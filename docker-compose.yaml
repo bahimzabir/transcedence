@@ -1,0 +1,18 @@
+# postgres database container
+
+version: '3.8'
+
+services:
+  dev-db:
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: nest
+    networks:
+      - nest
+networks:
+  nest:
+    driver: bridge

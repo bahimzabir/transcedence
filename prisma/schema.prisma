@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //email should be unique when debuging is done
+  email     String  @unique 
+  password  String?
+  token     String?
+  username  String?
+  firstname String?
+  lastname  String?
+  photo     String?
+  bio       String?
+  online    Boolean  @default(false)
+  goalsscored Int? @default(0)
+  goalsconceded Int? @default(0)
+  // friends   User[]   @relation("Friends")
+  // friendOf  User[]   @relation("Friends")
+  // blocked   User[]   @relation("Blocked")
+  // blockedBy User[]   @relation("Blocked")
+  // chatrooms ChatRoom[]
+  // chats Message[]
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String
+  link        String
+  description String?
+}
+
+
+model ChatRoom {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String?
+  slug String? @unique
+  adminId Int?
+  // owners User[]
+  messages Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chatroom ChatRoom @relation(fields: [chatroomId], references: [id])
+  chatroomId Int
+  // sender User @relation(fields: [senderId], references: [id])
+  senderId Int
+  toId Int?
+  content String?
+}
