@@ -19,6 +19,8 @@ services:
       - 3000:3000
     networks:
       - nest
+    depends_on:
+      - dev-db
 
 networks:
   nest:
