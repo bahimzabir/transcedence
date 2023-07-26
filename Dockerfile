@@ -16,4 +16,4 @@ WORKDIR /app/transcedence
 RUN npm install
 #RUN npx prisma migrate dev --name init
 #CMD npm run start:dev
-CMD ["npx", "prisma", "migrate", "dev", "--name", "init", ";" , "npm", "run", "start:dev"]
+CMD ["npm", "run", "start:dev", ";" , "npx", "prisma", "migrate", "dev", "--name", "init"]
