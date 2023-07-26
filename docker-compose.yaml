@@ -17,11 +17,6 @@ services:
     build: .
     ports:
       - 3000:3000
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: nest
-      POSTGRES_HOST: dev-db
     depends_on:
       - dev-db
     networks:
