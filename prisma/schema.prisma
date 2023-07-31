@@ -15,46 +15,43 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  //email should be unique when debuging is done
-  email     String  @unique 
-  password  String?
-  token     String?
-  username  String?
-  firstname String?
-  lastname  String?
-  photo     String?
-  bio       String?
-  online    Boolean  @default(false)
-  goalsscored Int? @default(0)
-  goalsconceded Int? @default(0)
-  // friends   User[]   @relation("Friends")
-  // friendOf  User[]   @relation("Friends")
-  // blocked   User[]   @relation("Blocked")
-  // blockedBy User[]   @relation("Blocked")
-  // chatrooms ChatRoom[]
-  // chats Message[]
+  email         String  @unique
+  password      String?
+  token         String?
+  username      String?
+  firstname     String?
+  lastname      String?
+  photo         String?
+  bio           String?
+  online        Boolean @default(false)
+  goalsscored   Int     @default(0)
+  goalsconceded Int     @default(0)
+
+  chats ChatRoom[]
+
+  messages Message[]
+  friends      User[] @relation("Friends")
+  friendOf     User[] @relation("Friends")
+
+  blockedUsers User[] @relation("BlockedUsers")
+  blockedBy    User[] @relation("BlockedUsers")
+
+  outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
+  incomingFriendRequests FriendRequest[] @relation("IncomingFriendRequests")
+
 }
-
-model Bookmark {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title       String
-  link        String
-  description String?
-}
-
 
 model ChatRoom {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name String?
-  slug String? @unique
-  adminId Int?
-  // owners User[]
+  isAdmin Boolean @default(false)
+  name    String?
+  public  Boolean @default(true)
+
+  password String?
+  members  User[]
   messages Message[]
 }
 
@@ -63,10 +60,23 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chatroom ChatRoom @relation(fields: [chatroomId], references: [id])
-  chatroomId Int
-  // sender User @relation(fields: [senderId], references: [id])
+  sender   User @relation(fields: [senderId], references: [id])
   senderId Int
-  toId Int?
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId Int
+
   content String?
+}
+
+model FriendRequest {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sender   User @relation("OutgoingFriendRequests", fields: [senderId], references: [id])
+  senderId Int
+
+  receiver   User @relation("IncomingFriendRequests", fields: [receiverId], references: [id])
+  receiverId Int
 }

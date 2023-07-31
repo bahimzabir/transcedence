@@ -14,7 +14,7 @@ services:
       - nest
   backend:
     container_name: backend
-    build: .
+    image: bahimzabir/trans:latest
     ports:
       - 3000:3000
     networks:
