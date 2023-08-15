@@ -1,1 +1,1 @@
-export { JwtStartegy } from "./jwt.startegy";
+export { JwtStartegy } from './jwt.startegy';
