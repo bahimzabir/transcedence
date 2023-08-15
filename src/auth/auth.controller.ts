@@ -25,7 +25,7 @@ export class AuthController {
   @UseGuards(AuthGuard('42'))
   async callback(@Req() req, @Res() res) {
     const r = await this.authService.SignIn(req);
-    res.cookie('jwt', r.token, {
+    await res.cookie('jwt', r.token, {
       httpOnly: true, // Ensures that the token cannot be accessed via JavaScript.
       secure: true, // Ensures the token is only sent over HTTPS if available.
       sameSite: 'strict', // Prevents the token from being sent in cross-site requests.
@@ -47,7 +47,7 @@ export class GoogleAuthController {
     @UseGuards(GoogleOAuthGuard)
     async Google_redirect(@Req() req, @Res() res){
         const r = await this.authService.SignIn(req);
-        res.cookie("jwt", r.token, {
+        await res.cookie("jwt", r.token, {
             httpOnly: true, // Ensures that the token cannot be accessed via JavaScript.
             secure: true, // Ensures the token is only sent over HTTPS if available.
             sameSite: "strict", // Prevents the token from being sent in cross-site requests.
