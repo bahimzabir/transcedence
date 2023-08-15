@@ -11,6 +11,6 @@ import { GoogleAuthController } from './auth.controller';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
   controllers: [AuthController, GoogleAuthController,],
-  providers: [AuthService, FortyTwoStrategy, JwtStartegy,],
+  providers: [AuthService, FortyTwoStrategy, JwtStartegy, GoogleStrategy],
 })
 export class AuthModule {}

@@ -1,3 +1,4 @@
+import { Body } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -5,9 +6,12 @@ import {
   WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
+import { subscribe } from 'diagnostics_channel';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
+import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @WebSocketGateway({
   cors: {
@@ -17,12 +21,15 @@ import { Server, Socket } from 'socket.io';
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
-
-  handleDisconnect(client: Socket): void {
-    console.log(`Client disconnected: ${client.id}`);
+  sockets = new Map<number, Socket>();
+  @SubscribeMessage("newConnection")
+  newConnection(client: Socket, @Body() createChatDto) {
+    console.log({CreateChatDto : createChatDto});
+    // this.sockets.set(createChatDto.id, client);
   }
 
-  handleConnection(client: Socket): void {
+  handleConnection(client: Socket, @Body() CreateChatDto): void {
+    console.log({socket: client})
     console.log(`Client connected: ${client.id}`);
   }
 

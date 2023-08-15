@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { AuthDto } from 'src/dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleOAuthGuard } from './guard/google-oauth.guard';
+import { SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 
 @Controller('auth')
 export class AuthController {
@@ -52,9 +53,7 @@ export class GoogleAuthController {
             secure: true, // Ensures the token is only sent over HTTPS if available.
             sameSite: "strict", // Prevents the token from being sent in cross-site requests.
           });
-        // console.log(r.token);
-        console.log(req)
-        res.redirect("http://localhost:5173/chat");
+        res.redirect("http://localhost:3000/home");
         // console.log({redirected: r});
     }
 }
