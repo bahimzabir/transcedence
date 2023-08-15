@@ -7,7 +7,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {
     super({
       clientID: "217156220608-rmsvmgijlqvk1ujaftckmg03hakiosoa.apps.googleusercontent.com",
-      clientSecret: "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",
+      clientSecret: "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",
       callbackURL: 'http://localhost:3000/auth/google/googleRedirect',
       scope: ['email', 'profile'],
     });
