@@ -5,6 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Module({
   providers: [HomeService],
-  controllers: [HomeController]
+  controllers: [HomeController],
 })
 export class HomeModule {}
