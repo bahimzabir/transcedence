@@ -7,9 +7,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStartegy } from './startegy';
 import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { GoogleStrategy } from './google/google.strategy';
+import { GoogleAuthController } from './auth.controller';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
-  controllers: [AuthController, GoogleOAuthGuard],
-  providers: [AuthService, FortyTwoStrategy, JwtStartegy, GoogleStrategy],
+  controllers: [AuthController, GoogleAuthController,],
+  providers: [AuthService, FortyTwoStrategy, JwtStartegy,],
 })
 export class AuthModule {}
