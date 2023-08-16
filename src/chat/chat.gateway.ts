@@ -3,9 +3,7 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Body } from '@nestjs/common';
-import { Server } from 'http';
 import { Socket } from 'socket.io';
-
 @WebSocketGateway(
   {
     cors:{
@@ -16,13 +14,15 @@ import { Socket } from 'socket.io';
 export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
   @WebSocketServer() 
-  server: Server;
+  server;
 
   sockets = new Map<string, Socket>();
 
   handleConnection(client: Socket): void {
     console.log('connected');
     console.log("socket id ", client.id);
+    this.sockets.set(client.id, client);
+    console.log(this.sockets.size);
   }
 
   handleDisconnect(client: Socket): void {
@@ -36,6 +36,8 @@ export class ChatGateway {
 
   @SubscribeMessage("message")
   async onChat(@Body() createchatdto : CreateChatDto) {
+    this.chatService.SendMessage(createchatdto);
+    this.server.to(this.sockets[createchatdto.receiverId]).emit("message", createchatdto);
   }
   @SubscribeMessage('findAllChat')
   findAll() {

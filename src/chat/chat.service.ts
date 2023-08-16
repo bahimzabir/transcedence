@@ -20,14 +20,9 @@ export class ChatService {
         throw 'Chat does not exist'
       }
   }
-  create(createChatDto: CreateChatDto) {
-    try
-    {
-      this.checkChatExists(createChatDto.id + "ROOM_" + createChatDto.receiverId)
-    }
-    catch {
+async create(createChatDto: CreateChatDto) {
       try {
-        this.prisma.chatRoom.create({
+        const chatRoom = await this.prisma.chatRoom.create({
           data: {
             name: createChatDto.id + "ROOM_" + createChatDto.receiverId,
             public: createChatDto.isDm === true ? false : true,
@@ -37,8 +32,44 @@ export class ChatService {
       } catch (error) {
         console.log("ERROR occur here")
       }
-    }
     console.log("ROOOM HAS BEEN CREATED")
+  }
+
+  async createMessage(createChatDto: CreateChatDto) {
+      const chatRoom = await this.prisma.chatRoom.findMany({
+        where: {
+          name: createChatDto.id + "ROOM_" + createChatDto.receiverId,
+        }
+      })
+      await this.prisma.message.create({
+        data:{
+          content: createChatDto.message,
+          senderId: 1,
+          chatRoomId: 1,
+      }})
+  }
+  async SendMessage(createChatDto: CreateChatDto) {
+    try {
+      const chatRoom = await this.prisma.chatRoom.findMany({
+        where: {
+          name: createChatDto.id + "ROOM_" + createChatDto.receiverId,
+        }
+      })
+      if (chatRoom.length) {
+        console.log("ROOM ALREADY EXIST")
+        this.createMessage(createChatDto)
+      }
+      else
+      {
+        console.log("ROOM CREATED")
+        this.create(createChatDto)
+        this.createMessage(createChatDto)
+      }
+      return createChatDto.message;
+    }
+    catch (error) {
+      console.error("ERROR occur here SendMEssage")
+    }
   }
   findAll() {
     return `This action returns all chat`;

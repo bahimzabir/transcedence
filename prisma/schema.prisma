@@ -29,7 +29,6 @@ model User {
 
   chats ChatRoom[]
 
-  messages Message[]
   friends      User[] @relation("Friends")
   friendOf     User[] @relation("Friends")
 
@@ -62,7 +61,6 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sender   User @relation(fields: [senderId], references: [id])
   senderId Int
 
   chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
