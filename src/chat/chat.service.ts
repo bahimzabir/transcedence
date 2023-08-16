@@ -43,7 +43,7 @@ async create(createChatDto: CreateChatDto) {
       })
       await this.prisma.message.create({
         data:{
-          content: createChatDto.message,
+          content: "HI",
           senderId: 1,
           chatRoomId: 1,
       }})
