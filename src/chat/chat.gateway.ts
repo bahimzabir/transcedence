@@ -3,7 +3,7 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Body } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { Socket , Server} from 'socket.io';
 @WebSocketGateway(
   {
     cors:{
@@ -14,9 +14,10 @@ import { Socket } from 'socket.io';
 export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
   @WebSocketServer() 
-  server;
+  server: Server;
 
   sockets = new Map<string, Socket>();
+  i = 0;
 
   handleConnection(client: Socket): void {
     console.log('connected');
@@ -34,10 +35,27 @@ export class ChatGateway {
   }
 
 
+  @SubscribeMessage('receiveMessage')
+  async receiveMessage(@MessageBody() createChatDto: any) {
+    console.log("RECEIVE : ")
+    console.log(createChatDto)
+  }
   @SubscribeMessage("message")
-  async onChat(@Body() createchatdto : CreateChatDto) {
-    this.chatService.SendMessage(createchatdto);
-    this.server.to(this.sockets[createchatdto.receiverId]).emit("message", createchatdto);
+  async onChat(client: Socket,@Body() createchatdto : CreateChatDto) {
+    let newDto = new CreateChatDto();
+    newDto.id = 1;
+    newDto.receiverId = 2;
+    newDto.message = "HI";
+    newDto.isDm = true;
+
+    this.chatService.SendMessage(newDto);
+    this.sockets.forEach((value, key) => {
+        // value.emit("receiveMessage", "HIIII");
+        this.server.to(value.id).emit("receiveMessage", "HIIII");
+        this.i = 1;
+    })
+    //get the second user socket id
+    //send the message to the second user
   }
   @SubscribeMessage('findAllChat')
   findAll() {
