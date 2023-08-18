@@ -3,12 +3,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtGard } from 'src/auth/guard';
 
 @UseGuards(JwtGard)
-@Controller('Home')
+@Controller()
 export class HomeController {
-  @Get()
+  @Get(['/', '/home'])
   home(@Req() req: any) {
-    console.log({ homereq: req.user });
-    console.log({ homecookies: req.cookies });
+    //console.log({ homereq: req.user });
+    //console.log({ homecookies: req.cookies });
     return 'Welcome Home!';
   }
 }

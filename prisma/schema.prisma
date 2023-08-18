@@ -18,6 +18,7 @@ model User {
   email         String  @unique
   password      String?
   token         String?
+  nkick         String?
   username      String?
   firstname     String?
   lastname      String?
@@ -28,6 +29,7 @@ model User {
   goalsconceded Int     @default(0)
 
   chats ChatRoom[]
+  chatsowned ChatRoom[] @relation("ChatRoomAdmin")
 
   messages Message[]
   friends      User[] @relation("Friends")
@@ -52,6 +54,7 @@ model ChatRoom {
 
   password String?
   members  User[]
+  admins   User[] @relation("ChatRoomAdmin")
   messages Message[]
 }
 
@@ -61,7 +64,7 @@ model Message {
   updatedAt DateTime @updatedAt
 
   sender   User @relation(fields: [senderId], references: [id])
-  senderId Int
+  senderId Int @map("senderId")
 
   chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId Int
