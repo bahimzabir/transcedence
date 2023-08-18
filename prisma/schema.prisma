@@ -18,6 +18,7 @@ model User {
   email         String  @unique
   password      String?
   token         String?
+  nkick         String?
   username      String?
   firstname     String?
   lastname      String?
@@ -27,6 +28,10 @@ model User {
   goalsscored   Int     @default(0)
   goalsconceded Int     @default(0)
 
+  chats ChatRoom[]
+  chatsowned ChatRoom[] @relation("ChatRoomAdmin")
+
+  messages Message[]
   friends      User[] @relation("Friends")
   friendOf     User[] @relation("Friends")
 
@@ -38,17 +43,19 @@ model User {
 
 }
 
-
-
 model ChatRoom {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   isAdmin Boolean @default(false)
   name    String?
   public  Boolean @default(true)
-  senderId  Int
+
   password String?
+  members  User[]
+  membersIDs Int[] @map("membersIDs")
+  admins   User[] @relation("ChatRoomAdmin")
   messages Message[]
 }
 
@@ -57,7 +64,8 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  senderId Int
+  sender   User @relation(fields: [senderId], references: [id])
+  senderId Int @map("senderId")
 
   chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId Int

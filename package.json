@@ -39,6 +39,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "jsonwebtoken": "^9.0.1",
+    "nest": "^0.1.6",
     "passport": "^0.6.0",
     "passport-42": "^1.2.6",
     "passport-google-oauth20": "^2.0.0",
