@@ -54,6 +54,7 @@ model ChatRoom {
 
   password String?
   members  User[]
+  membersIDs Int[] @map("membersIDs")
   admins   User[] @relation("ChatRoomAdmin")
   messages Message[]
 }

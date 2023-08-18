@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { ChatRoomBody } from 'src/dto';
+import { connect } from 'http2';
 
 @Injectable()
 export class ChatService {
@@ -21,16 +24,21 @@ export class ChatService {
         }
     }
 
-    async createChat(req: any, body: any) {
+    async createChat(req: any, body: ChatRoomBody) {
         try {
             const chat = await this.prisma.chatRoom.create({
                 data: {
                     name: body.name,
                     members: {
+                        connect: [{
+                            id: req.user.id,
+                        }],
+                    },
+                    admins: {
                         connect: {
                             id: req.user.id,
                         },
-                    },
+                    }
                 },
             });
             return chat;
