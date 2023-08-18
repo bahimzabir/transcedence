@@ -6,5 +6,25 @@ import { connect } from 'http2';
 
 @Injectable()
 export class ChatService {
-    
+    constructor(private prisma: PrismaService) {}
+    async createChatRoom(req: any, body: ChatRoomBody) {
+        try {
+            const chatRoom = await this.prisma.chatRoom.create({
+                data: {
+                    name: body.name,
+                },
+                
+            });
+
+            const roomUser = await this.prisma.roomUser.create({
+                data: {
+                    userId: req.user.id,
+                    roomId: chatRoom.id,
+                },
+            });
+            return chatRoom;
+        } catch (error) {
+            throw new Error('error occured while creating chat room');
+        }
+    }
 }
