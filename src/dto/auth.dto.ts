@@ -13,3 +13,4 @@ export class ChatRoomBody {
     @IsString()
     name?: string;
 }
+ 

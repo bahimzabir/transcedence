@@ -6,11 +6,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.use(cookieParser());
   app.enableCors({
     origin: '*',
   });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.use(cookieParser());
   const config = new DocumentBuilder()
     .setTitle('Transcedence API')
     .setDescription('everything you need to know about the APIs')
