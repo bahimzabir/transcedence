@@ -27,8 +27,6 @@ model User {
   goalsscored   Int     @default(0)
   goalsconceded Int     @default(0)
 
-  chats ChatRoom[]
-
   friends      User[] @relation("Friends")
   friendOf     User[] @relation("Friends")
 
@@ -46,13 +44,11 @@ model ChatRoom {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   isAdmin Boolean @default(false)
   name    String?
   public  Boolean @default(true)
-
+  senderId  Int
   password String?
-  members  User[]
   messages Message[]
 }
 

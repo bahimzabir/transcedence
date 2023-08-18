@@ -4,6 +4,10 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Body } from '@nestjs/common';
 import { Socket , Server} from 'socket.io';
+import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
+import * as jwt from 'jsonwebtoken'
+import { subscribe } from 'diagnostics_channel';
 @WebSocketGateway(
   {
     cors:{
@@ -15,15 +19,14 @@ export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
   @WebSocketServer() 
   server: Server;
-
-  sockets = new Map<string, Socket>();
-  i = 0;
-
+  sockets = new Map<string, Socket[]>();
   handleConnection(client: Socket): void {
     console.log('connected');
-    console.log("socket id ", client.id);
-    this.sockets.set(client.id, client);
-    console.log(this.sockets.size);
+    let cookie = client.handshake.headers.cookie;
+    cookie = cookie.split(" ")[1];
+    const payload = jwt.verify(cookie, 'very-very-secret-hahaha')
+    const parsePayload = JSON.parse(JSON.stringify(payload));
+    this.sockets.set(parsePayload.sub, [client]);
   }
 
   handleDisconnect(client: Socket): void {
@@ -41,7 +44,7 @@ export class ChatGateway {
     console.log(createChatDto)
   }
   @SubscribeMessage("message")
-  async onChat(client: Socket,@Body() createchatdto : CreateChatDto) {
+  async onChat(client: Socket, @Body() createchatdto : CreateChatDto) {
     let newDto = new CreateChatDto();
     newDto.id = 1;
     newDto.receiverId = 2;
@@ -49,10 +52,12 @@ export class ChatGateway {
     newDto.isDm = true;
 
     this.chatService.SendMessage(newDto);
+    console.log("---->", this.sockets.size)
     this.sockets.forEach((value, key) => {
-        // value.emit("receiveMessage", "HIIII");
-        this.server.to(value.id).emit("receiveMessage", "HIIII");
-        this.i = 1;
+      if(key != newDto.id.toString()){
+        console.log("HIIIII")
+        this.server.to(value[0].id).emit("receiveMessage", "HIIII");
+      }
     })
     //get the second user socket id
     //send the message to the second user

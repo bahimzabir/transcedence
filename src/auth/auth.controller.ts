@@ -53,6 +53,7 @@ export class GoogleAuthController {
             secure: true, // Ensures the token is only sent over HTTPS if available.
             sameSite: "strict", // Prevents the token from being sent in cross-site requests.
           });
+        console.log(r.token);
         res.redirect("http://localhost:3000/home");
         // console.log({redirected: r});
     }
