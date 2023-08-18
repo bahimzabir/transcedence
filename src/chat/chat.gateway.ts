@@ -2,66 +2,37 @@ import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { Socket, Server} from 'socket.io';
 import { Body } from '@nestjs/common';
-import { Socket , Server} from 'socket.io';
-import cookieParser from 'cookie-parser';
-import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken'
-import { subscribe } from 'diagnostics_channel';
-@WebSocketGateway(
-  {
-    cors:{
-      origin: '*',
-    }
-  }
-)
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
-  @WebSocketServer() 
-  server: Server;
-  sockets = new Map<string, Socket[]>();
-  handleConnection(client: Socket): void {
-    console.log('connected');
-    let cookie = client.handshake.headers.cookie;
-    cookie = cookie.split(" ")[1];
-    const payload = jwt.verify(cookie, 'very-very-secret-hahaha')
-    const parsePayload = JSON.parse(JSON.stringify(payload));
-    this.sockets.set(parsePayload.sub, [client]);
-  }
-
-  handleDisconnect(client: Socket): void {
-    console.log("the client: ", client.id, " disconnected");
-  }
-  @SubscribeMessage('createChat')
-  create(@MessageBody() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
-  }
+  @WebSocketServer()
+  server: Server
+  sockets = new  Map<number, Socket[]>;
 
 
-  @SubscribeMessage('receiveMessage')
-  async receiveMessage(@MessageBody() createChatDto: any) {
-    console.log("RECEIVE : ")
-    console.log(createChatDto)
-  }
-  @SubscribeMessage("message")
-  async onChat(client: Socket, @Body() createchatdto : CreateChatDto) {
-    let newDto = new CreateChatDto();
-    newDto.id = 1;
-    newDto.receiverId = 2;
-    newDto.message = "HI";
-    newDto.isDm = true;
 
-    this.chatService.SendMessage(newDto);
-    console.log("---->", this.sockets.size)
-    this.sockets.forEach((value, key) => {
-      if(key != newDto.id.toString()){
-        console.log("HIIIII")
-        this.server.to(value[0].id).emit("receiveMessage", "HIIII");
-      }
-    })
-    //get the second user socket id
-    //send the message to the second user
+  @SubscribeMessage('newmessage')
+  newMessage(client: Socket, createChatDto: CreateChatDto) {
+    console.log("new message received");
   }
+  handleConnection(client: Socket) {
+    const userNtparsed = this.chatService.getUserJwt(client);
+    const userId = this.chatService.getIdFromJwt(userNtparsed);
+    this.sockets.set(userId, [client]);
+  }
+  @SubscribeMessage('createMessage')
+  create(client: Socket, createChatDto: any) {
+    this.chatService.create(createChatDto,  this.chatService.getIdFromJwt(
+      this.chatService.getUserJwt(client)));
+    this.server.to(this.sockets[createChatDto.receiverId]).emit('newmessage', createChatDto);
+  }
+
   @SubscribeMessage('findAllChat')
   findAll() {
     return this.chatService.findAll();

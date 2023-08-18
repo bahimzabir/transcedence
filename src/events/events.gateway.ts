@@ -23,14 +23,17 @@ export class EventsGateway {
   server: Server;
   sockets = new Map<number, Socket>();
   @SubscribeMessage("newConnection")
-  newConnection(client: Socket, @Body() createChatDto) {
-    console.log({CreateChatDto : createChatDto});
+  newConnection(client: Socket, message: any) {
+    console.log(message)
+    console.log(client.id)
+    // console.log({CreateChatDto : createChatDto});
     // this.sockets.set(createChatDto.id, client);
   }
 
   handleConnection(client: Socket, @Body() CreateChatDto): void {
-    console.log({socket: client})
-    console.log(`Client connected: ${client.id}`);
+    // console.log({socket: client})
+    // console.log(client.id);
+    // console.log(`Client connected: ${client.id}`);
   }
 
   @SubscribeMessage('events')
