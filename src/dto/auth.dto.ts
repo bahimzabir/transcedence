@@ -7,8 +7,9 @@ export class AuthDto {
   password: string;
 }
 
-// export class OtherUserDto {
-//     @IsNumber()
-//     @IsNotEmpty()
-//     Id: string;
-// }
+export class ChatRoomBody {
+    //@IsNumber()
+    to: number;
+    @IsString()
+    name?: string;
+}
