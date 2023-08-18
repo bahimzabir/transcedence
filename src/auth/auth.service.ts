@@ -15,14 +15,15 @@ export class AuthService {
   ) {}
   async Signup(req) {
     try {
-      const user = await this.prisma.user.create({
-        data: {
+      const userInput : Prisma.UserCreateInput = {
           email: req.user.email,
           token: req.user.accessToken,
           photo: req.user.picture,
           firstname: req.user.firstName,
           lastname: req.user.lastName,
-        },
+      };
+      const user = await this.prisma.user.create({
+        data: userInput,
       });
       return user;
     } catch (error) {
@@ -42,6 +43,7 @@ export class AuthService {
       msg: 'user already exist',
       user,
       token: await this.generateToken(user),
+      
     };
   }
 

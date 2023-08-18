@@ -24,10 +24,12 @@ export class AuthController {
   @UseGuards(AuthGuard('42'))
   async callback(@Req() req, @Res() res) {
     const r = await this.authService.SignIn(req);
-    res.cookie('jwt', r.token, {
-      httpOnly: true, // Ensures that the token cannot be accessed via JavaScript.
-      secure: true, // Ensures the token is only sent over HTTPS if available.
-      sameSite: 'strict', // Prevents the token from being sent in cross-site requests.
+    await res.cookie('jwt', r.token, {
+        domain: 'localhost', // Set to your domain
+        path: '/',
+        httpOnly: true,
+        secure: false, // Set to true for HTTPS
+        //sameSite: 'Lax', // Adjust based on your requirements
     });
     console.log(r.token);
     res.redirect('http://localhost:3000/home');
