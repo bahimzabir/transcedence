@@ -3,10 +3,12 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
-
+import * as jwt from 'jsonwebtoken'
 @Injectable()
 export class ChatService {
   constructor(readonly prisma: PrismaService) { }
+
+  
   async checkChatExists(chatname: string) {
       const chatroom = await this.prisma.chatRoom.findMany(
         {
@@ -36,16 +38,16 @@ async create(createChatDto: CreateChatDto) {
   }
 
   async createMessage(createChatDto: CreateChatDto) {
-      const chatRoom = await this.prisma.chatRoom.findMany({
+      const chatroom = await this.prisma.chatRoom.findMany({
         where: {
           name: createChatDto.id + "ROOM_" + createChatDto.receiverId,
         }
       })
       await this.prisma.message.create({
         data:{
-          content: "HI",
-          senderId: 1,
-          chatRoomId: 1,
+          content: createChatDto.message,
+          senderId: createChatDto.id,
+          chatRoomId: chatroom[0].id,
       }})
   }
   async SendMessage(createChatDto: CreateChatDto) {
