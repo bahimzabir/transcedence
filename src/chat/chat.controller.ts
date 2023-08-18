@@ -8,5 +8,9 @@ import { ChatRoomBody } from 'src/dto';
 @UseGuards(JwtGard)
 @Controller('chat')
 export class ChatController {
-
+    constructor(private readonly chatService: ChatService) {}
+    @Post('new')
+    createChatRoom(@Req() req: any, @Body() body: ChatRoomBody) {
+        return this.chatService.createChatRoom(req, body);
+    }
 }
