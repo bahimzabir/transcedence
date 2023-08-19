@@ -13,7 +13,7 @@ export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
   @WebSocketServer()
   server: Server
-  sockets = new  Map<number, Socket[]>;
+  sockets = new  Map<number, Socket>();
 
 
 
@@ -24,13 +24,15 @@ export class ChatGateway {
   handleConnection(client: Socket) {
     const userNtparsed = this.chatService.getUserJwt(client);
     const userId = this.chatService.getIdFromJwt(userNtparsed);
-    this.sockets.set(userId, [client]);
+    this.sockets.set(userId, client);
+
   }
   @SubscribeMessage('createMessage')
   create(client: Socket, createChatDto: any) {
-    this.chatService.create(createChatDto,  this.chatService.getIdFromJwt(
-      this.chatService.getUserJwt(client)));
-    this.server.to(this.sockets[createChatDto.receiverId]).emit('newmessage', createChatDto);
+    const dto = this.chatService.parseJwt(createChatDto);
+    // console.log("-------------->",dto.id)
+    this.chatService.create(dto, 1);
+    this.server.to(this.sockets.get(2).id).emit('newmessage', dto)
   }
 
   @SubscribeMessage('findAllChat')

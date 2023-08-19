@@ -32,7 +32,7 @@ export class AuthController {
       sameSite: 'strict', // Prevents the token from being sent in cross-site requests.
     });
     console.log(r.token);
-    res.redirect('http://localhost:3000/home');
+    res.redirect('http://localhost:5173/chat');
     console.log({ redirected: r });
   }
 }
@@ -54,7 +54,7 @@ export class GoogleAuthController {
             sameSite: "strict", // Prevents the token from being sent in cross-site requests.
           });
         console.log(r.token);
-        res.redirect("http://localhost:3000/home");
+        res.redirect("http://localhost:5173/chat");
         // console.log({redirected: r});
     }
 }
