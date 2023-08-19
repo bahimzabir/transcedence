@@ -5,11 +5,37 @@ import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-
+import { ChatRoomBody } from 'src/dto/auth.dto';
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
+
   private config : ConfigService;
+
+
+
+  async createChatRoom(req: any, body: ChatRoomBody) {
+    try {
+        const chatRoom = await this.prisma.chatRoom.create({
+            data: {
+                name: body.name,
+            },
+            
+        });
+
+        const roomUser = await this.prisma.roomUser.create({
+            data: {
+                userId: req.user.id,
+                roomId: chatRoom.id,
+            },
+        });
+        return chatRoom;
+    } catch (error) {
+        throw new Error('error occured while creating chat room');
+    }
+}
+
+
   getUserJwt(socket: Socket) {
     let token = socket.handshake.headers.cookie;
     token = token.split(' ')[1];
@@ -21,8 +47,25 @@ export class ChatService {
     const user = JSON.parse(JSON.stringify(userNotDecoded));
     return user.sub;
   }
+
+  parseJwt(token: any) {
+    const ob = JSON.parse(JSON.stringify(token));
+    const dto : CreateChatDto = {
+      id: ob.id,
+      message: ob.message,
+      receiverId: ob.receiverId,
+    }
+    return dto;
+
+  }
   async create(createMessageDto: CreateChatDto, sender: number) {
-    
+    await this.prisma.message.create({
+      data: {
+        content: "hi",
+        senderId: 1,
+        roomId: 1,
+    }
+  })
   }
 
   findAll() {
