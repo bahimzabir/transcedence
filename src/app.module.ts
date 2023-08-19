@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { HomeModule } from './home/home.module';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
+import { GameController } from './game/game.controller';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { ChatModule } from './chat/chat.module';
     HomeModule,
     EventsModule,
     ChatModule,
+    GameModule,
   ],
+  //controllers: [GameController],
 })
 export class AppModule {}
