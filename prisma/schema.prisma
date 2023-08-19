@@ -25,11 +25,11 @@ model User {
   bio       String?
   online    Boolean @default(false)
 
-  goalsscored   Int? @default(0)
-  goalsconceded Int? @default(0)
-  wins          Int? @default(0)
-  losses        Int? @default(0)
-  draws         Int? @default(0)
+  goalsscored   Int @default(0)
+  goalsconceded Int @default(0)
+  wins          Int @default(0)
+  losses        Int @default(0)
+  draws         Int @default(0)
 
   notifications Notification[]
   roomUsers     RoomUser[]
