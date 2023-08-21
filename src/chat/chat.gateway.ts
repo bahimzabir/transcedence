@@ -1,19 +1,20 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
-import { Socket, Server} from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { Body } from '@nestjs/common';
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true,
   },
 })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService) { }
   @WebSocketServer()
   server: Server
-  sockets = new  Map<number, Socket>();
+  sockets = new Map<number, Socket>();
 
 
 
@@ -21,18 +22,36 @@ export class ChatGateway {
   newMessage(client: Socket, createChatDto: CreateChatDto) {
     console.log("new message received");
   }
-  handleConnection(client: Socket) {
-    const userNtparsed = this.chatService.getUserJwt(client);
-    const userId = this.chatService.getIdFromJwt(userNtparsed);
-    this.sockets.set(userId, client);
 
+  async handleConnection(client: Socket) {
+    let token = await client.handshake.headers.cookie;
+    let id: number;
+    if (token) {
+      token = token.split('=')[1];
+      const decoded = this.chatService.getUserJwt(token);
+      id = +decoded.sub;
+      console.log("----->", id)
+      this.sockets.set(id, client);
+    }
+  }
+  handleDisconnect(client: Socket): void {
+    console.log(`Client disconnected: ${client.id}`);
   }
   @SubscribeMessage('createMessage')
-  create(client: Socket, createChatDto: any) {
-    const dto = this.chatService.parseJwt(createChatDto);
+  create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
     // console.log("-------------->",dto.id)
-    this.chatService.create(dto, 1);
-    this.server.to(this.sockets.get(2).id).emit('newmessage', dto)
+    let token = client.handshake.headers.cookie;
+    let id: number;
+    if (token) {
+      token = token.split('=')[1];
+      const decoded = this.chatService.getUserJwt(token);
+      id = +decoded.sub;
+      console.log("----->PPPP ", typeof dto[0].id)
+      
+      this.chatService.create(dto[0], id);
+      this.server.to(this.sockets.get(dto[0].receiverId).id).emit('newmessage', dto)
+
+    }    
   }
 
   @SubscribeMessage('findAllChat')

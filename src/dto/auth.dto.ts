@@ -9,8 +9,6 @@ export class AuthDto {
 
 export class ChatRoomBody {
     //@IsNumber()
-    to: number;
-    @IsString()
     name?: string;
 }
  
