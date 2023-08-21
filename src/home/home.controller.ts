@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtGard } from 'src/auth/guard';
 
@@ -9,6 +9,13 @@ export class HomeController {
   home(@Req() req: any) {
     //console.log({ homereq: req.user });
     //console.log({ homecookies: req.cookies });
+    return 'Welcome Home!';
+  }
+
+  @Post(['/', '/home'])
+  ispost(@Req() req: any, @Body() body: Body) {
+    console.log({ homereq: req.user });
+    console.log({ homebody: body });
     return 'Welcome Home!';
   }
 }
