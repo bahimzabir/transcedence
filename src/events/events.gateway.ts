@@ -16,7 +16,8 @@ import * as jwt from 'jsonwebtoken'
 
 const sockerConfig = {
   cors: {
-    origin: '*',
+    origin: ['http://localhost:3000', 'http://127.0.0.1:5501', 'http://localhost:5501'],
+    credentials: true,
   },
   namespace: 'user',
 };
@@ -25,12 +26,11 @@ const sockerConfig = {
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
-  //@UseGuards(JwtGard)
   async handleConnection(client: Socket): Promise<void> {
-    //const token = client.handshake.headers.authorization?.split('=')[1];
-   // let payload : any = jwt.verify(token, 'very-very-secret-hahaha')
-    //console.log(payload)
-    //const user = await this.jwtStrategy.validate( {sub :payload.sub, email: payload.email} );
+    const token = client.handshake.headers.cookie.split('=')[1];
+   let payload : any = jwt.verify(token, 'very-very-secret-hahaha')
+    console.log(payload)
+    // const user = await this.jwtStrategy.validate( {sub :payload.sub, email: payload.email} );
     console.log({Client_connected: client.id});
   }
 
@@ -41,8 +41,8 @@ export class EventsGateway {
 
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log({ data });
-    console.log({message_from_client: data.message, id : data.id})
+    //console.log({ data });
+    //console.log({message_from_client: data.message, id : data.id})
     return from([1, 2, 3]).pipe(
       map((item) => ({ event: 'events', data: item })),
     );
@@ -50,7 +50,7 @@ export class EventsGateway {
 
   @SubscribeMessage('identity')
   async identity(@MessageBody() data: number): Promise<number> {
-    console.log({ data });
+    //console.log({ data });
     return data;
   }
 }
