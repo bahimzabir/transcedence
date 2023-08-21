@@ -8,64 +8,52 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ChatRoomBody } from 'src/dto/auth.dto';
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  private config : ConfigService;
+  private config: ConfigService;
 
 
 
-  async createChatRoom(req: any, body: ChatRoomBody) {
+  async createChatRoom(req, body: ChatRoomBody) {
     try {
-        const chatRoom = await this.prisma.chatRoom.create({
-            data: {
-                name: body.name,
-            },
-            
-        });
+      console.log("HOOLLLLA")
+      const chatRoom = await this.prisma.chatRoom.create({
+        data: {
+          name: body.name,
+        },
 
-        const roomUser = await this.prisma.roomUser.create({
-            data: {
-                userId: req.user.id,
-                roomId: chatRoom.id,
-            },
-        });
-        return chatRoom;
+      });
+      console.log("GOOT HERE")
+      console.log(req.user.id);
+      const roomUser = await this.prisma.roomUser.create({
+        data: {
+          userId: req.user.id,
+          roomId: chatRoom.id,
+        },
+      });
+      console.log("room created successfully with name of ", chatRoom.name)
+      return chatRoom;
     } catch (error) {
-        throw new Error('error occured while creating chat room');
+      throw new Error('error occured while creating chat room');
     }
-}
+  }
 
-
-  getUserJwt(socket: Socket) {
-    let token = socket.handshake.headers.cookie;
-    token = token.split(' ')[1];
+  getUserJwt(token: string) {
     const Decoded = jwt.verify(token, 'very-very-secret-hahaha');
     return Decoded;
   }
 
-  getIdFromJwt(userNotDecoded: any) {
-    const user = JSON.parse(JSON.stringify(userNotDecoded));
-    return user.sub;
-  }
 
-  parseJwt(token: any) {
-    const ob = JSON.parse(JSON.stringify(token));
-    const dto : CreateChatDto = {
-      id: ob.id,
-      message: ob.message,
-      receiverId: ob.receiverId,
-    }
-    return dto;
-
-  }
   async create(createMessageDto: CreateChatDto, sender: number) {
+    const id: number  = createMessageDto.id;
+    console.log("id is " ,id)
     await this.prisma.message.create({
       data: {
-        content: "hi",
-        senderId: 1,
-        roomId: 1,
-    }
-  })
+        content: createMessageDto.message,
+        senderId: sender,
+        roomId: id,
+      }
+    })
   }
 
   findAll() {
