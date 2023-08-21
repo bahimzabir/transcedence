@@ -13,6 +13,7 @@ import { Server, Socket } from 'socket.io';
 import {JwtStartegy} from 'src/auth/startegy'
 // import { JwtModule } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken'
+import { WsGuard } from 'src/auth/guard';
 
 const sockerConfig = {
   cors: {
@@ -22,14 +23,16 @@ const sockerConfig = {
   namespace: 'user',
 };
 
+@UseGuards(WsGuard)
 @WebSocketGateway(sockerConfig)
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
   async handleConnection(client: Socket): Promise<void> {
-    const token = client.handshake.headers.cookie.split('=')[1];
-   let payload : any = jwt.verify(token, 'very-very-secret-hahaha')
-    console.log(payload)
+    const cookies = client.handshake.headers.cookie;
+    const token = cookies ? cookies.split("=")[1] : "Cookeis not sent"
+   //let payload : any = jwt.verify(token, 'very-very-secret-hahaha')
+    console.log(token)
     // const user = await this.jwtStrategy.validate( {sub :payload.sub, email: payload.email} );
     console.log({Client_connected: client.id});
   }
