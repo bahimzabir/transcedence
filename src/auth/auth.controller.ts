@@ -28,7 +28,7 @@ export class AuthController {
         domain: 'localhost', // Set to your domain
         path: '/',
         httpOnly: true,
-        secure: false, // Set to true for HTTPS
+        secure: true, // Set to true for HTTPS
         //sameSite: 'Lax', // Adjust based on your requirements
     });
     console.log(r.token);
