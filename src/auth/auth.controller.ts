@@ -46,8 +46,11 @@ export class GoogleAuthController {
   @UseGuards(GoogleOAuthGuard)
   async Google_redirect(@Req() req, @Res() res) {
     const r = await this.authService.SignIn(req);
-    await res.cookie("jwt", r.token);
-    res.redirect("http://localhost:5173/chat");
+    await res.cookie("jwt", r.token , {
+      httpOnly: true,
+      secure: true,
+    })
+    res.redirect("http://localhost:3000/home");
     // console.log({redirected: r});
   }
 }
