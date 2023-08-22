@@ -1,73 +1,57 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Overview
+ft_transcendence is an immersive multiplayer online game project developed as part of the 42 school curriculum. This project reimagines the classic game "Pong" with modern twists and includes an array of features such as real-time multiplayer matches, user authentication through 42 Passport and Google OAuth, 2-step authentication for enhanced security, and dynamic microservices architecture. Additionally, it introduces chat functionality, chat groups, friend management, and blocked user management to create a comprehensive gaming community. Developed with NestJS for the backend, React for the front, PostgreSQL for the database, Docker for containerization, Nginx for web serving, and incorporating authentication from 42 Passport and Google, this project offers a comprehensive learning experience in modern web development.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Features
+Real-Time Multiplayer: ft_transcendence offers players a captivating real-time multiplayer experience, elevating gameplay with instantaneous interactions.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+User Authentication: Players can securely register and log in via 42 Passport and Google OAuth, providing seamless access and enhanced security through trusted third-party authentication.
 
-## Description
+2-Step Authentication: The game implements 2-step authentication for an added layer of security, ensuring players' accounts are well-protected.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Chat and Chat Groups: Players can engage in real-time chat with other players and create or join chat groups, fostering communication and community building.
 
-## Installation
+Friend Management: The project incorporates friend management, allowing players to send and accept friend requests to connect with each other.
 
-```bash
-$ npm install
-```
+Blocked User Management: Players can block users to manage their interactions and ensure a comfortable gaming environment.
 
-## Running the app
+Leaderboards: The game boasts leaderboards to showcase top players and their scores, encouraging healthy competition among players.
 
-```bash
-# development
-$ npm run start
+Tournaments: ft_transcendence introduces in-game tournaments, allowing players to display their skills and compete for rewards.
 
-# watch mode
-$ npm run start:dev
+# Tech Stack
 
-# production mode
-$ npm run start:prod
-```
+Backend Framework: The backend is built with NestJS, a versatile Node.js framework known for creating scalable and performant server-side applications.
 
-## Test
+Frontend Framework: React, a widely-used JavaScript library for crafting dynamic user interfaces, serves as the foundation for the front end.
 
-```bash
-# unit tests
-$ npm run test
+Database Management: PostgreSQL is chosen as the database management system, providing reliable data storage for user profiles, game states, chat messages, and scores.
 
-# e2e tests
-$ npm run test:e2e
+Authentication: ft_transcendence integrates authentication via 42 Passport and Google OAuth, enabling seamless registration and login processes.
 
-# test coverage
-$ npm run test:cov
-```
+2-Step Authentication: The project incorporates 2-step authentication, enhancing security through an additional verification layer.
 
-## Support
+Containerization with Docker: Docker facilitates consistent deployment and ensures uniform behavior across various environments.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Web Serving with Nginx: Nginx functions as the web server, expertly managing incoming traffic and routing requests.
 
-## Stay in touch
+# Architecture
+ft_transcendence follows a microservices architecture, segmenting functionalities into distinct backend services:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Authentication Service: Manages user registration, authentication, and authorization, providing secure access through 42 Passport and Google OAuth.
 
-## License
+Game Service: Handles core game logic, real-time interactions, and tournament management, delivering a seamless gameplay experience.
 
-Nest is [MIT licensed](LICENSE).
+Chat Service: Enables real-time chat functionality and manages chat groups, enhancing player interactions.
+
+User Service: Manages user profiles, friend interactions, blocked users, messaging, and leaderboard tracking, fostering a vibrant gaming community.
+
+Database Service: Connects to the PostgreSQL database, handling player data, game states, scores, chat messages, and more.
+
+# Deployment
+The Dockerized architecture ensures a straightforward deployment process across various environments, making ft_transcendence accessible via cloud platforms or dedicated servers.
+
+# Security
+ft_transcendence emphasizes data security, utilizing hashed passwords, secure API endpoints, and 2-step authentication. HTTPS encryption safeguards communication between clients and the server.
+
+# Conclusion
+ft_transcendence stands as a comprehensive and engaging project that seamlessly blends modern technologies. Leveraging NestJS, React, PostgreSQL, Docker, and Nginx, and integrating authentication from 42 Passport and Google OAuth, the project constructs a captivating online gaming experience. The addition of chat functionality, chat groups, friend management, and blocked user management fosters a dynamic and interconnected gaming community. Developers gain practical experience in frontend and backend development, database management, security implementation, containerization, web serving, and third-party authentication, making ft_transcendence an exceptional educational endeavor.
