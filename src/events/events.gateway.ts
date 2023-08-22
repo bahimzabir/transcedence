@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { Body } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -6,13 +6,12 @@ import {
   WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
+import { subscribe } from 'diagnostics_channel';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
-// import { JwtGard } from 'src/auth/guard';
-import {JwtStartegy} from 'src/auth/startegy'
-import * as jwt from 'jsonwebtoken'
-import { WsGuard } from 'src/auth/guard';
+import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 const sockerConfig = {
   cors: {
@@ -26,18 +25,21 @@ const sockerConfig = {
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
-  async handleConnection(client: Socket, ...args: any): Promise<void> {
-    // const cookies = client.handshake.headers.cookie;
-    // const token = cookies ? cookies.split("=")[1] : "Cookeis not sent"
-    console.log({connected: client.id});
+  sockets = new Map<number, Socket>();
+  @SubscribeMessage("newConnection")
+  newConnection(client: Socket, message: any) {
+    console.log(message)
+    console.log(client.id)
+    // console.log({CreateChatDto : createChatDto});
+    // this.sockets.set(createChatDto.id, client);
   }
-  
-  handleDisconnect(client: Socket): void {
-    console.log(`Client disconnected: ${client.id}`);
+
+  handleConnection(client: Socket, @Body() CreateChatDto): void {
+    // console.log({socket: client})
+    // console.log(client.id);
+    // console.log(`Client connected: ${client.id}`);
   }
-  
-  
-  @UseGuards(WsGuard)
+
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
     console.log( "events is here");
