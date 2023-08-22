@@ -13,13 +13,13 @@ import { Body } from '@nestjs/common';
 export class ChatGateway {
   constructor(private readonly chatService: ChatService) { }
   @WebSocketServer()
-  server: Server
+  server: Server;
   sockets = new Map<number, Socket>();
 
 
 
   @SubscribeMessage('newmessage')
-  newMessage(client: Socket, createChatDto: CreateChatDto) {
+  newMessage(@ConnectedSocket() client: Socket, @MessageBody() createChatDto: CreateChatDto) {
     console.log("new message received");
   }
 
@@ -46,10 +46,9 @@ export class ChatGateway {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      console.log("----->PPPP ", typeof dto[0].id)
       
       this.chatService.create(dto[0], id);
-      this.server.to(this.sockets.get(dto[0].receiverId).id).emit('newmessage', dto)
+      this.server.to(this.sockets.get(2).id).emit('newmessage', dto)
 
     }    
   }
