@@ -37,7 +37,16 @@ interface Room {
   data?: GameData;
 }
 
-@WebSocketGateway(  { cors: { origin: 'localhost:5173' } , namespace: 'game'})
+const socketConfig = {
+  cors: {
+    origin: ['http://localhost:5173'],
+    credentials: true,
+  },
+  namespace: "game"
+};
+
+
+@WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer()
@@ -51,10 +60,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 
   async handleConnection(client: Socket) : Promise<void> {
-    
+    console.log("GOT hERE")
     const token = client.handshake.headers.cookie;
     
-    console.log(token)
+    console.log(token);
 
     await this.queue.push(client);
     //client.emit("joined_queue");
