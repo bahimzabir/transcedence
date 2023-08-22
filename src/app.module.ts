@@ -4,11 +4,11 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { HomeModule } from './home/home.module';
-import { EventsModule } from './events/events.module';
+import { ChatModule } from './chat/chat.module';
+import { EventsGateway } from './events/events.gateway';
 import { ChatModule } from './chat/chat.module';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -16,7 +16,7 @@ import { GameModule } from './game/game.module';
     UserModule,
     PrismaModule,
     HomeModule,
-    EventsModule,
+    ChatModule,
     ChatModule,
     GameModule,
   ],

@@ -19,11 +19,6 @@ export class JwtStartegy extends PassportStrategy(Strategy, 'jwt') {
   //jwt extractor from cookies
   private static  extractJwtFromCookies(req: any,): string | null {
     const reqCookies = req.cookies.jwt;
-    //console.log({ ReqCookies: reqCookies });
-    if (!reqCookies) {
-      console.log('Cookies not found');
-      return null;
-    }
     return reqCookies;
   }
 

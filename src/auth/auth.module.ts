@@ -5,9 +5,12 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { FortyTwoStrategy } from './42_.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStartegy } from './startegy';
+import { GoogleOAuthGuard } from './guard/google-oauth.guard';
+import { GoogleStrategy } from './google/google.strategy';
+import { GoogleAuthController } from './auth.controller';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
-  controllers: [AuthController],
-  providers: [AuthService, FortyTwoStrategy, JwtStartegy],
+  controllers: [AuthController, GoogleAuthController,],
+  providers: [AuthService, FortyTwoStrategy, JwtStartegy, GoogleStrategy],
 })
 export class AuthModule {}
