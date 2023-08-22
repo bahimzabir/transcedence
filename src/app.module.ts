@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { HomeModule } from './home/home.module';
 import { ChatModule } from './chat/chat.module';
 import { EventsGateway } from './events/events.gateway';
-import { ChatModule } from './chat/chat.module';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
 @Module({
