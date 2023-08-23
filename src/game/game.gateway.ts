@@ -59,25 +59,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private roomNames: String[] = [];
 
   async handleConnection(client: Socket) : Promise<void> {
-    // console.log("GOT hERE");
-    const token = client.handshake.headers.cookie;
-    
-    // console.log(token);
+    const cookie = client.handshake.headers.cookie;
+    console.log(cookie);
 
     await this.queue.push(client);
-    //client.emit("joined_queue");
 
-    console.log(this.queue.length);
     if (this.queue.length >= 2) {
       const players = this.queue.splice(0, 2);
       const roomName: string = this.createNewRoom();
+
       let n = 0;
       players.forEach(player => {
         player.join(roomName);
         player.emit("join_room", {side: n, roomName: roomName});
         n++;
       });
-      console.log('room created: ', roomName);
 
       let room: Room = {roomName: roomName,
                         players: players,
@@ -91,7 +87,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       
       this.rooms.push(room);
       this.server.to(room.roomName).emit("started");
-      console.log("emit match started");
     }
 
   }
@@ -144,26 +139,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("move")
   async movePaddle(@MessageBody() data: any) {
-    // console.log("moooove");
-    // console.log(data)
+
     let room = this.getRoomByName(data.roomName);
 
     if (room === undefined) {
       return ;
     }
 
-    // if (data.direction === "down" && data.Side === "left" && room.data.leftPlayerY < 520) {
-    //   room.data.leftPlayerY += 5;
-    // }
-    // else if (data.direction === "down" && data.Side === "right" && room.data.rightPlayerY < 520) {
-    //   room.data.rightPlayerY += 5;
-    // }
-    // else if (data.direction === "up" && data.Side === "left" && room.data.leftPlayerY > 0) {
-    //   room.data.leftPlayerY -= 5;
-    // }
-    // else if (data.direction === "up" && data.Side === "right" && room.data.rightPlayerY > 0) {
-    //   room.data.rightPlayerY -= 5;
-    // }
     if (data.Side === "left" ) {
       room.data.leftPlayerY += data.deltaY;
     }
