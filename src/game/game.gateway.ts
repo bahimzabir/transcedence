@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 
  import * as jwt from "jsonwebtoken"
+import { connected } from 'process';
 
 import { Server, Socket } from "socket.io"
 
@@ -39,9 +40,10 @@ interface Room {
 
 const socketConfig = {
   cors: {
-    origin: [ 'http://localhost:5173', 'http://localhost:3000'],
+    origin: [ 'http://localhost:5173', 'http://10.14.8.6:5173', 'http://10.14.8.6:3000'],
     credentials: true,
-  }
+  },
+  namespace: 'game'
 };
 
 
@@ -56,18 +58,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private roomNames: String[] = [];
 
-
-
   async handleConnection(client: Socket) : Promise<void> {
-    console.log("GOT hERE")
+    // console.log("GOT hERE");
     const token = client.handshake.headers.cookie;
     
-    console.log(token);
+    // console.log(token);
 
     await this.queue.push(client);
     //client.emit("joined_queue");
 
-    // console.log(this.queue.length);
+    console.log(this.queue.length);
     if (this.queue.length >= 2) {
       const players = this.queue.splice(0, 2);
       const roomName: string = this.createNewRoom();
@@ -77,9 +77,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         player.emit("join_room", {side: n, roomName: roomName});
         n++;
       });
+      console.log('room created: ', roomName);
 
-      // console.log(roomName);
-      
       let room: Room = {roomName: roomName,
                         players: players,
                         data: {
@@ -92,8 +91,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       
       this.rooms.push(room);
       this.server.to(room.roomName).emit("started");
+      console.log("emit match started");
     }
-
 
   }
 
@@ -141,30 +140,35 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.server.to(room.roomName).emit("update", room.data);
     }
-
   }
-
 
   @SubscribeMessage("move")
   async movePaddle(@MessageBody() data: any) {
-
+    // console.log("moooove");
+    // console.log(data)
     let room = this.getRoomByName(data.roomName);
 
     if (room === undefined) {
       return ;
     }
 
-    if (data.direction === "down" && data.side === "left" && room.data.leftPlayerY < 520) {
-      room.data.leftPlayerY += 10;
+    // if (data.direction === "down" && data.Side === "left" && room.data.leftPlayerY < 520) {
+    //   room.data.leftPlayerY += 5;
+    // }
+    // else if (data.direction === "down" && data.Side === "right" && room.data.rightPlayerY < 520) {
+    //   room.data.rightPlayerY += 5;
+    // }
+    // else if (data.direction === "up" && data.Side === "left" && room.data.leftPlayerY > 0) {
+    //   room.data.leftPlayerY -= 5;
+    // }
+    // else if (data.direction === "up" && data.Side === "right" && room.data.rightPlayerY > 0) {
+    //   room.data.rightPlayerY -= 5;
+    // }
+    if (data.Side === "left" ) {
+      room.data.leftPlayerY += data.deltaY;
     }
-    else if (data.direction === "down" && data.side === "right" && room.data.rightPlayerY < 520) {
-      room.data.rightPlayerY += 10;
-    }
-    else if (data.direction === "up" && data.side === "left" && room.data.leftPlayerY > 0) {
-      room.data.leftPlayerY -= 10;
-    }
-    else if (data.direction === "up" && data.side === "right" && room.data.rightPlayerY > 0) {
-      room.data.rightPlayerY -= 10;
+    else if (data.Side === "right" ) {
+      room.data.rightPlayerY += data.deltaY;
     }
 
     this.server.to(data.roomName).emit("update",  room.data);

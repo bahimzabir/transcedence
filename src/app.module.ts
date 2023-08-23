@@ -16,7 +16,7 @@ import { GameModule } from './game/game.module';
     UserModule,
     PrismaModule,
     HomeModule,
-    EventsModule,
+    // EventsModule,
     ChatModule,
     GameModule,
   ],
