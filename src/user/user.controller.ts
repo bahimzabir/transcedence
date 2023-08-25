@@ -11,6 +11,10 @@ export class UserController {
     return req.user;
   }
 
+  @Get('me/tree')
+  getUserTree(@Req() req: any) {
+    return this.userService.getUserTree(req);
+  }
   //edit user infos
   @Post('me')
   editUser(@Req() req: any, @Body() body: Body) {
