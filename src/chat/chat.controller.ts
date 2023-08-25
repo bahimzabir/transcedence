@@ -14,4 +14,8 @@ export class ChatController {
     createChatRoom(@Req() req: any, @Body() body: any) {
         return this.chatService.createChatRoom(req, body);
     }
+    @Get('all')
+    getAllChatRooms(@Req() req: Request) {
+        return this.chatService.findAll();
+    }
 }

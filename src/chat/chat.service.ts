@@ -54,8 +54,49 @@ export class ChatService {
     })
   }
 
-  findAll() {
-    return `This action returns all chat`;
+  async findAll() {
+    try {
+      const rooms = await this.prisma.chatRoom.findMany({
+        include: {
+          messages: {
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  username: true,
+                  photo: true,
+                }
+              }
+            }
+          },
+          roomUsers: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  photo: true,
+                }
+              }
+            }
+          },
+          admins: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  photo: true,
+                }
+              }
+            }
+          },
+        },
+      });
+      return rooms;
+    } catch (error) {
+      throw new Error('error occured while getting all chat rooms');
+    }
   }
 
   findOne(id: number) {
