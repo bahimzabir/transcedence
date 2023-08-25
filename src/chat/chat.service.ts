@@ -8,9 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ChatRoomBody } from 'src/dto/auth.dto';
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) { }
-
-  private config: ConfigService;
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
 
 
@@ -39,7 +37,7 @@ export class ChatService {
   }
 
   getUserJwt(token: string) {
-    const Decoded = jwt.verify(token, 'very-very-secret-hahaha');
+    const Decoded = jwt.verify(token, this.config.get('JWT_SECRET'));
     return Decoded;
   }
 

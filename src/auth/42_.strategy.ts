@@ -2,16 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-42';
 import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly authService: AuthService, private config: ConfigService) {
     super({
-      clientID:
-        'u-s4t2ud-397cfbf70bcb8d4e3d34dd3e443770a07a3a898a8c3fe1d1840713b9af0e9fe1',
-      clientSecret:
-        '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',
-      callbackURL: 'http://localhost:3000/auth/callback',
+      clientID: config.get('42_ID'),
+      clientSecret: config.get('42_SECRET'),
+      callbackURL: config.get('42_CALLBACK_URL'),
       scope: 'public',
     });
   }
