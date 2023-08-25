@@ -8,7 +8,7 @@ import {
   MessageBody
 } from '@nestjs/websockets';
 
- import * as jwt from "jsonwebtoken"
+import * as jwt from "jsonwebtoken"
 import { connected } from 'process';
 
 import { Server, Socket } from "socket.io"
@@ -40,7 +40,7 @@ interface Room {
 
 const socketConfig = {
   cors: {
-    origin: [ 'http://localhost:5173', 'http://10.14.8.6:5173', 'http://10.14.8.6:3000'],
+    origin: [ 'http://localhost:5173', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
     credentials: true,
   },
   namespace: 'game'
@@ -60,9 +60,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket) : Promise<void> {
     const cookie = client.handshake.headers.cookie;
-    console.log(cookie);
+    const jwtToken = cookie.split('=')[1];
+    console.log(jwtToken);
+    const jwtPayload : any = jwt.verify(jwtToken, 'very-very-secret-hahaha')
+    console.log(jwtPayload);
 
     await this.queue.push(client);
+    client.emit("push_queue");
 
     if (this.queue.length >= 2) {
       const players = this.queue.splice(0, 2);
@@ -155,7 +159,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(data.roomName).emit("update",  room.data);
 
-
   }
 
 
@@ -166,7 +169,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     }
     return undefined;
-  }
 
-  
+  }  
 }

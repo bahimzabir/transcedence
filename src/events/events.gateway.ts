@@ -41,7 +41,7 @@ export class EventsGateway {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-
+  
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
     //console.log({ data });
