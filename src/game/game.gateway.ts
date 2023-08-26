@@ -12,6 +12,7 @@ import * as jwt from "jsonwebtoken"
 import { connected } from 'process';
 
 import { Server, Socket } from "socket.io"
+import { GameService } from './game.service';
 
 
 interface BallPos {
@@ -50,6 +51,8 @@ const socketConfig = {
 @WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
+  constructor(private gameService: GameService) {}
+
   @WebSocketServer()
   server: Server;
 
@@ -63,7 +66,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const jwtToken = cookie.split('=')[1];
     console.log(jwtToken);
     const jwtPayload : any = jwt.verify(jwtToken, 'very-very-secret-hahaha')
-    console.log(jwtPayload);
+    console.log(jwtPayload.sub);
+
+
+    const user = this.gameService.getUserById(jwtPayload.sub);
+
+    console.log(user);
+    
+    
 
     await this.queue.push(client);
     client.emit("push_queue");
