@@ -1,17 +1,11 @@
-import { Body } from '@nestjs/common';
 import {
-  MessageBody,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsResponse,
 } from '@nestjs/websockets';
-import { subscribe } from 'diagnostics_channel';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
-import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import * as jwt from 'jsonwebtoken';
 
 const sockerConfig = {
   cors: {
@@ -21,37 +15,68 @@ const sockerConfig = {
   namespace: 'user',
 };
 
+
+const validateUser = async (config: ConfigService, prisma: PrismaService, status: boolean, token?: string, id?: number,) => {
+  let userID = id ? id : null
+  if (!userID) {
+    const payload: any = await jwt.verify(token, config.get('JWT_SECRET'));
+    userID = payload.sub;
+  }
+  try {
+    const user = await prisma.user.update({
+      where: {
+        id: userID,
+      },
+      data: {
+        online: status,
+      },
+    })
+    if (user) {
+      delete user.token;
+      delete user.password;
+      delete user.email;
+    }
+    return user.id;
+  } catch (error) {
+    return null;
+  }
+}
+
 @WebSocketGateway(sockerConfig)
 export class EventsGateway {
+
+  constructor(private prisma: PrismaService, private config: ConfigService,) { }
   @WebSocketServer()
   server: Server;
-  sockets = new Map<number, Socket>();
-  @SubscribeMessage("newConnection")
-  newConnection(client: Socket, message: any) {
-    console.log(message)
-    console.log(client.id)
-    // console.log({CreateChatDto : createChatDto});
-    // this.sockets.set(createChatDto.id, client);
+  onlineUsers = new Map<number, string[]>();
+
+  async handleConnection(client: Socket): Promise<void> {
+    const cookies = await client.handshake.headers.cookie;
+    if (cookies) {
+      const token = client.handshake.headers.cookie.split("=")[1];
+      const userID = await validateUser(this.config, this.prisma, true, token);
+      if (this.onlineUsers.has(userID)) {
+        this.onlineUsers.get(userID).push(client.id);
+      } else {
+        this.onlineUsers.set(userID, [client.id]);
+      }
+    }
+
   }
 
-  handleConnection(client: Socket, @Body() CreateChatDto): void {
-    // console.log({socket: client})
-    // console.log(client.id);
-    // console.log(`Client connected: ${client.id}`);
-  }
-
-  @SubscribeMessage('events')
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log( "events is here");
-    //console.log({message_from_client: data.message, id : data.id})
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'events', data: item })),
-    );
-  }
-
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
-    //console.log({ data });
-    return data;
+  async handleDisconnect(client: Socket): Promise<void> {
+    const token = client.handshake.headers.cookie.split("=")[1];
+    const userID = await validateUser(this.config, this.prisma, true, token, null);
+    const sockets = this.onlineUsers.get(userID);
+    const index = sockets.indexOf(client.id);
+    if (index > -1) {
+      sockets.splice(index, 1);
+    }
+    if (sockets.length === 0) {
+      this.onlineUsers.delete(userID);
+      await validateUser(this.config, this.prisma, false, null, userID);
+    } else {
+      this.onlineUsers.set(userID, sockets);
+    }
   }
 }

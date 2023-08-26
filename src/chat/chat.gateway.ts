@@ -24,6 +24,7 @@ export class ChatGateway {
   }
 
   async handleConnection(client: Socket) {
+    console.log("new connection");
     let token = await client.handshake.headers.cookie;
     let id: number;
     if (token) {
@@ -35,7 +36,7 @@ export class ChatGateway {
     }
   }
   handleDisconnect(client: Socket): void {
-    console.log(`Client disconnected: ${client.id}`);
+    //console.log(`Client disconnected: ${client.id}`);
   }
   @SubscribeMessage('createMessage')
   create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
