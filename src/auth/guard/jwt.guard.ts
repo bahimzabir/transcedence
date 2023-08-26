@@ -13,8 +13,6 @@ export class JwtGard extends AuthGuard('jwt') {
   }
 }
 
-
-
 @Injectable()
 export class WsGuard implements CanActivate {
 
