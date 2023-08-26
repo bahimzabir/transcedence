@@ -16,8 +16,8 @@ import { GameModule } from './game/game.module';
     PrismaModule,
     HomeModule,
     ChatModule,
-    ChatModule,
     GameModule,
+    EventsGateway
   ],
   //controllers: [GameController],
 })
