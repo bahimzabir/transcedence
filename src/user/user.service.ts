@@ -4,6 +4,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
+
+  async getUserById(id: number) {
+    return await this.prisma.user.findUnique({
+        where: { id },
+    });
+
+}
+
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({

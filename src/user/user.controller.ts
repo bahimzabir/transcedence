@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Req, Post, UseGuards, Body, Param , ParseIntPipe } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
 
@@ -9,6 +9,11 @@ export class UserController {
   @Get('me')
   getUser(@Req() req: any) {
     return req.user;
+  }
+
+  @Get(':id')
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
+    return await this.userService.getUserById(id);
   }
 
   //edit user infos

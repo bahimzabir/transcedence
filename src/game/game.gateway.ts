@@ -13,6 +13,7 @@ import { connected } from 'process';
 
 import { Server, Socket } from "socket.io"
 import { GameService } from './game.service';
+import { UserService } from 'src/user/user.service';
 
 
 interface BallPos {
@@ -51,34 +52,42 @@ const socketConfig = {
 @WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-  constructor(private gameService: GameService) {}
+  constructor(private gameService: GameService, private userService: UserService) {}
 
   @WebSocketServer()
   server: Server;
 
   private queue: Socket[] = [];
   private rooms: Room[] = [];
+  private playerIds: number[] = [];
 
   private roomNames: String[] = [];
 
   async handleConnection(client: Socket) : Promise<void> {
     const cookie = client.handshake.headers.cookie;
     const jwtToken = cookie.split('=')[1];
-    console.log(jwtToken);
+    
     const jwtPayload : any = jwt.verify(jwtToken, 'very-very-secret-hahaha')
-    console.log(jwtPayload.sub);
+    const userId = jwtPayload.sub;
 
-
-    const user = this.gameService.getUserById(jwtPayload.sub);
-
-    console.log(user);
+    // if (this.playerIds.includes(userId)) {
+    //   console.log("already playing");
+    //   return ;
+    // }
+    // else {
+    //   console.log("Not in game");
+    //   this.playerIds.push(userId);
+    // }
+    // console.log(jwtPayload);
+    const user = await this.userService.getUserById(userId);
+    console.log(user.email);
     
     
 
-    await this.queue.push(client);
-    client.emit("push_queue");
+    this.queue.push(client);
 
     if (this.queue.length >= 2) {
+      console.log("ewa");
       const players = this.queue.splice(0, 2);
       const roomName: string = this.createNewRoom();
 
@@ -121,9 +130,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // handle disconnection of one of the players
-  handleDisconnect(client: Socket) {
-    
-  }
+  handleDisconnect(client: Socket) {}
 
   @Interval(10)
   async moveBall() {
