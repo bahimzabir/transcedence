@@ -11,17 +11,14 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
 
-
   async createChatRoom(req, body: ChatRoomBody) {
     try {
-      console.log("HOOLLLLA")
       const chatRoom = await this.prisma.chatRoom.create({
         data: {
           name: body.name,
         },
-
       });
-      console.log("GOOT HERE")
+      chatRoom.photo = "./src/chat/img/" + chatRoom.id + "room.png";
       console.log(req.user.id);
       const roomUser = await this.prisma.roomUser.create({
         data: {
@@ -34,6 +31,7 @@ export class ChatService {
     } catch (error) {
       throw new Error('error occured while creating chat room');
     }
+
   }
 
   getUserJwt(token: string) {
@@ -102,12 +100,12 @@ export class ChatService {
   findOne(id: number) {
     return `This action returns a #${id} chat`;
   }
-
   update(id: number, updateChatDto: UpdateChatDto) {
     return `This action updates a #${id} chat`;
   }
 
   remove(id: number) {
+    
     return `This action removes a #${id} chat`;
   }
 }

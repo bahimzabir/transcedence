@@ -1,4 +1,4 @@
-import { IsAlphanumeric, IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class AuthDto {
   @IsEmail()
@@ -9,7 +9,10 @@ export class AuthDto {
 
 export class ChatRoomBody {
     @IsString()
+    @IsNotEmpty()
     name?: string;
+    @IsString()
+    picUrl: string;    
 }
 
 export class GameRecords {
