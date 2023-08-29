@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Req, Post, UseGuards, Body, Query, Param } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
 
@@ -25,5 +25,10 @@ export class UserController {
     } catch (error) {
       throw error;
     }
+  }
+  @Get(':id')
+  getUserById(@Param('id') id: number)
+  {
+    return this.userService.getUserbyId(id);
   }
 }
