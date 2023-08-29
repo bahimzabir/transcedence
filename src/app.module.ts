@@ -8,6 +8,7 @@ import { ChatModule } from './chat/chat.module';
 import { EventsGateway } from './events/events.gateway';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
+import { MulterModule } from '@nestjs/platform-express';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),

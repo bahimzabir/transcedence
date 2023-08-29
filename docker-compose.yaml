@@ -10,18 +10,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "123"
       POSTGRES_DB: nest
-  #   networks:
-  #     - nest
-  # backend:
-  #   container_name: backend
-  #   image: bahimzabir/trans:latest
-  #   ports:
-  #     - 3000:3000
-  #   networks:
-  #     - nest
-  #   depends_on:
-  #     - dev-db
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - 8000:80
+    # volumes:
+    #   - ./nginx.conf:/etc/nginx/nginx.conf
 
-# networks:
-#   nest:
-#     driver: bridge
