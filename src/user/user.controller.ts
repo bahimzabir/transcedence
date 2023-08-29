@@ -1,6 +1,7 @@
 import { Controller, Get, Req, Post, UseGuards, Body } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
+import { UserUpdateDto } from 'src/dto';
 
 @UseGuards(JwtGard)
 @Controller('users')
@@ -15,15 +16,23 @@ export class UserController {
   getUserTree(@Req() req: any) {
     return this.userService.getUserTree(req);
   }
-  //edit user infos
+
+  @Get('me/friends')
+  getUserFriends(@Req() req: any) {
+    return this.userService.getUserFriends(req);
+  }
   @Post('me')
-  editUser(@Req() req: any, @Body() body: Body) {
+  editUser(@Req() req: any, @Body() body: UserUpdateDto) {
     console.log({ edituser: req.user });
     console.log({ editbody: body });
     try {
       this.userService.editUser(req, body);
+      return { message: 'user updated', data: body };
     } catch (error) {
       throw error;
     }
   }
 }
+
+
+

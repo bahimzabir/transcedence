@@ -11,6 +11,7 @@ export class UserService {
           id: req.user.id,
         },
         data: {
+          username: body.username,
           bio: body.bio,
           photo: body.photo,
         },
@@ -20,7 +21,30 @@ export class UserService {
     }
   }
 
-  // get user tree
+  // get user friends
+  async getUserFriends(req: any) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          id: true,
+          friends: {
+            select: {
+              id: true,
+              username: true,
+              photo: true,
+              online: true,
+            },
+          },
+        },
+      });
+      return user;
+    } catch (error) {
+      throw new Error('error occured while getting user friends');
+    }
+  }
 
   async getUserTree(req: any) {
     try {
