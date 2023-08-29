@@ -88,4 +88,46 @@ export class UserService {
       throw new Error('error occured while getting user tree');
     }
   }
+  async getUserbyId(id: number) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: id,
+        },
+        include: {
+          notifications: true,
+          friends: true,
+          outgoingFriendRequests: true,
+          incomingFriendRequests: true,
+          blockedUsers: true,
+          blockedBy: true,
+          roomUsers: {
+            select: {
+              room: {
+                select: {
+                  id: true,
+                  name: true,
+                  photo: true,
+                }
+              }
+            }
+          },
+          roomAdmins: {
+            select: {
+              room: {
+                select: {
+                  id: true,
+                  name: true,
+                  photo: true,
+                }
+              }
+            }
+          },
+        },
+      });
+      return user;
+    } catch (error) {
+      throw new Error('error occured while getting user tree');
+    }
+  }
 }
