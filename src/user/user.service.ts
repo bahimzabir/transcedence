@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Req } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -92,7 +92,7 @@ export class UserService {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
-          id: id,
+          id: +id,
         },
         include: {
           notifications: true,
@@ -127,7 +127,74 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new Error('error occured while getting user tree');
+      console.log(error);
+      throw new Error('error occured while getting user trees');
+    }
+  }
+
+
+  async searchAllUser(req: any, username: string) {
+    //console.log(req.user.username);
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          OR: [ // search by username
+            {
+              username: {
+                contains: username,
+                mode: 'insensitive',
+              },
+            },
+            // search by firstname
+            {
+              firstname: {
+                contains: username,
+                mode: 'insensitive',
+              },
+            },
+            // search by lastname
+            {
+              lastname: {
+                contains: username,
+                mode: 'insensitive',
+              },
+            },
+          ],
+          //exclude blocked users
+          NOT: {
+            OR: [
+              {
+                id: req.user.id,
+              },
+              {
+                blockedBy: {
+                  some: {
+                    id: req.user.id,
+                  },
+                },
+              },
+              {
+                blockedUsers: {
+                  some: {
+                    id: req.user.id,
+                  },
+                },
+              },
+            ],
+          },
+        },
+        select: {
+          id: true,
+          firstname: true,
+          lastname: true,
+          username: true,
+          photo: true,
+          online: true,
+        },
+      });
+      return users;
+    } catch (error) {
+      throw new Error('error occured while searching user');
     }
   }
 }
