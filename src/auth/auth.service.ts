@@ -21,6 +21,7 @@ export class AuthService {
           photo: req.user.picture,
           firstname: req.user.firstName,
           lastname: req.user.lastName,
+          username: req.user.email.split('@')[0],
       };
       const user = await this.prisma.user.create({
         data: userInput,
