@@ -32,10 +32,16 @@ export class UserController {
       throw error;
     }
   }
-  @Get(':id')
-  getUserById(@Param('id') id: number)
+  @Get('byid')
+  getUserById(@Query('id') id: number)
   {
     return this.userService.getUserbyId(id);
+  }
+  //search suggestion by username
+  @Get('search/all')
+  searchAllUser(@Req() req : Request ,@Query('squery') username: string)
+  {
+    return this.userService.searchAllUser(req ,username);
   }
 }
 
