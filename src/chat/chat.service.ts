@@ -96,7 +96,19 @@ export class ChatService {
       throw new Error('error occured while getting all chat rooms');
     }
   }
-
+  async roomInfos(id: number)
+  {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+          id: id,
+      },
+      include: {
+        messages: true,
+        members: true,
+        admins: true,
+      }
+    })
+  }
   findOne(id: number) {
     return `This action returns a #${id} chat`;
   }
