@@ -39,7 +39,7 @@ export class UserController {
   }
   //search suggestion by username
   @Get('search/all')
-  searchAllUser(@Req() req : Request ,@Query('squery') username: string)
+  searchAllUser(@Req() req : Request ,@Query('query') username: string)
   {
     return this.userService.searchAllUser(req ,username);
   }
