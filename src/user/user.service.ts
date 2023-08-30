@@ -1,4 +1,5 @@
 import { Injectable, Req } from '@nestjs/common';
+import { count } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -54,7 +55,14 @@ export class UserService {
         },
         include: {
           notifications: true,
-          friends: true,
+          friends: {
+            select: {
+              id: true,
+              username: true,
+              photo: true,
+              online: true,
+            },
+          },
           outgoingFriendRequests: true,
           incomingFriendRequests: true,
           blockedUsers: true,
