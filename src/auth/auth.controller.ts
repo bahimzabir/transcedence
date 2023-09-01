@@ -33,7 +33,7 @@ export class AuthController {
         secure: true, // Set to true for HTTPS
         //sameSite: 'Lax', // Adjust based on your requirements
     });
-    res.redirect('http://localhost:5173/chat');
+    res.redirect('http://localhost:5173/home');
   }
 }
 @Controller("/auth/google")
@@ -52,7 +52,7 @@ export class GoogleAuthController {
       httpOnly: true,
       secure: true,
     })
-    res.redirect("http://localhost:3000/home");
+    res.redirect("http://localhost:5173/home");
     // console.log({redirected: r});
   }
 }
