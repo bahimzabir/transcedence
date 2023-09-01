@@ -11,8 +11,6 @@ export class ChatRoomBody {
     @IsString()
     @IsNotEmpty()
     name?: string;
-    @IsString()
-    picUrl: string;    
 }
 
 export class GameRecords {
