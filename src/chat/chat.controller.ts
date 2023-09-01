@@ -20,14 +20,24 @@ export class ChatController {
         }),
     })
     )
-    async createChatRoom(@Req() req: any, @Body() body: ChatRoomBody, @UploadedFile() file: Express.Multer.File) {
+    async createChatRoom(@Req() req: any, @Body() body,
+    @UploadedFile() file: Express.Multer.File) {
         const creatroom = await this.chatService.createChatRoom(req, body);
         const filename = +creatroom.id + "room.png";
         await fs.rename(file.path, path.join("src/chat/img/", filename), () =>{})
         return creatroom;
     }
+
+
     @Get('all')
     getAllChatRooms(@Req() req: Request) {
         return this.chatService.findAll();
+    }
+
+    @Get('roominfos:id')
+    async getRoominfos(@Req() req, id: number)
+    {
+        console.log("HOOO")
+        return this.chatService.roomInfos(id);
     }
 }
