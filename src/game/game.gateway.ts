@@ -130,7 +130,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
-		console.log("player lost");
+		console.log("handle Dis");
 	}
 
 	@Interval(10)
@@ -157,9 +157,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 
-			if (room.data.leftScore === 9 || room.data.rightScore === 9) {
+			if (room.data.leftScore === 3 || room.data.rightScore === 3) {
 				this.server.to(room.roomName).emit("endMatch");
 			}
+
+
+			if (room.players[0].socket.disconnected) {
+				console.log("player One Disconnected");
+			}	
 		}
 	}
 
@@ -183,7 +188,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		else if (client === room.players[1].socket) {
 			room.data.rightPlayerY = data.posY;
 		}
+
 		this.server.to(data.roomName).emit("update", room.data);
+
+		if (room.players[0].socket.disconnected) {
+			console.log("player One Disconnected");
+		}
+		if (room.players[1].socket.disconnected) {
+			console.log("player Two Disconnected");
+		}
+
+
 	}
 
 
