@@ -18,14 +18,26 @@ export class ChatService {
           name: body.name,
         },
       });
-      chatRoom.photo = "./src/chat/img/" + chatRoom.id + "room.png";
-      console.log(req.user.id);
+      await this.prisma.chatRoom.update({
+        where: {
+          id: chatRoom.id,
+        },
+        data:{
+          photo: "http://localhost:8000/roomimg/" + chatRoom.id + "room.png",
+        }
+      })
       const roomUser = await this.prisma.roomUser.create({
         data: {
           userId: req.user.id,
           roomId: chatRoom.id,
         },
       });
+      const admin = await this.prisma.roomAdmin.create({
+        data:{
+          roomId: +chatRoom.id,
+          userId: +req.user.id,
+        }
+      })
       console.log("room created successfully with name of ", chatRoom.name)
       return chatRoom;
     } catch (error) {
@@ -39,9 +51,9 @@ export class ChatService {
     return Decoded;
   }
 
-
   async create(createMessageDto: CreateChatDto, sender: number) {
-    const id: number  = createMessageDto.id;
+
+    const id: number = +createMessageDto.id;
     console.log("id is " ,id)
     await this.prisma.message.create({
       data: {
@@ -100,15 +112,53 @@ export class ChatService {
   {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-          id: id,
+          id: +id,
       },
-      include: {
-        messages: true,
+      select: {
         members: true,
-        admins: true,
+        messages: true,
+        admins: {
+          select: {
+              userId: true,
+          }
+        }
       }
     })
+    return room;
   }
+
+  async joinroom(userId:number, roomId:number)
+  {
+    console.log("userID", userId);
+    console.log("roomID", roomId);
+      try {
+        const roomUser = await this.prisma.roomUser.create({
+          data: {
+            userId: +userId,
+            roomId: +roomId,
+          },
+        });
+      } catch (error) {
+        console.log(error)
+      }
+  }
+  async getroommgs(id: number)
+  {
+    try {
+      const msg = await this.prisma.chatRoom.findFirst({
+        where: {
+          id: +id,
+        },
+        select:{
+          messages: true,
+        }
+      })
+      return msg;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} chat`;
   }
