@@ -205,4 +205,32 @@ export class UserService {
       throw new Error('error occured while searching user');
     }
   }
+
+  async getallchatrooms(id:number)
+  {
+    try{
+      const chatrooms = await this.prisma.user.findUnique({
+        where:{
+          id: id,
+        },
+        select: {
+          roomUsers: {
+            select: {
+              room: {
+                select: {
+                  id: true,
+                  name: true,
+                  photo: true,
+              },
+            },
+          },            
+        },
+      },
+    });
+      return chatrooms.roomUsers;
+    }
+    catch (error) {
+     
+    }
+  }
 }

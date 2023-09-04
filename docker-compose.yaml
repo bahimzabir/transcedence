@@ -17,10 +17,10 @@ services:
       - 8000:80
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - nginx_data:/usr/share/nginx/html:rw
+      - nginx_data:/home:rw,Z
 volumes:
   nginx_data:
    driver_opts:
-        type: none
+        type: 'nfs'
         o: 'bind'
-        device: "/nfs/homes/aaitbelh/Desktop/transcendence/backend/src/chat/img"
+        device: "/nfs/homes/aaitbelh/Desktop/transcendence/backend/client"

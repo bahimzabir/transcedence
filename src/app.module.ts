@@ -6,11 +6,14 @@ import { ConfigModule } from '@nestjs/config';
 import { HomeModule } from './home/home.module';
 import { ChatModule } from './chat/chat.module';
 import { EventsGateway } from './events/events.gateway';
-import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
-import { MulterModule } from '@nestjs/platform-express';
+import { ServeStaticModule} from '@nestjs/serve-static';
+import { join } from 'path';
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client'),
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UserModule,
@@ -18,8 +21,11 @@ import { MulterModule } from '@nestjs/platform-express';
     HomeModule,
     ChatModule,
     GameModule,
-    EventsGateway
+    EventsGateway,
   ],
   //controllers: [GameController],
 })
+
+
 export class AppModule {}
+
