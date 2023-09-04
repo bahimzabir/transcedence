@@ -1,7 +1,8 @@
-import { Controller, Get, Req, Post, UseGuards, Body, Query, Param } from '@nestjs/common';
+import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
 import { UserUpdateDto } from 'src/dto';
+import { promises } from 'dns';
 
 @UseGuards(JwtGard)
 @Controller('users')
@@ -42,6 +43,17 @@ export class UserController {
   searchAllUser(@Req() req : Request ,@Query('query') username: string)
   {
     return this.userService.searchAllUser(req ,username);
+  }
+  @Get('me/chatrooms')
+  getAllchatRooms(@Req() req)
+  {
+    return this.userService.getallchatrooms(req.user.id);
+  }
+
+  @Get('chatrooms')
+  getAllchatRoomsId(@Query('id') id:number)
+  {
+    return this.userService.getallchatrooms(id).then((data) => data);
   }
 }
 
