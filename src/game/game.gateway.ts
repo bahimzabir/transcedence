@@ -57,13 +57,12 @@ const socketConfig = {
 @WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-	// constructor(private gameService: GameService, private userService: UserService) {}
+	constructor(private gameService: GameService) {}
 
 	@WebSocketServer()
 	server: Server;
 
 	private queue: Player[] = [];
-	private rooms: Room[] = [];
 
 	private roomNames: String[] = [];
 
@@ -112,7 +111,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				playerOneId: players[0].id,
 				playerTwoId: players[1].id
 			});
-			this.rooms.push(room);
+			this.gameService.addRoom(room);
 		}
 	}
 
@@ -135,7 +134,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@Interval(10)
 	async moveBall() {
-		for (let room of this.rooms) {
+		for (let room of this.gameService.getRooms()) {
 			room.data.ballPos.x += room.data.speedX;
 			room.data.ballPos.y += room.data.speedY;
 
@@ -203,9 +202,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 
 	private getRoomByName(roomName: string) : Room | undefined {
-		for (let room of this.rooms) {
+		for (let room of this.gameService.getRooms()) {
 			if (room.roomName === roomName) {
-			  return room;
+				return room;
 			}
 		}
 		return undefined;
