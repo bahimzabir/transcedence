@@ -1,10 +1,12 @@
 import { Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
+import  {EventsGateway } from 'src/events/events.gateway';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class UserService {
-  constructor(private prisma: PrismaService) { }
+export class UserService  {
+  constructor(private prisma: PrismaService, private event: EventsGateway) { }
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({
@@ -203,6 +205,34 @@ export class UserService {
       return users;
     } catch (error) {
       throw new Error('error occured while searching user');
+    }
+  }
+
+  async getallchatrooms(id:number)
+  {
+    try{
+      const chatrooms = await this.prisma.user.findUnique({
+        where:{
+          id: id,
+        },
+        select: {
+          roomUsers: {
+            select: {
+              room: {
+                select: {
+                  id: true,
+                  name: true,
+                  photo: true,
+              },
+            },
+          },            
+        },
+      },
+    });
+      return chatrooms.roomUsers;
+    }
+    catch (error) {
+     
     }
   }
 }

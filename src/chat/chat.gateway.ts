@@ -4,6 +4,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket, Server } from 'socket.io';
 import { Body } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 @WebSocketGateway({
   cors: {
     origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -11,7 +12,7 @@ import { Body } from '@nestjs/common';
   },
 })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService) { }
+  constructor(private readonly chatService: ChatService, private prisma: PrismaService) { }
   @WebSocketServer()
   server: Server;
   sockets = new Map<number, Socket>();
@@ -39,8 +40,8 @@ export class ChatGateway {
     //console.log(`Client disconnected: ${client.id}`);
   }
   @SubscribeMessage('createMessage')
-  create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
-    // console.log("-------------->",dto.id)
+  async create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
+    console.log("dto id ", dto[0].id)
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
@@ -49,7 +50,19 @@ export class ChatGateway {
       id = +decoded.sub;
       
       this.chatService.create(dto[0], id);
-      this.server.to(this.sockets.get(2).id).emit('newmessage', dto)
+      const ids = await this.prisma.roomUser.findMany({
+        where: {
+          roomId: dto[0].id,
+        },
+        select:{
+          userId: true,
+        }
+      })
+      for (let index = 0; index < ids.length; index++) {
+        const element = ids[index];
+        if(element.userId !== id)
+          this.server.to(this.sockets.get(+element.userId).id).emit('newmessage', dto)
+      }
 
     }    
   }
