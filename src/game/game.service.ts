@@ -2,10 +2,44 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Req } from '@nestjs/common';
 import { GameRecords } from 'src/dto';
+import { Server, Socket } from "socket.io"
+
+interface BallPos {
+	x: number;
+	y: number;
+}
+
+interface GameData {
+	ballPos: BallPos;
+	leftPlayerY: number;
+	rightPlayerY: number;
+	speedX: number;
+	speedY: number;
+	leftScore: number;
+	rightScore: number;
+}
+
+interface Player {
+	socket: Socket;
+	id: number;
+	side: string;
+};
+
+interface Room {
+	roomName: string;
+	players: Player[];
+	data: GameData;
+}
 
 @Injectable()
 export class GameService {
     constructor(private prisma: PrismaService) { }
+
+    private rooms: Room[] = [];
+
+    getRooms() : Room[] { return this.rooms; }
+
+    addRoom(room: Room) : void { this.rooms.push(room); }
 
     async addGameRecords(req: any, body: GameRecords) {
         try {

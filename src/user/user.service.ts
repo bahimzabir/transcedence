@@ -1,10 +1,12 @@
 import { Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
+import  {EventsGateway } from 'src/events/events.gateway';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class UserService {
-  constructor(private prisma: PrismaService) { }
+export class UserService  {
+  constructor(private prisma: PrismaService, private event: EventsGateway) { }
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({
@@ -41,6 +43,7 @@ export class UserService {
           },
         },
       });
+      // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
     } catch (error) {
       throw new Error('error occured while getting user friends');

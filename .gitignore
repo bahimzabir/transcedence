@@ -36,6 +36,7 @@ lerna-debug.log*
 
 #database volume
 database/db/*
+./docker-compose.yaml
 
 #prisma migrations
 
