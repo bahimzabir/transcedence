@@ -9,6 +9,7 @@ import { EventsGateway } from './events/events.gateway';
 import { GameModule } from './game/game.module';
 import { ServeStaticModule} from '@nestjs/serve-static';
 import { join } from 'path';
+import { EventsModule } from './events/events.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -21,7 +22,6 @@ import { join } from 'path';
     HomeModule,
     ChatModule,
     GameModule,
-    EventsGateway,
   ],
   //controllers: [GameController],
 })
