@@ -1,5 +1,4 @@
 export class Chat {
-    id:number;
+    id: number;
     message:string;
-    receiverId: number;
 }
