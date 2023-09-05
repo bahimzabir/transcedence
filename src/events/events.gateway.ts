@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { Global, Injectable } from '@nestjs/common';
 
-const sockerConfig = {
+const socketConfig = {
   cors: {
     origin: ['http://localhost:3000', 'http://127.0.0.1:5501', 'http://localhost:5501', 'http://localhost:5173'],
     credentials: true,
@@ -44,7 +44,7 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
 }
 
 @Injectable()
-@WebSocketGateway(sockerConfig)
+@WebSocketGateway(socketConfig)
 export class EventsGateway {
   
   @WebSocketServer()
