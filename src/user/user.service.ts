@@ -3,10 +3,20 @@ import { count } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 import  {EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService  {
   constructor(private prisma: PrismaService, private event: EventsGateway) { }
+  roomUserSelect : Prisma.RoomUserSelect = {
+    room: {
+      select: {
+        id: true,
+        name: true,
+        photo: true,
+      }
+    }
+  } 
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({
@@ -70,28 +80,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
-          roomAdmins: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
+          roomUsers: {select: this.roomUserSelect}, 
+          roomAdmins: {select: this.roomUserSelect},
         },
       });
       return user;
@@ -112,28 +102,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
-          roomAdmins: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
+          roomUsers: {select: this.roomUserSelect},
+          roomAdmins: {select: this.roomUserSelect},
         },
       });
       return user;
@@ -145,10 +115,9 @@ export class UserService  {
 
 
   async searchAllUser(req: any, username: string) {
-    //console.log(req.user.username);
     try {
       const users = await this.prisma.user.findMany({
-        where: {
+        where: { 
           OR: [ // search by username
             {
               username: {
