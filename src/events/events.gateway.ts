@@ -55,7 +55,7 @@ export class EventsGateway {
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-      console.log("handiling connection")
+      console.log("handling connection")
       const cookies = await client.handshake.headers.cookie;
       if (cookies) {
         const token = client.handshake.headers.cookie.split("=")[1];
@@ -91,7 +91,7 @@ export class EventsGateway {
         } else {
           this.onlineUsers.set(userID, sockets);
         }
-        console.log("handiling disconnection")
+        console.log("handling disconnection")
       }
     } catch {
       console.log("handleDisconnect error")
