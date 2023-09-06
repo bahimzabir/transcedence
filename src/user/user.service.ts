@@ -79,6 +79,9 @@ export class UserService  {
     }
   }
 
+  async sendFriendRequest(req: any, body: any) {
+    
+  }
 
   async searchAllUser(req: any, username: string) {
     try {
