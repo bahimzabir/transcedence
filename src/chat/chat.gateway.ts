@@ -5,6 +5,8 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket, Server } from 'socket.io';
 import { Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { connect } from 'http2';
+import { EventsGateway } from 'src/events/events.gateway';
 @WebSocketGateway({
   cors: {
     origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -12,7 +14,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
   },
 })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService, private prisma: PrismaService) { }
+  constructor(private readonly chatService: ChatService, private prisma: PrismaService, private events:EventsGateway) { }
   @WebSocketServer()
   server: Server;
   sockets = new Map<number, Socket>();
@@ -36,8 +38,15 @@ export class ChatGateway {
       this.sockets.set(id, client);
     }
   }
-  handleDisconnect(client: Socket): void {
-    //console.log(`Client disconnected: ${client.id}`);
+  handleDisconnect(@ConnectedSocket() client: Socket): void {
+    let token = client.handshake.headers.cookie;
+    let id: number;
+    if (token) {
+      token = token.split('=')[1];
+      const decoded = this.chatService.getUserJwt(token);
+      id = +decoded.sub;
+    }
+    this.sockets.delete(id);
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
@@ -61,9 +70,18 @@ export class ChatGateway {
       for (let index = 0; index < ids.length; index++) {
         const element = ids[index];
         if(element.userId !== id)
-          this.server.to(this.sockets.get(+element.userId).id).emit('newmessage', dto)
+        {
+          let userid = undefined;
+          if((userid = element.userId) !== undefined)
+          {
+            this.server.to(this.sockets.get(+userid).id).emit('newmessage', dto)
+          }
+          else{
+            this.events.hanldleSendNotification(userid, dto);
+          }
+        }
       }
-
+      return true;
     }    
   }
 
