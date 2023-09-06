@@ -33,6 +33,11 @@ export class UserController {
       throw error;
     }
   }
+
+  @Post('me/sendfriendrequest')
+  sendFriendRequest(@Req() req: any, @Body() body: any) {
+    // return this.userService.sendFriendRequest(req, body);
+  }
   @Get('byid')
   getUserById(@Query('id') id: number)
   {
