@@ -6,6 +6,6 @@ import { PrismaTypes } from 'src/prisma/prisma.service';
 
 @Module({
   controllers: [UserController],
-  providers: [UserService, EventsGateway, PrismaTypes],
+  providers: [UserService, EventsGateway],
 })
 export class UserModule {}
