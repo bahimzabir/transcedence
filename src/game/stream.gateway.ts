@@ -56,8 +56,6 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private map = Map<string , {score1: number, score2: number}>
 
     async handleConnection(client: Socket) {
-        
-        console.log("init");
         client.emit("initRooms", this.rooms);
     }
 
@@ -65,19 +63,30 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
         
     }
 
-    
+    async updateScore(roomName: string, score1: number, score2: number) {
+        this.server.emit("updateScore", {
+            roomName,
+            score1,
+            score2
+        });
+    }
 
     async addRoom(room: Room) {
+
         this.rooms.push({
             roomName: room.roomName,
             playerOneId: room.players[0].id,
-			playerTwoId: room.players[1].id
+			playerTwoId: room.players[1].id,
+            score1: room.data.leftScore,
+            score2: room.data.rightScore
         });
 
         this.server.emit("addRoom", {
             roomName: room.roomName,
             playerOneId: room.players[0].id,
-			playerTwoId: room.players[1].id
+			playerTwoId: room.players[1].id,
+            score1: room.data.leftScore,
+            score2: room.data.rightScore
         });
     }
 }
