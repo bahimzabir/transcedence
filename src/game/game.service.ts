@@ -43,7 +43,6 @@ export class GameService {
 
     async addGameRecords(req: any, body: GameRecords) {
         try {
-            //console.log(body)
             const user = await this.prisma.user.update({
                 where: {
                     id: req.user.id,
