@@ -147,8 +147,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ballPos.x > 1000 || room.data.ballPos.x < 0) {
 				(room.data.ballPos.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
 				this.resetData(room);
-				// console.log("update rooms in scoring");
-				// this.streamGateway.updateRooms();
+
+				this.streamGateway.updateScore(
+					room.roomName,
+					room.data.leftScore,
+					room.data.rightScore
+				);
 			}
 
 			if (room.data.ballPos.x <= 10 && (room.data.ballPos.y > room.data.leftPlayerY && room.data.ballPos.y < room.data.leftPlayerY+80)) {
