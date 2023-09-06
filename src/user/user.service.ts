@@ -1,22 +1,13 @@
 import { Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import  {EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService  {
-  constructor(private prisma: PrismaService, private event: EventsGateway) { }
-  roomUserSelect : Prisma.RoomUserSelect = {
-    room: {
-      select: {
-        id: true,
-        name: true,
-        photo: true,
-      }
-    }
-  } 
+  constructor(private prisma: PrismaService, private event: EventsGateway, private ptypes: PrismaTypes) { }
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({
@@ -80,8 +71,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {select: this.roomUserSelect}, 
-          roomAdmins: {select: this.roomUserSelect},
+          roomUsers: {select: this.ptypes.roomUserSelect}, 
+          roomAdmins: {select: this.ptypes.roomUserSelect},
         },
       });
       return user;
@@ -102,8 +93,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {select: this.roomUserSelect},
-          roomAdmins: {select: this.roomUserSelect},
+          roomUsers: {select: this.ptypes.roomUserSelect},
+          roomAdmins: {select: this.ptypes.roomUserSelect},
         },
       });
       return user;
