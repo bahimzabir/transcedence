@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService  {
-  constructor(private prisma: PrismaService, private event: EventsGateway, private ptypes: PrismaTypes) { }
+  constructor(private prisma: PrismaService, private event: EventsGateway) { }
   async editUser(req: any, body: any) {
     try {
       const user = await this.prisma.user.update({
@@ -71,8 +71,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {select: this.ptypes.roomUserSelect}, 
-          roomAdmins: {select: this.ptypes.roomUserSelect},
+          roomUsers: {select: PrismaTypes.roomUserSelect}, 
+          roomAdmins: {select: PrismaTypes.roomUserSelect},
         },
       });
       return user;
@@ -93,8 +93,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {select: this.ptypes.roomUserSelect},
-          roomAdmins: {select: this.ptypes.roomUserSelect},
+          roomUsers: {select: PrismaTypes.roomUserSelect},
+          roomAdmins: {select: PrismaTypes.roomUserSelect},
         },
       });
       return user;

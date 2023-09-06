@@ -19,7 +19,7 @@ export class PrismaService extends PrismaClient {
 
 @Injectable()
 export class PrismaTypes {
-  roomUserSelect : Prisma.RoomUserSelect = {
+  static roomUserSelect : Prisma.RoomUserSelect = {
     room: {
       select: {
         id: true,
@@ -27,5 +27,5 @@ export class PrismaTypes {
         photo: true,
       }
     }
-  } 
+  }
 }
