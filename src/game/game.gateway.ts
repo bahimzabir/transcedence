@@ -16,6 +16,7 @@ import { GameService } from './game.service';
 import { UserService } from 'src/user/user.service';
 import { Console } from 'console';
 import { RouterModule } from '@nestjs/core';
+import { Injectable } from '@nestjs/common';
 
 
 interface BallPos {
@@ -53,7 +54,7 @@ const socketConfig = {
 	namespace: 'game'
 };
 
-
+@Injectable()
 @WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
@@ -86,7 +87,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const players = this.queue.splice(0, 2);
 			const roomName: string = this.createNewRoom();
 
-			
 			let room: Room = {
 				roomName: roomName,
 				players: players,
@@ -156,14 +156,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 
-			if (room.data.leftScore === 3 || room.data.rightScore === 3) {
-				this.server.to(room.roomName).emit("endMatch");
-			}
+			this.server.emit("brodcast", { data: room.data, roomName: room.roomName });
+
+			// if (room.data.leftScore === 3 || room.data.rightScore === 3) {
+			// 	this.server.to(room.roomName).emit("endMatch");
+			// }
 
 
-			if (room.players[0].socket.disconnected) {
-				console.log("player One Disconnected");
-			}	
+			// if (room.players[0].socket.disconnected) {
+			// 	console.log("player One Disconnected");
+			// }
 		}
 	}
 
@@ -190,12 +192,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		this.server.to(data.roomName).emit("update", room.data);
 
-		if (room.players[0].socket.disconnected) {
-			console.log("player One Disconnected");
-		}
-		if (room.players[1].socket.disconnected) {
-			console.log("player Two Disconnected");
-		}
+		// if (room.players[0].socket.disconnected) {
+		// 	console.log("player One Disconnected");
+		// }
+		// if (room.players[1].socket.disconnected) {
+		// 	console.log("player Two Disconnected");
+		// }
 
 
 	}
@@ -209,5 +211,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		return undefined;
 	}
+
+
+	private brodcastGameData() {
+
+	}
+
 }
 
