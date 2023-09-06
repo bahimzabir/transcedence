@@ -43,6 +43,7 @@ export class UserService  {
           },
         },
       });
+      // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
     } catch (error) {
       throw new Error('error occured while getting user friends');

@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { Global, Injectable } from '@nestjs/common';
 
-const sockerConfig = {
+const socketConfig = {
   cors: {
     origin: ['http://localhost:3000', 'http://127.0.0.1:5501', 'http://localhost:5501', 'http://localhost:5173'],
     credentials: true,
@@ -44,9 +44,9 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
 }
 
 @Injectable()
-@WebSocketGateway(sockerConfig)
+@WebSocketGateway(socketConfig)
 export class EventsGateway {
-  
+
   @WebSocketServer()
   server: Server;
   onlineUsers = new Map<number, string[]>();
@@ -54,37 +54,50 @@ export class EventsGateway {
   constructor(private prisma: PrismaService, private config: ConfigService) { }
 
   async handleConnection(client: Socket): Promise<void> {
-    console.log("hendiling connection")
-    const cookies = await client.handshake.headers.cookie;
-    if (cookies) {
-      const token = client.handshake.headers.cookie.split("=")[1];
-      const userID = await this.validateUser(this.config, this.prisma, true, token);
-      if (this.onlineUsers.has(userID)) {
-        this.onlineUsers.get(userID).push(client.id);
-      } else {
-        this.onlineUsers.set(userID, [client.id]);
+    try {
+      console.log("hendiling connection")
+      const cookies = await client.handshake.headers.cookie;
+      if (cookies) {
+        const token = client.handshake.headers.cookie.split("=")[1];
+        const userID = await this.validateUser(this.config, this.prisma, true, token);
+        if (this.onlineUsers.has(userID)) {
+          this.onlineUsers.get(userID).push(client.id);
+        } else {
+          this.onlineUsers.set(userID, [client.id]);
+        }
       }
+      console.log(this.onlineUsers);
+    } catch {
+      console.log("handleConnection error")
     }
     //console.log("handle connected users", this.onlineUsers)
 
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
-    const token = client.handshake.headers.cookie.split("=")[1];
-    const userID = await this.validateUser(this.config, this.prisma, true, token, null);
-    const sockets = this.onlineUsers.get(userID);
-    const index = sockets.indexOf(client.id);
-    if (index > -1) {
-      sockets.splice(index, 1);
+    try {
+      const cookies = await client.handshake.headers.cookie;
+      if (cookies) {
+        const token = cookies.split("=")[1];
+        const userID = await this.validateUser(this.config, this.prisma, true, token, null);
+        const sockets = this.onlineUsers.get(userID);
+        const index = sockets.indexOf(client.id);
+        if (index > -1) {
+          sockets.splice(index, 1);
+        }
+        if (sockets.length === 0) {
+          this.onlineUsers.delete(userID);
+          await validateUser(this.config, this.prisma, false, null, userID);
+        } else {
+          this.onlineUsers.set(userID, sockets);
+        }
+        console.log("hendiling disconnection")
+      }
+    } catch {
+      console.log("handleDisconnect error")
     }
-    if (sockets.length === 0) {
-      this.onlineUsers.delete(userID);
-      await validateUser(this.config, this.prisma, false, null, userID);
-    } else {
-      this.onlineUsers.set(userID, sockets);
-    }
-    console.log("hendiling disconnection")
   }
+
 
   async hanldleSendNotification(clientId: number, data: any) {
     console.log("sending notification to", clientId);
@@ -100,7 +113,7 @@ export class EventsGateway {
     const sockets = this.onlineUsers.get(clientId);
     if (sockets) {
       sockets.forEach(socket => {
-      this.server.to(socket).emit('friendRequest', data);
+        this.server.to(socket).emit('friendRequest', data);
       });
     }
   }
@@ -109,7 +122,7 @@ export class EventsGateway {
     const sockets = this.onlineUsers.get(clientId);
     if (sockets) {
       sockets.forEach(socket => {
-      this.server.to(socket).emit('acceptFriendRequest', data);
+        this.server.to(socket).emit('acceptFriendRequest', data);
       });
     }
   }
