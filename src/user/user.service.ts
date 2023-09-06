@@ -1,8 +1,9 @@
 import { Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import  {EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService  {
@@ -31,17 +32,7 @@ export class UserService  {
         where: {
           id: req.user.id,
         },
-        select: {
-          id: true,
-          friends: {
-            select: {
-              id: true,
-              username: true,
-              photo: true,
-              online: true,
-            },
-          },
-        },
+        select: PrismaTypes.UserFriendSelect,
       });
       // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
@@ -58,40 +49,13 @@ export class UserService  {
         },
         include: {
           notifications: true,
-          friends: {
-            select: {
-              id: true,
-              username: true,
-              photo: true,
-              online: true,
-            },
-          },
+          friends: { select: PrismaTypes.UserFriendSelect },
           outgoingFriendRequests: true,
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
-          roomAdmins: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
+          roomUsers: {select: PrismaTypes.roomUserSelect}, 
+          roomAdmins: {select: PrismaTypes.roomUserSelect},
         },
       });
       return user;
@@ -99,42 +63,14 @@ export class UserService  {
       throw new Error('error occured while getting user tree');
     }
   }
+  
   async getUserbyId(id: number) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           id: +id,
         },
-        include: {
-          notifications: true,
-          friends: true,
-          outgoingFriendRequests: true,
-          incomingFriendRequests: true,
-          blockedUsers: true,
-          blockedBy: true,
-          roomUsers: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
-          roomAdmins: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-                }
-              }
-            }
-          },
-        },
+        select: PrismaTypes.UserBasicIfosSelect,
       });
       return user;
     } catch (error) {
@@ -145,10 +81,9 @@ export class UserService  {
 
 
   async searchAllUser(req: any, username: string) {
-    //console.log(req.user.username);
     try {
       const users = await this.prisma.user.findMany({
-        where: {
+        where: { 
           OR: [ // search by username
             {
               username: {
@@ -194,14 +129,7 @@ export class UserService  {
             ],
           },
         },
-        select: {
-          id: true,
-          firstname: true,
-          lastname: true,
-          username: true,
-          photo: true,
-          online: true,
-        },
+        select: PrismaTypes.UserBasicIfosSelect,
       });
       return users;
     } catch (error) {
@@ -217,20 +145,7 @@ export class UserService  {
           id: id,
         },
         select: {
-          roomUsers: {
-            select: {
-              room: {
-                select: {
-                  id: true,
-                  name: true,
-                  photo: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          }         
-        },
+          roomUsers: {select: PrismaTypes.roomUserSelect},
       },
     });
     return chatrooms.roomUsers;
@@ -246,10 +161,7 @@ export class UserService  {
         where:{
           id: id,
         },
-        select: {
-          photo: true,
-          username: true,
-        }
+        select: PrismaTypes.UserBasicIfosSelect,
       })
       return user;
     } catch (error) {
