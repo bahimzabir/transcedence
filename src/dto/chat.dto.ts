@@ -1,5 +1,7 @@
 class chatroomUserDto {
-    readonly id: number;
-    readonly name: string;
-    readonly avatar: string;
+    id: number;
+    name: string;
+    avatar: string;
+    isdm: boolean;
+    receiver: number;
 }

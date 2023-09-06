@@ -55,6 +55,11 @@ export class UserController {
   {
     return this.userService.getallchatrooms(id).then((data) => data);
   }
+  @Get('userinfos')
+  getUserinfo(@Query("id") id: number)
+  {
+      return this.userService.getUserinfos(+id);
+  }
 }
 
 
