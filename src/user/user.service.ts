@@ -226,14 +226,34 @@ export class UserService  {
                   photo: true,
               },
             },
-          },            
+          },
+          orderBy: {
+            createdAt: 'asc',
+          }         
         },
       },
     });
-      return chatrooms.roomUsers;
+    return chatrooms.roomUsers;
     }
     catch (error) {
      
+    }
+  }
+  async getUserinfos(id: number)
+  {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where:{
+          id: id,
+        },
+        select: {
+          photo: true,
+          username: true,
+        }
+      })
+      return user;
+    } catch (error) {
+      console.log(error)
     }
   }
 }
