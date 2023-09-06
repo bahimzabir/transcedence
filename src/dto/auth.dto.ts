@@ -7,16 +7,7 @@ export class AuthDto {
   password: string;
 }
 
-export class ChatRoomBody {
-    @IsString()
-    @IsNotEmpty()
-    name?: string;
-    isPrivate?: boolean;
-    isDm?: boolean;
-    @IsNumber()
-    @IsNotEmpty()
-    password?: string;
-}
+
 
 export class GameRecords {
   @IsAlphanumeric()
