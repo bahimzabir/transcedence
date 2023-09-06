@@ -2,7 +2,6 @@ import { Controller, Get, Req, Post, UseGuards, Body, UseInterceptors, UploadedF
 import { JwtGard } from 'src/auth/guard';
 import { ChatService } from './chat.service';
 import { get } from 'http';
-import { ChatRoomBody } from 'src/dto/auth.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
@@ -28,8 +27,11 @@ export class ChatController {
         await fs.rename(file.path, path.join("src/chat/img/", filename), () =>{})
         return creatroom;
     }
-
-
+    @Post("newdm")
+    async creatDmroom(@Req() req: any, @Body() body)
+    {
+        const creatdm = await this.chatService.createdm(req, body);
+    }
     @Get('all')
     getAllChatRooms(@Req() req: Request) {
         return this.chatService.findAll();
@@ -43,7 +45,7 @@ export class ChatController {
     @Get('joinroom')
     joinRoom(@Req() req, @Query('id') roomdId: number)
     {
-        console.log("--->", req.user.id, roomdId)
+        // console.log("--->", req.user.id, roomdId)
         this.chatService.joinroom(+req.user.id, roomdId);
     }
     @Get('getroomsmgs')

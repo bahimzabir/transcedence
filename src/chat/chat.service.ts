@@ -5,11 +5,40 @@ import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatRoomBody } from 'src/dto/auth.dto';
+import { ChatRoomBody } from './entities/chat.entity';
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
+
+  async createdm(req, body)
+  {
+    try {
+      const chatdm = await this.prisma.chatRoom.create({
+        data: {
+          name : req.user.id + "dm" + body.receiver,
+          isPrivate: true,
+          password: "",
+        }
+      })
+      const senderuser = await this.prisma.roomUser.create({
+        data:{
+          userId: +req.user.id,
+          roomId: chatdm.id,
+        }
+      })
+      const receiver = await this.prisma.roomUser.create({
+        data:{
+          userId: +body.receiver,
+          roomId: chatdm.id,
+        }
+      })
+      return true;
+    } catch (error) {
+        console.log({error: "error occured when trying create adm between id " + req.user.id +  " and " + body.receiver})
+        return false;
+      }
+  }
 
   async createChatRoom(req, body: ChatRoomBody) {
     try {
