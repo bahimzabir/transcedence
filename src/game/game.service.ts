@@ -56,7 +56,6 @@ export class GameService {
                 },
 
             })
-            //console.log(user)
             return user;
         }
         catch (error) {
