@@ -114,6 +114,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				playerTwoId: players[1].id
 			});
 			this.gameService.addRoom(room);
+			await this.streamGateway.addRoom(room);
 		}
 	}
 
@@ -146,7 +147,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ballPos.x > 1000 || room.data.ballPos.x < 0) {
 				(room.data.ballPos.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
 				this.resetData(room);
-				this.streamGateway.updateRooms();
+				// console.log("update rooms in scoring");
+				// this.streamGateway.updateRooms();
 			}
 
 			if (room.data.ballPos.x <= 10 && (room.data.ballPos.y > room.data.leftPlayerY && room.data.ballPos.y < room.data.leftPlayerY+80)) {
@@ -160,7 +162,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(room.roomName).emit("update", room.data);
 
 			
-
 			// if (room.data.leftScore === 3 || room.data.rightScore === 3) {
 			// 	this.server.to(room.roomName).emit("endMatch");
 			// }
