@@ -42,12 +42,14 @@ export class GameService {
 
     async addRoom(room: Room) { this.rooms.push(room); }
 
-    async updateRooms() {
-        this.rooms = this.rooms.filter(room => {room.done === false});
-    }
+    // async updateRooms() {
+    //     this.rooms = this.rooms.filter(room => {room.done === false});
+    // }
 
     async removeRoom(roomName: string) {
-        this.rooms = this.rooms.filter(room => { room.roomName !== roomName });
+        console.log(roomName);
+        this.rooms = this.rooms.filter(room => (room.roomName !== roomName));
+        console.log("length === ", this.rooms.length);
         console.log(this.rooms);
     }
     
