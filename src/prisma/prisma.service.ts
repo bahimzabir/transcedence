@@ -25,6 +25,7 @@ export class PrismaTypes {
         id: true,
         name: true,
         photo: true,
+        isdm: true,
       }
     }
   }
