@@ -34,7 +34,7 @@ export class UserController {
     }
   }
 
-  @Post('me/sendfriendrequest')
+  @Post('/sendfriendrequest')
   sendFriendRequest(@Req() req: any, @Body() body: FriendRequestDto) {
     return this.userService.sendFriendRequest(req, body);
   }
