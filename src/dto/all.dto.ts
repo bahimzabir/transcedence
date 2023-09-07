@@ -52,5 +52,6 @@ export class UserUpdateDto {
 export class FriendRequestDto {
     @IsNumber()
     @IsNotEmpty()
+    @ApiProperty()
     receiver: number;
 }
