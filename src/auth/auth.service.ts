@@ -5,7 +5,11 @@ import * as argon from 'argon2';
 import { AuthDto } from 'src/dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-
+import fetch from 'node-fetch';
+import { promises as fs } from 'fs';
+import * as path from 'path'
+import respone from 'express'
+import { buffer } from 'stream/consumers';
 @Injectable({})
 export class AuthService {
   constructor(
@@ -13,6 +17,16 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
   ) {}
+
+  downloadimg(url: string, id: number)
+  {
+    const filepath = path.join(__dirname, '../../src/chat/img/');
+    fetch(url)
+    .then((response) => response.buffer())
+    .then((buffer) => {
+      fs.writeFile(path.join(filepath, id + ".png"), buffer)}
+    );
+  }
   async Signup(req) {
     try {
       const userInput : Prisma.UserCreateInput = {
@@ -26,6 +40,15 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: userInput,
       });
+      this.downloadimg(user.photo, user.id);
+      await this.prisma.user.update({
+        where:{
+          id: user.id,
+        },
+        data:{
+          photo: "http://localhost:3000/" + user.id + ".png",
+        }
+      })
       return user;
     } catch (error) {
       throw new Error('error occured while creating user');
