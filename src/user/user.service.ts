@@ -224,6 +224,7 @@ export class UserService  {
                   id: true,
                   name: true,
                   photo: true,
+                  isdm: true,
               },
             },
           },
