@@ -45,6 +45,7 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
+	done: boolean;
 }
 
 const socketConfig = {
@@ -100,7 +101,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					speedY: 1,
 					leftScore: 0,
 					rightScore: 0
-				}
+				},
+				done: false
 			};
 
 			players.forEach(player => {
@@ -113,7 +115,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				playerOneId: players[0].id,
 				playerTwoId: players[1].id
 			});
-			this.gameService.addRoom(room);
+			await this.gameService.addRoom(room);
+			await this.streamGateway.addRoom(room);
 		}
 	}
 
@@ -146,7 +149,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ballPos.x > 1000 || room.data.ballPos.x < 0) {
 				(room.data.ballPos.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
 				this.resetData(room);
-				this.streamGateway.updateRooms();
+
+				this.streamGateway.updateScore(
+					room.roomName,
+					room.data.leftScore,
+					room.data.rightScore
+				);
 			}
 
 			if (room.data.ballPos.x <= 10 && (room.data.ballPos.y > room.data.leftPlayerY && room.data.ballPos.y < room.data.leftPlayerY+80)) {
@@ -160,16 +168,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(room.roomName).emit("update", room.data);
 
 			
-
-			// if (room.data.leftScore === 3 || room.data.rightScore === 3) {
-			// 	this.server.to(room.roomName).emit("endMatch");
-			// }
-
-
-			// if (room.players[0].socket.disconnected) {
-			// 	console.log("player One Disconnected");
-			// }
+			if (room.data.leftScore === 3 || room.data.rightScore === 3) {
+				this.server.to(room.roomName).emit("endMatch");
+				room.done = true;
+				await this.gameService.removeRoom(room.roomName);
+				await this.streamGateway.removeRoom(room.roomName);
+			}
 		}
+		// await this.gameService.updateRooms();
 	}
 
 	private resetData(room: Room) : void  {
@@ -181,7 +187,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage("move")
 	async movePaddle(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
 		let room = this.getRoomByName(data.roomName);
-		
+
 		if (room === undefined) {
 			return ;
 		}
@@ -192,19 +198,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		else if (client === room.players[1].socket) {
 			room.data.rightPlayerY = data.posY;
 		}
-
 		this.server.to(data.roomName).emit("update", room.data);
-
-		// if (room.players[0].socket.disconnected) {
-		// 	console.log("player One Disconnected");
-		// }
-		// if (room.players[1].socket.disconnected) {
-		// 	console.log("player Two Disconnected");
-		// }
-
-
 	}
-
 
 	private getRoomByName(roomName: string) : Room | undefined {
 		for (let room of this.gameService.getRooms()) {
