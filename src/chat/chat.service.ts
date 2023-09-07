@@ -23,7 +23,7 @@ export class ChatService {
         data: {
           name : reciveruser.username,
           isdm: true,
-          photo: reciveruser.username + ".png",
+          photo: reciveruser.id + ".png",
         }
       })
       const user = await this.prisma.user.findUnique({
@@ -35,21 +35,33 @@ export class ChatService {
         data: {
           name : user.username,
           isdm: true,
-          photo: user.username + ".png",
-        }
+          photo: user.id + ".png",
+        },
       })
-      const useroom = await this.prisma.roomUser.create({
+      let useroom = await this.prisma.roomUser.create({
         data:{
           userId: +req.user.id,
           roomId: userchat.id,
         }
       })
-      const receiveroom = await this.prisma.roomUser.create({
+      // useroom = await this.prisma.roomUser.create({
+      //   data:{
+      //     userId: +body.receiver,
+      //     roomId: userchat.id,
+      //   }
+      // })
+      let receiveroom = await this.prisma.roomUser.create({
         data:{
           userId: +body.receiver,
           roomId: receiverchat.id,
         }
       })
+      // receiveroom = await this.prisma.roomUser.create({
+      //   data:{
+      //     userId: +req.user.id,
+      //     roomId: receiverchat.id,
+      //   }
+      // })
       return true;
     } catch (error) {
         console.log({error: "error occured when trying create adm between id " + req.user.id +  " and " + body.receiver})
