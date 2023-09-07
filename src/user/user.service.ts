@@ -1,12 +1,13 @@
-import { Injectable, Req } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
 import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
-import  {EventsGateway } from 'src/events/events.gateway';
+import { EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
+import { FriendRequestDto } from 'src/dto';
 
 @Injectable()
-export class UserService  {
+export class UserService {
   constructor(private prisma: PrismaService, private event: EventsGateway) { }
   async editUser(req: any, body: any) {
     try {
@@ -54,8 +55,8 @@ export class UserService  {
           incomingFriendRequests: true,
           blockedUsers: true,
           blockedBy: true,
-          roomUsers: {select: PrismaTypes.roomUserSelect}, 
-          roomAdmins: {select: PrismaTypes.roomUserSelect},
+          roomUsers: { select: PrismaTypes.roomUserSelect },
+          roomAdmins: { select: PrismaTypes.roomUserSelect },
         },
       });
       return user;
@@ -63,7 +64,7 @@ export class UserService  {
       throw new Error('error occured while getting user tree');
     }
   }
-  
+
   async getUserbyId(id: number) {
     try {
       const user = await this.prisma.user.findUnique({
@@ -74,19 +75,59 @@ export class UserService  {
       });
       return user;
     } catch (error) {
-      console.log(error);
+      //console.log(error);
       throw new Error('error occured while getting user trees');
     }
   }
 
-  async sendFriendRequest(req: any, body: any) {
-    
+  async sendFriendRequest(req: any, body: FriendRequestDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          outgoingFriendRequests: {
+            where: {
+              receiver: {
+                id: body.receiver,
+              },
+            },
+          },
+        },
+      });
+      if (user.outgoingFriendRequests.length > 0) {
+        throw new HttpException(
+          'Friend request already sent',
+          HttpStatus.CONFLICT,
+        );
+      }
+      const friendRequest = await this.prisma.friendRequest.create({
+        data: {
+          sender: {
+            connect: {
+              id: req.user.id,
+            },
+          },
+          receiver: {
+            connect: {
+              id: body.receiver,
+            },
+          },
+        },
+      });
+      return friendRequest;
+    }
+    catch (error) {
+     return error;
+      // throw new Error('error occured while sending friend request');
+    }
   }
 
   async searchAllUser(req: any, username: string) {
     try {
       const users = await this.prisma.user.findMany({
-        where: { 
+        where: {
           OR: [ // search by username
             {
               username: {
@@ -140,28 +181,26 @@ export class UserService  {
     }
   }
 
-  async getallchatrooms(id:number)
-  {
-    try{
+  async getallchatrooms(id: number) {
+    try {
       const chatrooms = await this.prisma.user.findUnique({
-        where:{
+        where: {
           id: id,
         },
         select: {
-          roomUsers: {select: PrismaTypes.roomUserSelect},
-      },
-    });
-    return chatrooms.roomUsers;
+          roomUsers: { select: PrismaTypes.roomUserSelect },
+        },
+      });
+      return chatrooms.roomUsers;
     }
     catch (error) {
-     
+
     }
   }
-  async getUserinfos(id: number)
-  {
+  async getUserinfos(id: number) {
     try {
       const user = await this.prisma.user.findUnique({
-        where:{
+        where: {
           id: id,
         },
         select: PrismaTypes.UserBasicIfosSelect,
