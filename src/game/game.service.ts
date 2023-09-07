@@ -29,6 +29,7 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
+    done: boolean;
 }
 
 @Injectable()
@@ -39,7 +40,17 @@ export class GameService {
 
     getRooms() : Room[] { return this.rooms; }
 
-    addRoom(room: Room) : void { this.rooms.push(room); }
+    async addRoom(room: Room) { this.rooms.push(room); }
+
+    async updateRooms() {
+        this.rooms = this.rooms.filter(room => {room.done === false});
+    }
+
+    async removeRoom(roomName: string) {
+        this.rooms = this.rooms.filter(room => { room.roomName !== roomName });
+        console.log(this.rooms);
+    }
+    
 
     async addGameRecords(req: any, body: GameRecords) {
         try {
@@ -56,7 +67,6 @@ export class GameService {
                 },
 
             })
-            //console.log(user)
             return user;
         }
         catch (error) {
