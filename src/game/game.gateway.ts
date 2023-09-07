@@ -168,7 +168,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(room.roomName).emit("update", room.data);
 
 			
-			if (room.data.leftScore === 3 || room.data.rightScore === 3) {
+			if (room.data.leftScore === 11 || room.data.rightScore === 11) {
 				this.server.to(room.roomName).emit("endMatch");
 				room.done = true;
 				await this.gameService.removeRoom(room.roomName);
