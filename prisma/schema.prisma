@@ -58,6 +58,7 @@ model ChatRoom {
   password  String?
   photo     String?
   isPrivate Boolean     @default(false)
+  isdm      Boolean     @default(false)
   roomUsers RoomUser[]
   messages  Message[]
   admins    RoomAdmin[]
