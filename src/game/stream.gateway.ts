@@ -95,6 +95,15 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
             },
             map: Array.from(this.map.entries())
         });
+    }
+
+    async removeRoom(roomName: string) {
+        this.map.delete(roomName);
         
+        this.rooms = this.rooms.filter(room => { room.roomName !== roomName });
+        this.server.emit("removeRoom", {
+            roomName: roomName,
+            map: Array.from(this.map.entries())
+        });
     }
 }
