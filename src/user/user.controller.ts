@@ -1,7 +1,7 @@
 import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
-import { UserUpdateDto } from 'src/dto';
+import { FriendRequestDto, UserUpdateDto } from 'src/dto';
 import { promises } from 'dns';
 
 @UseGuards(JwtGard)
@@ -32,6 +32,11 @@ export class UserController {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Post('me/sendfriendrequest')
+  sendFriendRequest(@Req() req: any, @Body() body: FriendRequestDto) {
+    return this.userService.sendFriendRequest(req, body);
   }
   @Get('byid')
   getUserById(@Query('id') id: number)
