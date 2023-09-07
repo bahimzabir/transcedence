@@ -53,10 +53,13 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
     private rooms = [];
-    private map = Map<string , {score1: number, score2: number}>
+    private map = new Map<string , {score1: number, score2: number}>();
 
     async handleConnection(client: Socket) {
-        client.emit("initRooms", this.rooms);
+        client.emit("initRooms", {
+            rooms: this.rooms,
+            map: Array.from(this.map.entries())
+        });
     }
 
     async handleDisconnect(client: any) {
@@ -64,29 +67,34 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async updateScore(roomName: string, score1: number, score2: number) {
-        this.server.emit("updateScore", {
-            roomName,
-            score1,
-            score2
+
+        this.map.set(roomName, {
+            score1: score1,
+            score2: score2
         });
+        this.server.emit("updateScore", Array.from(this.map.entries()));
     }
 
     async addRoom(room: Room) {
 
+        this.map.set(room.roomName, {
+            score1: room.data.leftScore,
+            score2: room.data.rightScore
+        });
         this.rooms.push({
             roomName: room.roomName,
             playerOneId: room.players[0].id,
 			playerTwoId: room.players[1].id,
-            score1: room.data.leftScore,
-            score2: room.data.rightScore
         });
 
         this.server.emit("addRoom", {
-            roomName: room.roomName,
-            playerOneId: room.players[0].id,
-			playerTwoId: room.players[1].id,
-            score1: room.data.leftScore,
-            score2: room.data.rightScore
+            room: {
+                roomName: room.roomName,
+                playerOneId: room.players[0].id,
+			    playerTwoId: room.players[1].id,
+            },
+            map: Array.from(this.map.entries())
         });
+        
     }
 }
