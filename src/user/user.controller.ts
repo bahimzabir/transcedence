@@ -78,6 +78,11 @@ export class UserController {
     return this.userService.blockUser(req, id);
   }
 
+  @Post('unblock')
+  unblockUser(@Req() req: any, @Query('id') id: number) {
+    return this.userService.unblockUser(req, id);
+  }
+
   @Post('/sendfriendrequest')
   sendFriendRequest(@Req() req: any, @Body() body: FriendRequestDto) {
     return this.userService.sendFriendRequest(req, body);
