@@ -1,4 +1,4 @@
-import { IS_NOT_EMPTY, IsAlphanumeric, IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, isArray } from 'class-validator';
 
 
 export class AuthDto {
@@ -32,6 +32,7 @@ class chatroomUserDto {
 }
 
 import { ApiProperty } from '@nestjs/swagger';
+import { isInt16Array, isInt32Array } from 'util/types';
 
 export class UserUpdateDto {
     @IsString()
@@ -65,4 +66,11 @@ export class FillRequestDto {
     @IsBoolean()
     @ApiProperty()
     response: boolean;
+}
+
+
+export class UpdateNotificationsDto {
+    @IsArray()
+    @ApiProperty()
+    id: number[];
 }

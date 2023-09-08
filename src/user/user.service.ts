@@ -7,6 +7,8 @@ import { FriendStatus, Prisma } from '@prisma/client';
 import { FillRequestDto, FriendRequestDto } from 'src/dto';
 import { create } from 'domain';
 
+
+
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService, private event: EventsGateway) { }
@@ -65,6 +67,77 @@ export class UserService {
       return new Error('error occured while getting user tree');
     }
   }
+
+  async getNotifications (req: any) {
+    try {
+      const notifications = await this.prisma.notification.findMany({
+        where: {
+          user: {
+            id: req.user.id,
+          },
+        },
+        select: {
+          data: true,
+          read: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      return notifications;
+    } catch (error) {
+      return error;
+    }
+  };
+
+
+  async readNotification(req: any, ids: number[]) {
+    const count = ids.length;
+    const intIds = ids.map((id) => +id);
+    console.log(ids);
+    try {
+      const notifications = await this.prisma.notification.updateMany({
+        where: {
+          id: {
+            in: intIds,
+          },
+        },
+        data: {
+          read: true,
+        },
+      });
+      await this.prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          pendingnotifications : { decrement: count },
+        },
+      });
+      return notifications;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async deleteNotification(req: any, ids: number[]) {
+    // convert all ids to number
+    const intIds = ids.map((id) => +id);
+    console.log(+ids);
+    try {
+      const notifications = await this.prisma.notification.deleteMany({
+        where: {
+          id: {
+            in: intIds,
+          },
+        },
+      });
+      return notifications;
+    } catch (error) {
+      return error;
+    }
+  }
+
 
   async getUserbyId(req: any, id: number) {
     try {
@@ -246,7 +319,7 @@ export class UserService {
         },
       });
       this.event.hanldleSendNotification(body.receiver, req.user.id, {
-        type: "friendrequestaccepted", from: user, message: `${user.username} sent you a friend request`
+        type: "friendrequestrecieved", from: user, message: `${user.username} sent you a friend request`
       });
       return friendRequest;
     }
