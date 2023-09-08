@@ -3,8 +3,9 @@ import { count } from 'console';
 import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
-import { FriendRequestDto } from 'src/dto';
+import { FriendStatus, Prisma } from '@prisma/client';
+import { FillRequestDto, FriendRequestDto } from 'src/dto';
+import { create } from 'domain';
 
 @Injectable()
 export class UserService {
@@ -22,7 +23,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      throw new Error('error occured while updating user');
+      return new Error('error occured while updating user');
     }
   }
 
@@ -38,7 +39,7 @@ export class UserService {
       // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
     } catch (error) {
-      throw new Error('error occured while getting user friends');
+      return new Error('error occured while getting user friends');
     }
   }
 
@@ -61,30 +62,153 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new Error('error occured while getting user tree');
+      return new Error('error occured while getting user tree');
     }
   }
 
-  async getUserbyId(id: number) {
+  async getUserbyId(req: any, id: number) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           id: +id,
+          NOT: {
+            blockedUsers: {
+              some: {
+                id: req.user.id,
+              },
+            },
+          },
         },
         select: PrismaTypes.UserBasicIfosSelect,
       });
-      return user;
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const friendShip = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          outgoingFriendRequests: {
+            where: {
+              receiver: {
+                id: +id,
+              },
+            },
+          },
+          incomingFriendRequests: {
+            where: {
+              sender: {
+                id: +id,
+              },
+            },
+          },
+        },
+      })
+      return {
+        user, friendShip: {
+          sent: friendShip.incomingFriendRequests[0],
+          recieved: friendShip.outgoingFriendRequests[0],
+        }
+      };
     } catch (error) {
-      //console.log(error);
-      throw new Error('error occured while getting user trees');
+      console.log(error);
+      return error;
     }
   }
+
+  async getBlockedUsers(req: any) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          blockedUsers: {select: PrismaTypes.BlockedIfosSelect},
+        },
+      });
+      return user;
+    } catch (error) {
+      return new Error('error occured while getting blocked users');
+    }
+  }
+
+  async blockUser(req: any, id: number) {
+    try {
+      const user = await this.prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          blockedUsers: {
+            connect: {
+              id: +id,
+            },
+          },
+          outgoingFriendRequests: {
+            deleteMany: {
+              receiverId: +id,
+            },
+          },
+          incomingFriendRequests: {
+            deleteMany: {
+              senderId: +id,
+            },
+          },
+        },
+        select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
+      })
+      return user;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async unblockUser(req: any, id: number) {
+    try {
+      const user = await this.prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          blockedUsers: {
+            disconnect: {
+              id: +id,
+            },
+          },
+        },
+        select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
+      })
+      return user;
+    } catch (error) {
+      return error;
+    }
+  }
+
 
   async sendFriendRequest(req: any, body: FriendRequestDto) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           id: req.user.id,
+          NOT: {
+            OR: [
+              {
+                blockedUsers: {
+                  some: {
+                    id: body.receiver,
+                  },
+                }
+              }, {
+                blockedBy: {
+                  some: {
+                    id: body.receiver,
+                  },
+                },
+              }
+            ]
+
+          },
         },
         select: {
           outgoingFriendRequests: {
@@ -94,11 +218,15 @@ export class UserService {
               },
             },
           },
+          ...PrismaTypes.UserBasicIfosSelect,
         },
       });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
       if (user.outgoingFriendRequests.length > 0) {
         throw new HttpException(
-          'Friend request already sent',
+          'Friend request already sent to this user',
           HttpStatus.CONFLICT,
         );
       }
@@ -114,13 +242,83 @@ export class UserService {
               id: body.receiver,
             },
           },
+          status: FriendStatus.PENDING,
         },
+      });
+      this.event.hanldleSendNotification(body.receiver, req.user.id, {
+        type: "friendrequestaccepted", from: user, message: `${user.username} sent you a friend request`
       });
       return friendRequest;
     }
     catch (error) {
-     return error;
+      return error;
       // throw new Error('error occured while sending friend request');
+    }
+  }
+
+  async fillFriendRequest(req: any, body: FillRequestDto) {
+    try {
+      let friendRequest;
+      if (body.response) {
+        friendRequest = await this.prisma.friendRequest.update({
+          where: {
+            id: body.id,
+          },
+          data: {
+            status: FriendStatus.FRIEND,
+          },
+        });
+        if (friendRequest) {
+          const user = await this.prisma.user.update({
+            where: {
+              id: req.user.id,
+            },
+            data: {
+              friends: {
+                connect: {
+                  id: friendRequest.senderId,
+                },
+              },
+              friendOf: {
+                connect: {
+                  id: friendRequest.senderId,
+                },
+              },
+            },
+            select: PrismaTypes.UserBasicIfosSelect,
+          });
+          this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
+            type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
+          });
+        }
+      } else {
+        friendRequest = await this.prisma.friendRequest.delete({
+          where: {
+            id: body.id,
+          },
+        });
+      }
+      //console.log(friendRequest);
+      return friendRequest;
+    } catch (error) {
+      return new Error('error occured while accepting friend request');
+    }
+  }
+
+  async getFriendRequests(req: any) {
+    try {
+      const friendRequests = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          incomingFriendRequests: true,
+          outgoingFriendRequests: true,
+        },
+      });
+      return friendRequests;
+    } catch (error) {
+      return new Error('error occured while getting friend requests');
     }
   }
 
@@ -177,7 +375,7 @@ export class UserService {
       });
       return users;
     } catch (error) {
-      throw new Error('error occured while searching user');
+      return new Error('error occured while searching user');
     }
   }
 

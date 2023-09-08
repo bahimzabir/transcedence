@@ -1,4 +1,4 @@
-import { IS_NOT_EMPTY, IsAlphanumeric, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 
 export class AuthDto {
@@ -54,4 +54,15 @@ export class FriendRequestDto {
     @IsNotEmpty()
     @ApiProperty()
     receiver: number;
+}
+
+export class FillRequestDto {
+    @IsNumber()
+    @IsNotEmpty()
+    @ApiProperty()
+    id: number;
+    // accept or reject
+    @IsBoolean()
+    @ApiProperty()
+    response: boolean;
 }
