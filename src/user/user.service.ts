@@ -3,8 +3,9 @@ import { count } from 'console';
 import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
-import { FriendRequestDto } from 'src/dto';
+import { FriendStatus, Prisma } from '@prisma/client';
+import { FillRequestDto, FriendRequestDto } from 'src/dto';
+import { create } from 'domain';
 
 @Injectable()
 export class UserService {
@@ -65,18 +66,54 @@ export class UserService {
     }
   }
 
-  async getUserbyId(id: number) {
+  async getUserbyId(req: any, id: number) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           id: +id,
+          NOT: {
+            blockedUsers: {
+              some: {
+                id: req.user.id,
+              },
+            },
+          },
         },
         select: PrismaTypes.UserBasicIfosSelect,
       });
-      return user;
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const friendShip = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          outgoingFriendRequests: {
+            where: {
+              receiver: {
+                id: +id,
+              },
+            },
+          },
+          incomingFriendRequests: {
+            where: {
+              sender: {
+                id: +id,
+              },
+            },
+          },
+        },
+      })
+      return {
+        user, friendShip: {
+          sent: friendShip.incomingFriendRequests[0]?.status,
+          recieved: friendShip.outgoingFriendRequests[0]?.status,
+        }
+      };
     } catch (error) {
-      //console.log(error);
-      throw new Error('error occured while getting user trees');
+      console.log(error);
+      throw new Error('error occured while getting user tree');
     }
   }
 
@@ -114,13 +151,75 @@ export class UserService {
               id: body.receiver,
             },
           },
+          status: FriendStatus.PENDING,
         },
       });
       return friendRequest;
     }
     catch (error) {
-     return error;
+      return error;
       // throw new Error('error occured while sending friend request');
+    }
+  }
+
+  async acceptFriendRequest(req: any, body: FillRequestDto) {
+    try {
+      let friendRequest: Prisma.FriendRequestUpdateInput;
+      if (body.response) {
+        const friendRequest = await this.prisma.friendRequest.update({
+          where: {
+            id: body.id,
+          },
+          data: {
+            status: FriendStatus.FRIEND,
+          },
+        });
+        if (friendRequest){
+          await this.prisma.user.update({
+            where: {
+              id: req.user.id,
+            },
+            data: {
+              friends: {
+                connect: {
+                  id: friendRequest.senderId,
+                },
+              },
+              friendOf: {
+                connect: {
+                  id: friendRequest.senderId,
+                },
+              },
+            },
+          });
+        }
+      } else {
+        friendRequest = await this.prisma.friendRequest.delete({
+          where: {
+            id: body.id,
+          },
+        });
+      }
+      return friendRequest;
+    } catch (error) {
+      throw new Error('error occured while accepting friend request');
+    }
+  }
+
+  async getFriendRequest(req: any) {
+    try {
+      const friendRequests = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          incomingFriendRequests: true,
+          outgoingFriendRequests: true,
+        },
+      });
+      return friendRequests;
+    } catch (error) {
+      throw new Error('error occured while getting friend requests');
     }
   }
 
