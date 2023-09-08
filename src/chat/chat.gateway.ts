@@ -77,7 +77,7 @@ export class ChatGateway {
             this.server.to(this.sockets.get(+userid).id).emit('newmessage', dto)
           }
           else{
-            this.events.hanldleSendNotification(userid, dto);
+            this.events.hanldleSendNotification(userid, id, dto);
           }
         }
       }

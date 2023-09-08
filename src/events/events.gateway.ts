@@ -99,38 +99,22 @@ export class EventsGateway {
   }
 
 
-  async hanldleSendNotification(clientId: number, data: any) {
-    // console.log("sending notification to", clientId);
-    // console.log("connected users", this.onlineUsers)
+  async hanldleSendNotification(clientId: number, senderId: number, data: any) {
+    await this.prisma.notification.create({
+      data: {
+        user : {
+          connect : {
+            id : clientId,
+          }
+        },
+        type: data.type,
+        from: senderId,
+        data: data,
+      },
+    });
     const sockets = this.onlineUsers.get(clientId);
-    console.log("sockets", sockets);
     if (sockets) {
       this.server.to(sockets).emit('notification', data);
-    }
-  }
-
-  async handleSendFriendRequest(clientId: number, data: any) {
-    const sockets = this.onlineUsers.get(clientId);
-    if (sockets) {
-      sockets.forEach(socket => {
-        this.server.to(socket).emit('friendRequest', data);
-      });
-    }
-  }
-
-  async handleAcceptFriendRequest(clientId: number, data: any) {
-    const sockets = this.onlineUsers.get(clientId);
-    if (sockets) {
-      sockets.forEach(socket => {
-        this.server.to(socket).emit('acceptFriendRequest', data);
-      });
-    }
-  }
-
-  async handleSendMessage(clientId: number, data: any) {
-    const sockets = this.onlineUsers.get(clientId);
-    if (sockets) {
-      this.server.to(sockets).emit('message', data);
     }
   }
 
