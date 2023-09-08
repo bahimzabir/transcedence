@@ -107,8 +107,8 @@ export class UserService {
       })
       return {
         user, friendShip: {
-          sent: friendShip.incomingFriendRequests[0]?.status,
-          recieved: friendShip.outgoingFriendRequests[0]?.status,
+          sent: friendShip.incomingFriendRequests[0],
+          recieved: friendShip.outgoingFriendRequests[0],
         }
       };
     } catch (error) {
@@ -162,11 +162,11 @@ export class UserService {
     }
   }
 
-  async acceptFriendRequest(req: any, body: FillRequestDto) {
+  async fillFriendRequest(req: any, body: FillRequestDto) {
     try {
-      let friendRequest: Prisma.FriendRequestUpdateInput;
+      let friendRequest;
       if (body.response) {
-        const friendRequest = await this.prisma.friendRequest.update({
+        friendRequest = await this.prisma.friendRequest.update({
           where: {
             id: body.id,
           },
@@ -200,13 +200,14 @@ export class UserService {
           },
         });
       }
+      console.log(friendRequest);
       return friendRequest;
     } catch (error) {
       throw new Error('error occured while accepting friend request');
     }
   }
 
-  async getFriendRequest(req: any) {
+  async getFriendRequests(req: any) {
     try {
       const friendRequests = await this.prisma.user.findUnique({
         where: {
