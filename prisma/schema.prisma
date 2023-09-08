@@ -31,6 +31,8 @@ model User {
   wins          Int @default(0)
   losses        Int @default(0)
   draws         Int @default(0)
+  game          game[] @relation("player1")
+  gamewith      game[] @relation("player2")
 
   notifications Notification[]
   roomUsers     RoomUser[]
@@ -150,8 +152,10 @@ model game {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  paleyer1 Int
-  paleyer2 Int
+  paleyer1 User @relation("player1", fields: [paleyer1Id], references: [id])
+  paleyer1Id Int
+  paleyer2 User @relation("player2" ,fields: [paleyer2Id], references: [id])
+  paleyer2Id Int
 
   player1score Int
   player2score Int
