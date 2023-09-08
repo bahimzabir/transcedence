@@ -245,7 +245,7 @@ export class UserService {
           status: FriendStatus.PENDING,
         },
       });
-      this.event.hanldleSendNotification(body.receiver, {
+      this.event.hanldleSendNotification(body.receiver, req.user.id, {
         type: "friendrequestaccepted", from: user, message: `${user.username} sent you a friend request`
       });
       return friendRequest;
@@ -287,7 +287,7 @@ export class UserService {
             },
             select: PrismaTypes.UserBasicIfosSelect,
           });
-          this.event.hanldleSendNotification(friendRequest.senderId, {
+          this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
             type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
           });
         }
