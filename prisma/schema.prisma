@@ -48,6 +48,7 @@ model User {
 
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
   incomingFriendRequests FriendRequest[] @relation("IncomingFriendRequests")
+
 }
 
 model ChatRoom {
@@ -107,7 +108,29 @@ model FriendRequest {
 
   receiver   User @relation("IncomingFriendRequests", fields: [receiverId], references: [id])
   receiverId Int
+
+  status FriendStatus @default(NONE)
 }
+
+enum FriendStatus {
+  NONE
+  FRIEND
+  BLOCKED
+  PENDING
+}
+
+model FriendShip {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user1   Int
+  user2   Int
+
+  status FriendStatus @default(NONE)
+
+}
+
 
 model Notification {
   id        Int      @id @default(autoincrement())

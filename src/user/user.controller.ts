@@ -39,9 +39,9 @@ export class UserController {
     return this.userService.sendFriendRequest(req, body);
   }
   @Get('byid')
-  getUserById(@Query('id') id: number)
+  getUserById(@Req() req: any, @Query('id') id: number)
   {
-    return this.userService.getUserbyId(id);
+    return this.userService.getUserbyId(req, id);
   }
   //search suggestion by username
   @Get('search/all')
