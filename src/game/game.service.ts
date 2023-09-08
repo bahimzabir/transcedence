@@ -29,7 +29,6 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
-    done: boolean;
 }
 
 @Injectable()
@@ -42,15 +41,8 @@ export class GameService {
 
     async addRoom(room: Room) { this.rooms.push(room); }
 
-    // async updateRooms() {
-    //     this.rooms = this.rooms.filter(room => {room.done === false});
-    // }
-
     async removeRoom(roomName: string) {
-        console.log(roomName);
         this.rooms = this.rooms.filter(room => (room.roomName !== roomName));
-        console.log("length === ", this.rooms.length);
-        console.log(this.rooms);
     }
     
 

@@ -45,7 +45,6 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
-	done: boolean;
 }
 
 const socketConfig = {
@@ -102,7 +101,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
 			};
 
 			players.forEach(player => {
@@ -170,7 +168,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			
 			if (room.data.leftScore === 11 || room.data.rightScore === 11) {
 				this.server.to(room.roomName).emit("endMatch");
-				room.done = true;
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}

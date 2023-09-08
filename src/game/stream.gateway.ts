@@ -99,10 +99,7 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     async removeRoom(roomName: string) {
         this.map.delete(roomName);
-        console.log(roomName);
         this.rooms = this.rooms.filter(room => (room.roomName !== roomName));
-        console.log("length ===> ", this.rooms.length);
-        console.log(this.rooms);
         this.server.emit("removeRoom", {
             roomName: roomName,
             map: Array.from(this.map.entries())
