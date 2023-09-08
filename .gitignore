@@ -43,3 +43,4 @@ database/db/*
 prisma/migrations
 #images
 src/chat/img/*
+*.png
