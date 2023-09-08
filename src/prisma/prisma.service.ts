@@ -30,6 +30,21 @@ export class PrismaTypes {
     }
   }
 
+  
+  static UserBasicIfosSelect: Prisma.UserSelect = {
+    id: true,
+    firstname: true,
+    lastname: true,
+    username: true,
+    photo: true,
+    online: true,
+  }
+
+  static BlockedIfosSelect: Prisma.UserSelect = {
+    id: true,
+    username: true,
+  }
+
   static UserFriendSelect: Prisma.UserSelect = {
     friends: {
       select: {
@@ -39,15 +54,6 @@ export class PrismaTypes {
         online: true,
       },
     }
-  }
-
-  static UserBasicIfosSelect: Prisma.UserSelect = {
-    id: true,
-    firstname: true,
-    lastname: true,
-    username: true,
-    photo: true,
-    online: true,
   }
 
 }
