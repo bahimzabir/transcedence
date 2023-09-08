@@ -43,6 +43,7 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
   }
 }
 
+
 @Injectable()
 @WebSocketGateway(socketConfig)
 export class EventsGateway {
@@ -57,9 +58,10 @@ export class EventsGateway {
     try {
       console.log("handling connection")
       const cookies = await client.handshake.headers.cookie;
+      let userID;
       if (cookies) {
         const token = client.handshake.headers.cookie.split("=")[1];
-        const userID = await this.validateUser(this.config, this.prisma, true, token);
+        userID = await this.validateUser(this.config, this.prisma, true, token);
         if (this.onlineUsers.has(userID)) {
           this.onlineUsers.get(userID).push(client.id);
         } else {
@@ -67,11 +69,14 @@ export class EventsGateway {
         }
       }
       console.log(this.onlineUsers);
+      // const notifications = await getUnseenNotification(this.prisma, userID);
+      // notifications.forEach((notification) => {
+      //   client.emit('notification', notification.data);
+      // }
+      // )
     } catch {
       console.log("handleConnection error")
     }
-    //console.log("handle connected users", this.onlineUsers)
-
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
@@ -100,21 +105,33 @@ export class EventsGateway {
 
 
   async hanldleSendNotification(clientId: number, senderId: number, data: any) {
-    await this.prisma.notification.create({
-      data: {
-        user : {
-          connect : {
-            id : clientId,
-          }
+    try {
+      await this.prisma.notification.create({
+        data: {
+          user: {
+            connect: {
+              id: clientId,
+            }
+          },
+          type: data.type,
+          from: senderId,
+          data: data,
         },
-        type: data.type,
-        from: senderId,
-        data: data,
-      },
-    });
-    const sockets = this.onlineUsers.get(clientId);
-    if (sockets) {
-      this.server.to(sockets).emit('notification', data);
+      });
+      await this.prisma.user.update({
+        where: {
+          id: clientId,
+        },
+        data: {
+          pendingnotifications: {increment: 1},
+        },
+      });
+      const sockets = this.onlineUsers.get(clientId);
+      if (sockets) {
+        this.server.to(sockets).emit('notification', data);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 

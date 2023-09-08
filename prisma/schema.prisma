@@ -25,6 +25,8 @@ model User {
   photo     String?
   bio       String?
   online    Boolean @default(false)
+  pendingmessages Int @default(0)
+  pendingnotifications Int @default(0)
 
   goalsscored   Int @default(0)
   goalsconceded Int @default(0)

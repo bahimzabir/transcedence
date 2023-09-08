@@ -1,7 +1,7 @@
 import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
-import { FillRequestDto, FriendRequestDto, UserUpdateDto } from 'src/dto';
+import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto } from 'src/dto';
 import { promises } from 'dns';
 
 @UseGuards(JwtGard)
@@ -59,6 +59,11 @@ export class UserController {
     return this.userService.getBlockedUsers(req);
   }
 
+  @Get('me/getnotifications')
+  getNotifications(@Req() req) {
+    return this.userService.getNotifications(req);
+  }
+
   //// Post Requests
 
   @Post('me')
@@ -91,6 +96,16 @@ export class UserController {
   @Post('/fillfriendrequest')
   fillFriendRequest(@Req() req: any, @Body() body: FillRequestDto) {
     return this.userService.fillFriendRequest(req, body);
+  }
+
+  @Post('readnotification')
+  readNotification(@Req() req: any, @Body() body: UpdateNotificationsDto) {
+    return this.userService.readNotification(req, body.id);
+  }
+
+  @Post('deletenotification')
+  deleteNotification(@Req() req: any, @Body() body: UpdateNotificationsDto) {
+    return this.userService.deleteNotification(req, body.id);
   }
 }
 
