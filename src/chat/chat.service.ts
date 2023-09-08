@@ -23,7 +23,7 @@ export class ChatService {
         data: {
           name : reciveruser.username,
           isdm: true,
-          photo: reciveruser.id + ".png",
+          photo: reciveruser.photo,
         }
       })
       const user = await this.prisma.user.findUnique({
@@ -35,7 +35,7 @@ export class ChatService {
         data: {
           name : user.username,
           isdm: true,
-          photo: user.id + ".png",
+          photo: user.photo,
         },
       })
       let useroom = await this.prisma.roomUser.create({
