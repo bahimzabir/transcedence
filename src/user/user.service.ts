@@ -23,7 +23,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      throw new Error('error occured while updating user');
+      return new Error('error occured while updating user');
     }
   }
 
@@ -39,7 +39,7 @@ export class UserService {
       // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
     } catch (error) {
-      throw new Error('error occured while getting user friends');
+      return new Error('error occured while getting user friends');
     }
   }
 
@@ -62,7 +62,7 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new Error('error occured while getting user tree');
+      return new Error('error occured while getting user tree');
     }
   }
 
@@ -113,15 +113,81 @@ export class UserService {
       };
     } catch (error) {
       console.log(error);
-      throw new Error('error occured while getting user tree');
+      return error;
     }
   }
+
+  async getBlockedUsers(req: any) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          blockedUsers: {select: PrismaTypes.BlockedIfosSelect},
+        },
+      });
+      return user;
+    } catch (error) {
+      return new Error('error occured while getting blocked users');
+    }
+  }
+
+  async blockUser(req: any, id: number) {
+    try {
+      const user = await this.prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          blockedUsers: {
+            connect: {
+              id: +id,
+            },
+          },
+          outgoingFriendRequests: {
+            deleteMany: {
+              receiverId: +id,
+            },
+          },
+          incomingFriendRequests: {
+            deleteMany: {
+              senderId: +id,
+            },
+          },
+        },
+        select: {blockedUsers: {select: {username: true}}},
+      })
+      return user;
+    } catch (error) {
+      return error;
+    }
+  }
+
 
   async sendFriendRequest(req: any, body: FriendRequestDto) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           id: req.user.id,
+          NOT: {
+            OR: [
+              {
+                blockedUsers: {
+                  some: {
+                    id: body.receiver,
+                  },
+                }
+              }, {
+                blockedBy: {
+                  some: {
+                    id: body.receiver,
+                  },
+                },
+              }
+            ]
+
+          },
         },
         select: {
           outgoingFriendRequests: {
@@ -131,11 +197,15 @@ export class UserService {
               },
             },
           },
+          ...PrismaTypes.UserBasicIfosSelect,
         },
       });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
       if (user.outgoingFriendRequests.length > 0) {
         throw new HttpException(
-          'Friend request already sent',
+          'Friend request already sent to this user',
           HttpStatus.CONFLICT,
         );
       }
@@ -153,6 +223,9 @@ export class UserService {
           },
           status: FriendStatus.PENDING,
         },
+      });
+      this.event.hanldleSendNotification(body.receiver, {
+        type: "friendrequestaccepted", from: user, message: `${user.username} sent you a friend request`
       });
       return friendRequest;
     }
@@ -174,8 +247,8 @@ export class UserService {
             status: FriendStatus.FRIEND,
           },
         });
-        if (friendRequest){
-          await this.prisma.user.update({
+        if (friendRequest) {
+          const user = await this.prisma.user.update({
             where: {
               id: req.user.id,
             },
@@ -191,6 +264,10 @@ export class UserService {
                 },
               },
             },
+            select: PrismaTypes.UserBasicIfosSelect,
+          });
+          this.event.hanldleSendNotification(friendRequest.senderId, {
+            type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
           });
         }
       } else {
@@ -200,10 +277,10 @@ export class UserService {
           },
         });
       }
-      console.log(friendRequest);
+      //console.log(friendRequest);
       return friendRequest;
     } catch (error) {
-      throw new Error('error occured while accepting friend request');
+      return new Error('error occured while accepting friend request');
     }
   }
 
@@ -220,7 +297,7 @@ export class UserService {
       });
       return friendRequests;
     } catch (error) {
-      throw new Error('error occured while getting friend requests');
+      return new Error('error occured while getting friend requests');
     }
   }
 
@@ -277,7 +354,7 @@ export class UserService {
       });
       return users;
     } catch (error) {
-      throw new Error('error occured while searching user');
+      return new Error('error occured while searching user');
     }
   }
 

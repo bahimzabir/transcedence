@@ -100,8 +100,8 @@ export class EventsGateway {
 
 
   async hanldleSendNotification(clientId: number, data: any) {
-    console.log("sending notification to", clientId);
-    console.log("connected users", this.onlineUsers)
+    // console.log("sending notification to", clientId);
+    // console.log("connected users", this.onlineUsers)
     const sockets = this.onlineUsers.get(clientId);
     console.log("sockets", sockets);
     if (sockets) {
