@@ -156,7 +156,28 @@ export class UserService {
             },
           },
         },
-        select: {blockedUsers: {select: {username: true}}},
+        select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
+      })
+      return user;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async unblockUser(req: any, id: number) {
+    try {
+      const user = await this.prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          blockedUsers: {
+            disconnect: {
+              id: +id,
+            },
+          },
+        },
+        select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
       })
       return user;
     } catch (error) {
