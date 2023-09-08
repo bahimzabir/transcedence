@@ -139,7 +139,8 @@ model Notification {
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
-
+  from   Int
+  data  Json @default("{}")
   type String
   read Boolean @default(false)
 }
