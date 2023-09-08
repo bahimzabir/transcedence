@@ -54,6 +54,11 @@ export class UserController {
       return this.userService.getUserinfos(+id);
   }
 
+  @Get('me/blocklist')
+  getBlockList(@Req() req) {
+    return this.userService.getBlockedUsers(req);
+  }
+
   //// Post Requests
 
   @Post('me')
@@ -66,6 +71,11 @@ export class UserController {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Post('block')
+  blockUser(@Req() req: any, @Query('id') id: number) {
+    return this.userService.blockUser(req, id);
   }
 
   @Post('/sendfriendrequest')
