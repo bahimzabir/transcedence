@@ -6,6 +6,7 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
+import { ConnectedSocket } from '@nestjs/websockets';
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
@@ -19,16 +20,21 @@ export class ChatService {
           id: +body.receiver,
         }
       })
+      const user = await this.prisma.user.findUnique({
+        where:{
+          id: +req.user.id,
+        }
+      })
       const userchat = await this.prisma.chatRoom.create({
         data: {
           name : reciveruser.username,
           isdm: true,
           photo: reciveruser.photo,
-        }
-      })
-      const user = await this.prisma.user.findUnique({
-        where:{
-          id: +req.user.id,
+          members: {
+            connect: {
+              id: user.id,
+            }
+          }
         }
       })
       const receiverchat = await this.prisma.chatRoom.create({
@@ -36,6 +42,11 @@ export class ChatService {
           name : user.username,
           isdm: true,
           photo: user.photo,
+          members:{
+            connect: {
+              id: reciveruser.id,
+            },
+          },
         },
       })
       let useroom = await this.prisma.roomUser.create({
@@ -44,24 +55,24 @@ export class ChatService {
           roomId: userchat.id,
         }
       })
-      // useroom = await this.prisma.roomUser.create({
-      //   data:{
-      //     userId: +body.receiver,
-      //     roomId: userchat.id,
-      //   }
-      // })
+      useroom = await this.prisma.roomUser.create({
+        data:{
+          userId: +body.receiver,
+          roomId: userchat.id,
+        }
+      })
       let receiveroom = await this.prisma.roomUser.create({
         data:{
           userId: +body.receiver,
           roomId: receiverchat.id,
         }
       })
-      // receiveroom = await this.prisma.roomUser.create({
-      //   data:{
-      //     userId: +req.user.id,
-      //     roomId: receiverchat.id,
-      //   }
-      // })
+      receiveroom = await this.prisma.roomUser.create({
+        data:{
+          userId: +req.user.id,
+          roomId: receiverchat.id,
+        }
+      })
       return true;
     } catch (error) {
         console.log({error: "error occured when trying create adm between id " + req.user.id +  " and " + body.receiver})
@@ -196,6 +207,18 @@ export class ChatService {
             roomId: +roomId,
           },
         });
+        await this.prisma.chatRoom.update({
+          where:{ 
+            id: +roomId,
+          },
+          data: {
+            members: {
+              connect:{
+                id: +userId,
+              }
+            }
+          }
+        })
       } catch (error) {
         console.log(error)
       }
@@ -216,7 +239,10 @@ export class ChatService {
       console.log(error);
     }
   }
-
+  async addmgs(dto: CreateChatDto, userid: number)
+  {
+      this.create(dto, userid);
+  }
   findOne(id: number) {
     return `This action returns a #${id} chat`;
   }

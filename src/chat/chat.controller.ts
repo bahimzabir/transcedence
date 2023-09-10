@@ -1,5 +1,4 @@
-import { Controller, Get, Req, Post, UseGuards, Body, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, Query } from '@nestjs/common';
-import { JwtGard } from 'src/auth/guard';
+import { Controller, Get, Req, Post, UseGuards, Body, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, Query } from '@nestjs/common'; import { JwtGard } from 'src/auth/guard';
 import { ChatService } from './chat.service';
 import { get } from 'http';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -7,6 +6,9 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { RouterModule } from '@nestjs/core';
+import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { Socket } from 'socket.io';
 
 @UseGuards(JwtGard)
 @Controller('chat')
@@ -53,6 +55,11 @@ export class ChatController {
     {
         console.log("GOT HERE ---> ", roomid);
         return this.chatService.getroommgs(roomid);
+    }
+    @Post("addmsg")
+    addmsgtoroom(@Req() req: any)
+    {
+        return this.chatService.addmgs(req.body[0], +req.user.id);
     }
 }
 
