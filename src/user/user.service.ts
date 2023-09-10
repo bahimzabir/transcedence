@@ -22,6 +22,8 @@ export class UserService {
           username: body.username,
           bio: body.bio,
           photo: body.photo,
+          firstname: body.firstname,
+          lastname: body.lastname,
         },
       });
     } catch (error) {
