@@ -8,17 +8,18 @@ import { GameService } from "./game.service";
 import { Injectable } from "@nestjs/common";
 import { Server, Socket } from "socket.io"
 
-interface BallPos {
+interface Ball {
 	x: number;
 	y: number;
+	velocityX: number;
+	velocityY: number;
+	speed: number;
 }
 
 interface GameData {
-	ballPos: BallPos;
+	ball: Ball;
 	leftPlayerY: number;
 	rightPlayerY: number;
-	speedX: number;
-	speedY: number;
 	leftScore: number;
 	rightScore: number;
 }

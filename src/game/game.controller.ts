@@ -8,9 +8,9 @@ import { game } from '@prisma/client';
 @Controller('game')
 export class GameController {
     constructor(private readonly gameservice: GameService) {}
-    @Post('score_update')
-    async addNewScore(@Req() req: any, @Body() body: GameRecords) {
-        console.log(body);
-        return this.gameservice.addGameRecords(req, body);
-    }
+    // @Post('score_update')
+    // async addNewScore(@Req() req: any, @Body() body: GameRecords) {
+    //     console.log(body);
+    //     return this.gameservice.addGameRecords(req, body);
+    // }
 }
