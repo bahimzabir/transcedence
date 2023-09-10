@@ -20,17 +20,18 @@ import { Injectable } from '@nestjs/common';
 import { StreamGateway } from './stream.gateway';
 
 
-interface BallPos {
+interface Ball {
 	x: number;
 	y: number;
+	velocityX: number;
+	velocityY: number;
+	speed: number;
 }
 
 interface GameData {
-	ballPos: BallPos;
+	ball: Ball;
 	leftPlayerY: number;
 	rightPlayerY: number;
-	speedX: number;
-	speedY: number;
 	leftScore: number;
 	rightScore: number;
 }
@@ -94,11 +95,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				roomName: roomName,
 				players: players,
 				data: {
-					ballPos: {x: 500, y:300},
+					ball: {
+						x: 500, 
+						y: 300,
+						velocityX: 3,
+						velocityY: 0,
+						speed: 3,
+					},
 					leftPlayerY: 250,
 					rightPlayerY: 250,
-					speedX: 2,
-					speedY: 1,
 					leftScore: 0,
 					rightScore: 0
 				},
@@ -139,15 +144,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@Interval(10)
 	async moveBall() {
 		for (let room of this.gameService.getRooms()) {
-			room.data.ballPos.x += room.data.speedX;
-			room.data.ballPos.y += room.data.speedY;
+			room.data.ball.x += room.data.ball.velocityX;
+			room.data.ball.y += room.data.ball.velocityY;
 
-			if (room.data.ballPos.y >= 595 || room.data.ballPos.y <= 5) {
-				room.data.speedY *= -1;
+			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
+				room.data.ball.velocityY *= -1;
 			}
-			if (room.data.ballPos.x > 1000 || room.data.ballPos.x < 0) {
-				(room.data.ballPos.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				this.resetData(room);
+			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
+				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				this.resetBall(room);
 
 				this.streamGateway.updateScore(
 					room.roomName,
@@ -156,13 +161,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				);
 			}
 
-			if (room.data.ballPos.x <= 10 && (room.data.ballPos.y > room.data.leftPlayerY && room.data.ballPos.y < room.data.leftPlayerY+80)) {
-				room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
-				room.data.speedX *= -1;
+			if (room.data.ball.x <= 10 && (room.data.ball.y > room.data.leftPlayerY && room.data.ball.y < room.data.leftPlayerY+80)) {
+				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
+				this.handlePaddleCollision(room.data.ball, room.data.leftPlayerY);
+				room.data.ball.velocityX *= -1;
 			}
-			if (room.data.ballPos.x >= 990 && (room.data.ballPos.y > room.data.rightPlayerY && room.data.ballPos.y < room.data.rightPlayerY+80)) {
-				room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
-				room.data.speedX *= -1;
+			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.rightPlayerY && room.data.ball.y < room.data.rightPlayerY+80)) {
+				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
+				this.handlePaddleCollision(room.data.ball, room.data.rightPlayerY);
+				room.data.ball.velocityX *= -1;
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 
@@ -175,10 +182,35 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// await this.gameService.updateRooms();
 	}
 
-	private resetData(room: Room) : void  {
-		room.data.ballPos = {x: 500, y:300};
-		room.data.speedX = 2;
-		room.data.speedY = 1;
+
+	private handlePaddleCollision(ball: Ball, paddleY: number) {
+
+    	const paddleCenterY = paddleY + 40;
+    	const deltaY = ball.y - paddleCenterY;
+
+    	// Calculate the normalized bounce angle
+    	const normalizedDeltaY = deltaY / 40;
+    	const maxBounceAngle = Math.PI / 4;
+
+    	// Calculate the bounce angle based on the normalized delta
+    	const bounceAngle = normalizedDeltaY * maxBounceAngle;
+
+
+    	// You might also adjust the ball's speed to make the game more dynamic
+    	// For example, you can increase the ball's speed with each bounce.
+
+    	// Update the ball's velocity based on the new angle
+    	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
+	}
+
+	private resetBall(room: Room) : void  {
+		room.data.ball = {
+			x: 500, 
+			y: 300,
+			velocityX: 5,
+			velocityY: 0,
+			speed: 5,
+		};
 	}
 
 	@SubscribeMessage("move")
@@ -193,7 +225,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			room.data.leftPlayerY = data.posY;
 		}
 		else if (client === room.players[1].socket) {
-			room.data.rightPlayerY = data.posY;
+			if (data.posY <= 520)
+				room.data.rightPlayerY = data.posY;
 		}
 		this.server.to(data.roomName).emit("update", room.data);
 	}
