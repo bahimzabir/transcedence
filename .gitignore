@@ -45,3 +45,4 @@ prisma/migrations
 #images
 src/chat/img/*
 *.png
+.env
