@@ -461,10 +461,11 @@ export class UserService {
           id: id,
         },
         select: {
-          roomUsers: { select: PrismaTypes.roomUserSelect },
+          chats: true,
         },
       });
-      return chatrooms.roomUsers;
+      console.log()
+      return chatrooms.chats;
     }
     catch (error) {
 
