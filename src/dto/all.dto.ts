@@ -47,6 +47,14 @@ export class UserUpdateDto {
     @IsOptional()
     @ApiProperty()
     username?: string;
+    @IsString()
+    @IsOptional()
+    @ApiProperty()
+    firstname?: string;
+    @IsString()
+    @IsOptional()
+    @ApiProperty()
+    lastname?: string;
 }
 
 
