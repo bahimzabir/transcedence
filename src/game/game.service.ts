@@ -47,4 +47,26 @@ export class GameService {
         this.rooms = this.rooms.filter(room => (room.roomName !== roomName));
     }
 
+	
+
+	async createGameRecord(body: GameRecords) {
+		
+		try {
+			
+			const game = await this.prisma.game.create({
+				data: {
+					paleyer1Id: body.player1Id,
+					paleyer2Id: body.player2Id,
+					player1Score: body.player1Score,
+					player2Score: body.player2Score,
+					type: body.type
+			}
+		});
+		} catch (error) {
+			
+		}
+
+	}
+
+
 }

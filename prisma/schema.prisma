@@ -28,8 +28,6 @@ model User {
   pendingmessages Int @default(0)
   pendingnotifications Int @default(0)
 
-  goalsscored   Int @default(0)
-  goalsconceded Int @default(0)
   wins          Int @default(0)
   losses        Int @default(0)
   game          game[] @relation("player1")
@@ -158,8 +156,8 @@ model game {
   paleyer2 User @relation("player2" ,fields: [paleyer2Id], references: [id])
   paleyer2Id Int
 
-  player1score Int
-  player2score Int
+  player1Score Int
+  player2Score Int
 
   type String?
 }

@@ -1,5 +1,7 @@
 import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString, isArray } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
+import { isInt16Array, isInt32Array } from 'util/types';
 
 export class AuthDto {
     @IsEmail()
@@ -12,15 +14,20 @@ export class AuthDto {
 
 export class GameRecords {
     @IsAlphanumeric()
-    goalsscored;
+    @ApiProperty()
+    player1Id: number;
     @IsAlphanumeric()
-    goalsconceded;
+    @ApiProperty()
+    player2Id: number;
     @IsAlphanumeric()
-    win;
+    @ApiProperty()
+    player1Score: number;
     @IsAlphanumeric()
-    lose;
-    @IsAlphanumeric()
-    draw;
+    @ApiProperty()
+    player2Score: number;
+    @IsString()
+    @ApiProperty()
+    type: string;
 }
 
 class chatroomUserDto {
@@ -31,8 +38,6 @@ class chatroomUserDto {
     receiver: number;
 }
 
-import { ApiProperty } from '@nestjs/swagger';
-import { isInt16Array, isInt32Array } from 'util/types';
 
 export class UserUpdateDto {
     @IsString()
