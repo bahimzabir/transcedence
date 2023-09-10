@@ -86,6 +86,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		if (this.queue.length >= 2)
 		{
+			console.log("CREATING ROOM ...");
 			const players = this.queue.splice(0, 2);
 			const roomName: string = this.createNewRoom();
 
@@ -165,8 +166,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 
-			
-			if (room.data.leftScore === 11 || room.data.rightScore === 11) {
+			if (room.data.leftScore === 9 || room.data.rightScore === 9) {
 				this.server.to(room.roomName).emit("endMatch");
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
@@ -205,11 +205,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		}
 		return undefined;
-	}
-
-
-	private brodcastGameData() {
-
 	}
 
 }
