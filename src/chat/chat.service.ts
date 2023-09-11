@@ -12,66 +12,58 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
 
+  async getdmroominfos(id: number, sender: number)
+  {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        id: +id,
+      }
+    })
+    let userid: number;
+    if(sender != room.senderID)
+      userid = room.senderID;
+    else
+      userid = room.receiverID;
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: +userid,
+      },
+      select: {
+        username: true,
+        photo: true,
+      }
+    })
+    room.name = user.username;
+    room.photo = user.photo;
+    return room;
+  }
   async createdm(req, body)
   {
     try {
-      const reciveruser = await this.prisma.user.findUnique({
-        where: {
-          id: +body.receiver,
-        }
-      })
-      const user = await this.prisma.user.findUnique({
-        where:{
-          id: +req.user.id,
-        }
-      })
-      const userchat = await this.prisma.chatRoom.create({
+      const chatRoom = await this.prisma.chatRoom.create({
         data: {
-          name : reciveruser.username,
           isdm: true,
-          photo: reciveruser.photo,
-          members: {
-            connect: {
-              id: user.id,
-            }
+          senderID: +req.user.id,
+          receiverID: +body.receiver,
+          members :{
+            connect: [
+              {id: req.user.id},
+              {id: body.receiver},
+            ]
           }
         }
       })
-      const receiverchat = await this.prisma.chatRoom.create({
+      const roomUser = await this.prisma.roomUser.create({
         data: {
-          name : user.username,
-          isdm: true,
-          photo: user.photo,
-          members:{
-            connect: {
-              id: reciveruser.id,
-            },
-          },
+          userId: req.user.id,
+          roomId: chatRoom.id,
         },
       })
-      let useroom = await this.prisma.roomUser.create({
-        data:{
-          userId: +req.user.id,
-          roomId: userchat.id,
-        }
-      })
-      useroom = await this.prisma.roomUser.create({
-        data:{
-          userId: +body.receiver,
-          roomId: userchat.id,
-        }
-      })
-      let receiveroom = await this.prisma.roomUser.create({
-        data:{
-          userId: +body.receiver,
-          roomId: receiverchat.id,
-        }
-      })
-      receiveroom = await this.prisma.roomUser.create({
-        data:{
-          userId: +req.user.id,
-          roomId: receiverchat.id,
-        }
+      const roomUser2 = await this.prisma.roomUser.create({
+        data: {
+          userId: body.receiver,
+          roomId: chatRoom.id,
+        },
       })
       return true;
     } catch (error) {
@@ -85,6 +77,11 @@ export class ChatService {
       const chatRoom = await this.prisma.chatRoom.create({
         data: {
           name: body.name,
+          members:{
+            connect:{
+              id: req.user.id,
+            }
+          }
         },
       });
       await this.prisma.chatRoom.update({
@@ -92,7 +89,7 @@ export class ChatService {
           id: chatRoom.id,
         },
         data:{
-          photo: "http://localhost:8000/roomimg/" + chatRoom.id + "room.png",
+          photo: "http://localhost:3000/" + chatRoom.id + "room.png",
         }
       })
       const roomUser = await this.prisma.roomUser.create({
