@@ -493,10 +493,9 @@ export class UserService {
           id: +id
         },
         select: {
-          games: true
+          games: true,
         }
       });
-      console.log(games);
       return (games);
     } catch (error) {
       console.log(error);
