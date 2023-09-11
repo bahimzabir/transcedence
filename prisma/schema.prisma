@@ -39,7 +39,6 @@ model User {
   messages      Message[]
   chats         ChatRoom[]
 
-
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
 
@@ -61,6 +60,8 @@ model ChatRoom {
   photo     String?
   isPrivate Boolean     @default(false)
   isdm      Boolean     @default(false)
+  senderID  Int?
+  receiverID Int?
   roomUsers RoomUser[]
   messages  Message[]
   admins    RoomAdmin[]

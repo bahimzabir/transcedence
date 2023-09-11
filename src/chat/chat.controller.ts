@@ -56,6 +56,11 @@ export class ChatController {
         console.log("GOT HERE ---> ", roomid);
         return this.chatService.getroommgs(roomid);
     }
+    @Get('getdminfos')
+    getdmroominfos(@Req() req, @Query('id') roomid: number)
+    {   
+        return this.chatService.getdmroominfos(roomid, +req.user.id);
+    }
     @Post("addmsg")
     addmsgtoroom(@Req() req: any)
     {
