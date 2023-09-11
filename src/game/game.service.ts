@@ -30,6 +30,7 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
+    done: boolean;
 }
 
 @Injectable()
