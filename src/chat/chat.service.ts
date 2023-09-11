@@ -40,6 +40,16 @@ export class ChatService {
   async createdm(req, body)
   {
     try {
+      const search = await this.prisma.chatRoom.findFirst({
+        where:{
+          AND: [
+            {senderID: +req.user.id},
+            {receiverID: +body.receiver},
+          ]
+        }
+      });
+      if(search)
+        return false;
       const chatRoom = await this.prisma.chatRoom.create({
         data: {
           isdm: true,
@@ -118,9 +128,7 @@ export class ChatService {
   }
 
   async create(createMessageDto: CreateChatDto, sender: number) {
-
     const id: number = +createMessageDto.id;
-    console.log("id is " ,id)
     await this.prisma.message.create({
       data: {
         content: createMessageDto.message,
