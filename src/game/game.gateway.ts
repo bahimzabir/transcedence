@@ -178,6 +178,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(room.roomName).emit("update", room.data);
 
 			if (room.data.leftScore === 9 || room.data.rightScore === 9) {
+				const body = {
+					player1Id: 
+				};
+				await this.gameService.createGameRecord(body);
 				this.server.to(room.roomName).emit("endMatch");
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);

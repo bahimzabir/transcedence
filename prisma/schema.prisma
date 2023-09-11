@@ -31,7 +31,6 @@ model User {
   wins          Int @default(0)
   losses        Int @default(0)
   games         game[]
-  // gameswith        game[] @relation("player2")
 
   notifications Notification[]
   roomUsers     RoomUser[]

@@ -73,7 +73,6 @@ export class GameService {
 		} catch (error) {
             console.log(error);
 		}
-
 	}
 
     async addToWins(id: number) {
