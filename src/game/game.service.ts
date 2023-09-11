@@ -52,7 +52,6 @@ export class GameService {
 	async createGameRecord(body: GameRecords) {
 		
 		try {
-			
             await this.addToWins(body.winnerId);
             await this.addToLosses(body.loserId);
 
@@ -73,7 +72,7 @@ export class GameService {
 
     async addToWins(id: number) {
         try {
-            this.prisma.user.update({
+            await this.prisma.user.update({
                 where: {
                     id: id,
                 },
@@ -88,7 +87,7 @@ export class GameService {
 
     async  addToLosses(id: number) {
         try {
-            this.prisma.user.update({
+            await this.prisma.user.update({
                 where: {
                     id: id,
                 },
