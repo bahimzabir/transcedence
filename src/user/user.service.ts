@@ -484,4 +484,23 @@ export class UserService {
       console.log(error)
     }
   }
+
+  // get user games
+  async getUserGames(id: number) {
+    try {
+      const games = await this.prisma.user.findUnique({
+        where: {
+          id: +id
+        },
+        select: {
+          games: true
+        }
+      });
+      console.log(games);
+      return (games);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 }

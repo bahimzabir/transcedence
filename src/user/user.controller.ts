@@ -64,6 +64,11 @@ export class UserController {
     return this.userService.getNotifications(req);
   }
 
+  @Get('usergames')
+  getUserGames(@Query("id") id: number) {
+    return this.userService.getUserGames(id);
+  }
+
   //// Post Requests
 
   @Post('me')

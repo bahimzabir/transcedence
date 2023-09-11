@@ -13,21 +13,27 @@ export class AuthDto {
 
 
 export class GameRecords {
-    @IsAlphanumeric()
+    @IsNumber()
     @ApiProperty()
     player1Id: number;
-    @IsAlphanumeric()
+    @IsNumber()
     @ApiProperty()
     player2Id: number;
-    @IsAlphanumeric()
+    @IsNumber()
     @ApiProperty()
     player1Score: number;
-    @IsAlphanumeric()
+    @IsNumber()
     @ApiProperty()
     player2Score: number;
     @IsString()
     @ApiProperty()
     type: string;
+    @IsNumber()
+    @ApiProperty()
+    winnerId: number;
+    @IsNumber()
+    @ApiProperty()
+    loserId: number;
 }
 
 class chatroomUserDto {

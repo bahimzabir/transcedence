@@ -10,7 +10,6 @@ export class GameController {
     constructor(private readonly gameservice: GameService) {}
     @Post('gamerecord')
     async addGameRecord(@Body() body: GameRecords) {
-        console.log(body);
         return this.gameservice.createGameRecord(body);
     }
 }

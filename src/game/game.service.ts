@@ -52,21 +52,53 @@ export class GameService {
 	async createGameRecord(body: GameRecords) {
 		
 		try {
-			
-			const game = await this.prisma.game.create({
+            await this.addToWins(body.winnerId);
+            await this.addToLosses(body.loserId);
+
+			await this.prisma.game.create({
 				data: {
-					paleyer1Id: body.player1Id,
-					paleyer2Id: body.player2Id,
+					player1Id: body.player1Id,
+					player2Id: body.player2Id,
 					player1Score: body.player1Score,
 					player2Score: body.player2Score,
-					type: body.type
-			}
-		});
+					type: body.type,
+			    }
+		    });
 		} catch (error) {
-			
+
 		}
 
 	}
+
+    async addToWins(id: number) {
+        try {
+            await this.prisma.user.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    wins: {increment: 1}
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async  addToLosses(id: number) {
+        try {
+            await this.prisma.user.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    losses: {increment: 1}
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
 
 }
