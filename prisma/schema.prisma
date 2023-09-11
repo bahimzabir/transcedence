@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "postgresqlExtensions", "orderByRelation"]
+  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
 }
 
 datasource db {
@@ -30,8 +30,8 @@ model User {
 
   wins          Int @default(0)
   losses        Int @default(0)
-  game          game[] @relation("player1")
-  gamewith      game[] @relation("player2")
+  games            game[] @relation("player1")
+  gameswith        game[] @relation("player2")
 
   notifications Notification[]
   roomUsers     RoomUser[]
@@ -151,10 +151,10 @@ model game {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  paleyer1 User @relation("player1", fields: [paleyer1Id], references: [id])
-  paleyer1Id Int
-  paleyer2 User @relation("player2" ,fields: [paleyer2Id], references: [id])
-  paleyer2Id Int
+  player1 User @relation("player1", fields: [player1Id], references: [id])
+  player1Id Int
+  player2 User @relation("player2" ,fields: [player2Id], references: [id])
+  player2Id Int
 
   player1Score Int
   player2Score Int

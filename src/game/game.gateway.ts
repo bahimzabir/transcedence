@@ -18,6 +18,7 @@ import { Console } from 'console';
 import { RouterModule } from '@nestjs/core';
 import { Injectable } from '@nestjs/common';
 import { StreamGateway } from './stream.gateway';
+import { ConfigService } from '@nestjs/config';
 
 
 interface Ball {
@@ -60,8 +61,11 @@ const socketConfig = {
 @WebSocketGateway( socketConfig )
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
-	constructor(private gameService: GameService,
-		private streamGateway: StreamGateway) {}
+	constructor(
+		private gameService: GameService,
+		private streamGateway: StreamGateway,
+		private config: ConfigService
+	) {}
 
 	@WebSocketServer()
 	server: Server;
@@ -74,7 +78,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
 
-		const jwtPayload : any = jwt.verify(jwtToken, "8048af480a486c120bbca102e154762505e0a898");
+		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 
 		let player: Player = {
@@ -194,10 +198,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     	// Calculate the bounce angle based on the normalized delta
     	const bounceAngle = normalizedDeltaY * maxBounceAngle;
-
-
-    	// You might also adjust the ball's speed to make the game more dynamic
-    	// For example, you can increase the ball's speed with each bounce.
 
     	// Update the ball's velocity based on the new angle
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
