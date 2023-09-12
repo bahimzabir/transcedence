@@ -30,6 +30,7 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
+    done: boolean;
 }
 
 @Injectable()
@@ -57,17 +58,22 @@ export class GameService {
 
 			await this.prisma.game.create({
 				data: {
-					player1Id: body.player1Id,
-					player2Id: body.player2Id,
+                    players: {
+                        connect: [
+                            { id: body.player1Id },
+                            { id: body.player2Id },
+                        ],
+                    },
+                    player1Id: body.player1Id,
+                    player2Id: body.player2Id,
 					player1Score: body.player1Score,
 					player2Score: body.player2Score,
 					type: body.type,
 			    }
 		    });
 		} catch (error) {
-
+            console.log(error);
 		}
-
 	}
 
     async addToWins(id: number) {

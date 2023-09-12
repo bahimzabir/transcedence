@@ -47,6 +47,7 @@ interface Room {
 	roomName: string;
 	players: Player[];
 	data: GameData;
+	done: boolean;
 }
 
 const socketConfig = {
@@ -111,6 +112,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
+				done: false
 			};
 
 			players.forEach(player => {
@@ -177,13 +179,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 
-			if (room.data.leftScore === 9 || room.data.rightScore === 9) {
+			if ((room.data.leftScore === 9 || room.data.rightScore === 9) &&
+				room.done === false)
+			{
+				room.done = true;
+				console.log("MAAAMAAA SALIIIT");
+				const body = {
+					player1Id: room.players[0].id,
+					player2Id: room.players[1].id,
+					player1Score: room.data.leftScore,
+					player2Score: room.data.rightScore,
+					type: "classic",
+					winnerId: (room.data.leftScore > room.data.rightScore) ? room.players[0].id : room.players[1].id,
+					loserId: (room.data.leftScore < room.data.rightScore) ? room.players[0].id : room.players[1].id
+				};
+				await this.gameService.createGameRecord(body);
 				this.server.to(room.roomName).emit("endMatch");
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
 		}
-		// await this.gameService.updateRooms();
 	}
 
 
