@@ -47,13 +47,11 @@ export class ChatController {
     @Get('joinroom')
     joinRoom(@Req() req, @Query('id') roomdId: number)
     {
-        // console.log("--->", req.user.id, roomdId)
         this.chatService.joinroom(+req.user.id, roomdId);
     }
     @Get('getroomsmgs')
     getroomMgs(@Query('id') roomid: number)
     {
-        console.log("GOT HERE ---> ", roomid);
         return this.chatService.getroommgs(roomid);
     }
     @Get('getdminfos')
@@ -61,10 +59,4 @@ export class ChatController {
     {   
         return this.chatService.getdmroominfos(roomid, +req.user.id);
     }
-    @Post("addmsg")
-    addmsgtoroom(@Req() req: any)
-    {
-        return this.chatService.addmgs(req.body[0], +req.user.id);
-    }
 }
-

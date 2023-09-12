@@ -56,7 +56,6 @@ export class EventsGateway {
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-      console.log("handling connection")
       const cookies = await client.handshake.headers.cookie;
       let userID;
       if (cookies) {
@@ -68,7 +67,6 @@ export class EventsGateway {
           this.onlineUsers.set(userID, [client.id]);
         }
       }
-      console.log(this.onlineUsers);
       // const notifications = await getUnseenNotification(this.prisma, userID);
       // notifications.forEach((notification) => {
       //   client.emit('notification', notification.data);

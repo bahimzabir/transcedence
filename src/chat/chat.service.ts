@@ -42,10 +42,11 @@ export class ChatService {
     try {
       const search = await this.prisma.chatRoom.findFirst({
         where:{
-          AND: [
-            {senderID: +req.user.id},
-            {receiverID: +body.receiver},
-          ]
+          OR: [
+          { AND: [ {senderID: +req.user.id},{receiverID: +body.receiver}]},
+          { AND: [ {senderID: +body.receiver},{receiverID: +req.user.id}]}
+        ],
+    
         }
       });
       if(search)
@@ -203,8 +204,6 @@ export class ChatService {
 
   async joinroom(userId:number, roomId:number)
   {
-    console.log("userID", userId);
-    console.log("roomID", roomId);
       try {
         const roomUser = await this.prisma.roomUser.create({
           data: {
@@ -244,9 +243,22 @@ export class ChatService {
       console.log(error);
     }
   }
-  async addmgs(dto: CreateChatDto, userid: number)
+
+  async getUserfreindship(user1: number, user2: number)
   {
-      this.create(dto, userid);
+    try {
+      const freindship = await this.prisma.friendShip.findFirst({
+        where: {
+          OR: [
+            { AND: [ {user1: user1},{user1: user2}]},
+            { AND: [ {user2: user2},{user2: user1}]}
+          ],
+        },
+      })
+      return freindship;
+    } catch (error) {
+      console.log(error);
+    }
   }
   findOne(id: number) {
     return `This action returns a #${id} chat`;

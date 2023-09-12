@@ -20,21 +20,13 @@ export class ChatGateway {
   sockets = new Map<number, Socket>();
 
 
-
-  @SubscribeMessage('newmessage')
-  newMessage(@ConnectedSocket() client: Socket, @MessageBody() createChatDto: CreateChatDto) {
-    console.log("new message received");
-  }
-
   async handleConnection(client: Socket) {
-    console.log("new connection");
     let token = await client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      console.log("----->", id)
       this.sockets.set(id, client);
     }
   }
@@ -50,34 +42,49 @@ export class ChatGateway {
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
-    console.log("dto id ", dto[0].id)
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      
-      this.chatService.create(dto[0], id);
-      const ids = await this.prisma.roomUser.findMany({
+      const ids = await this.prisma.chatRoom.findMany({
         where: {
-          roomId: dto[0].id,
+          id: dto[0].id,
         },
         select:{
-          userId: true,
+          members: {
+            select: {
+              id: true,
+            }
+          }
         }
       })
-      for (let index = 0; index < ids.length; index++) {
-        const element = ids[index];
-        if(element.userId !== id)
+      const users = ids[0].members;
+      this.chatService.create(dto[0], id);
+      for (let index = 0; index < users.length; index++) {
+        const userid = users[index].id;
+        if(userid !== id)
         {
-          let userid = undefined;
-          if((userid = element.userId) !== undefined)
+          console.log("HIIII")
+          const freindship = this.chatService.getUserfreindship(id, userid);
+          console.log("-------->", (await freindship).status);
+          const usersocket = this.sockets[userid];
+          if(usersocket)
           {
-            this.server.to(this.sockets.get(+userid).id).emit('newmessage', dto)
+            if((await freindship).status === 'BLOCKED')
+              dto.message = "***************",
+            this.server.to(usersocket.id).emit('newmessage', dto)
           }
           else{
-            this.events.hanldleSendNotification(userid, id, dto);
+            const data = {
+              userId : userid,
+              from: id,
+              type: "message",
+              read: false,
+              data: dto[0],
+            }
+            this.events.hanldleSendNotification(userid, id, data);
           }
         }
       }
@@ -99,7 +106,6 @@ export class ChatGateway {
   update(@MessageBody() updateChatDto: UpdateChatDto) {
     return this.chatService.update(updateChatDto.id, updateChatDto);
   }
-
   @SubscribeMessage('removeChat')
   remove(@MessageBody() id: number) {
     return this.chatService.remove(id);
