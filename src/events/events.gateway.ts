@@ -128,6 +128,7 @@ export class EventsGateway {
       });
       const sockets = this.onlineUsers.get(clientId);
       if (sockets) {
+        console.log("sending notification");
         this.server.to(sockets).emit('notification', data);
       }
     } catch (error) {
