@@ -11,6 +11,20 @@ export class AuthDto {
 }
 
 
+export class NotificationDto{
+    userId: number;
+    from: number;
+    type: string;
+    data: any;
+    read: boolean;
+}
+
+export class messageDto {
+    id: number;
+    message: string;
+    sender: number;
+
+}
 
 export class GameRecords {
     @IsNumber()

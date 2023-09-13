@@ -7,6 +7,10 @@ import { Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { connect } from 'http2';
 import { EventsGateway } from 'src/events/events.gateway';
+import { NotificationDto, messageDto } from 'src/dto';
+enum freindship{
+  BLOCKED
+}
 @WebSocketGateway({
   cors: {
     origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -20,22 +24,14 @@ export class ChatGateway {
   sockets = new Map<number, Socket>();
 
 
-
-  @SubscribeMessage('newmessage')
-  newMessage(@ConnectedSocket() client: Socket, @MessageBody() createChatDto: CreateChatDto) {
-    console.log("new message received");
-  }
-
   async handleConnection(client: Socket) {
-    console.log("new connection");
     let token = await client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      console.log("----->", id)
-      this.sockets.set(id, client);
+      this.sockets[id] = client;
     }
   }
   handleDisconnect(@ConnectedSocket() client: Socket): void {
@@ -49,35 +45,53 @@ export class ChatGateway {
     this.sockets.delete(id);
   }
   @SubscribeMessage('createMessage')
-  async create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
-    console.log("dto id ", dto[0].id)
+  async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      
-      this.chatService.create(dto[0], id);
-      const ids = await this.prisma.roomUser.findMany({
+      const ids = await this.prisma.chatRoom.findMany({
         where: {
-          roomId: dto[0].id,
+          id: dto[0].id,
         },
         select:{
-          userId: true,
+          members: {
+            select: {
+              id: true,
+            }
+          }
         }
       })
-      for (let index = 0; index < ids.length; index++) {
-        const element = ids[index];
-        if(element.userId !== id)
+      const users = ids[0].members;
+      this.chatService.create(dto[0], id);
+      for (let index = 0; index < users.length; index++) {
+        const userid = users[index].id;
+        if(userid !== id)
         {
-          let userid = undefined;
-          if((userid = element.userId) !== undefined)
+          const freindship = await this.chatService.getUserfreindship(id, userid);
+          const usersocket = this.sockets[userid];
+          if(usersocket !== undefined)
           {
-            this.server.to(this.sockets.get(+userid).id).emit('newmessage', dto)
+            // console.log("GOT HERE");
+            // if(freindship.status == 'BLOCKED')
+            // {
+            //   dto[0].message = "***************";
+            // }
+            dto[0].sender = id;
+            this.server.to(usersocket.id).emit('newmessage', dto[0])
           }
           else{
-            this.events.hanldleSendNotification(userid, id, dto);
+            console.log("GOT HERE2222");
+            const data: NotificationDto = {
+              userId: userid,
+              from: id,
+              type: 'message',
+              data: dto,
+              read: false,
+            }
+            this.events.hanldleSendNotification(userid, id, data);
           }
         }
       }
@@ -99,7 +113,6 @@ export class ChatGateway {
   update(@MessageBody() updateChatDto: UpdateChatDto) {
     return this.chatService.update(updateChatDto.id, updateChatDto);
   }
-
   @SubscribeMessage('removeChat')
   remove(@MessageBody() id: number) {
     return this.chatService.remove(id);

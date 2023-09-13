@@ -233,6 +233,12 @@ export class UserService {
         },
         select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
       })
+      this.prisma.friendShip.create({
+        data:{
+          user1: req.user.id,
+          user2: id,
+        }
+      })
       return user;
     } catch (error) {
       return error;
@@ -333,9 +339,9 @@ export class UserService {
           status: FriendStatus.PENDING,
         },
       });
-      this.event.hanldleSendNotification(body.receiver, req.user.id, {
-        type: "friendrequestrecieved", from: user, message: `${user.username} sent you a friend request`
-      });
+      // this.event.hanldleSendNotification(body.receiver, req.user.id, {
+      //   type: "friendrequestrecieved", from: user, message: `${user.username} sent you a friend request`
+      // });
       return friendRequest;
     }
     catch (error) {
@@ -375,9 +381,9 @@ export class UserService {
             },
             select: PrismaTypes.UserBasicIfosSelect,
           });
-          this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
-            type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
-          });
+          // this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
+          //   type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
+          // });
         }
       } else {
         friendRequest = await this.prisma.friendRequest.delete({
