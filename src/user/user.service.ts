@@ -182,8 +182,8 @@ export class UserService {
       })
       return {
         user, friendShip: {
-          sent: friendShip.incomingFriendRequests[0],
-          recieved: friendShip.outgoingFriendRequests[0],
+          recieved: friendShip.incomingFriendRequests[0],
+          sent: friendShip.outgoingFriendRequests[0],
         }
       };
     } catch (error) {
@@ -299,6 +299,13 @@ export class UserService {
               },
             },
           },
+          incomingFriendRequests: {
+            where: {
+              sender: {
+                id: body.receiver,
+              },
+            },
+          },
           ...PrismaTypes.UserBasicIfosSelect,
         },
       });
@@ -308,6 +315,12 @@ export class UserService {
       if (user.outgoingFriendRequests.length > 0) {
         throw new HttpException(
           'Friend request already sent to this user',
+          HttpStatus.CONFLICT,
+        );
+      }
+      if (user.incomingFriendRequests.length > 0) {
+        throw new HttpException(
+          'Friend request already recieved from this user',
           HttpStatus.CONFLICT,
         );
       }
