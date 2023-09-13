@@ -101,7 +101,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				players: players,
 				data: {
 					ball: {
-						x: 500, 
+						x: 500,
 						y: 300,
 						velocityX: 5,
 						velocityY: 0,
