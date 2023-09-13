@@ -18,6 +18,14 @@ export class NotificationDto{
     data: any;
     read: boolean;
 }
+
+export class messageDto {
+    id: number;
+    message: string;
+    sender: number;
+
+}
+
 export class GameRecords {
     @IsNumber()
     @ApiProperty()

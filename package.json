@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "downup": "docker-compose down --rmi all --volumes --remove-orphans && docker-compose up -d && sleep 1 && bun run prisma migrate dev && rm -rf ~/Desktop/transcendence/backend/src/chat/img/*.png",
+    "downup": "docker-compose down --rmi all --volumes --remove-orphans && docker-compose up -d && sleep 1 && npx prisma migrate dev && rm -rf ~/Desktop/transcendence/backend/src/chat/img/*.png",
     "db:dev:rm": "docker compose rm dev-db -s -f -v",
     "db:dev:up": "docker compose up dev-db -d",
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && sleep 2 && npm run prisma:dev:dev &&  sleep 2 && npm run prisma:dev:deploy",

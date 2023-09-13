@@ -7,7 +7,7 @@ import { Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { connect } from 'http2';
 import { EventsGateway } from 'src/events/events.gateway';
-import { NotificationDto } from 'src/dto';
+import { NotificationDto, messageDto } from 'src/dto';
 enum freindship{
   BLOCKED
 }
@@ -45,7 +45,7 @@ export class ChatGateway {
     this.sockets.delete(id);
   }
   @SubscribeMessage('createMessage')
-  async create(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: Socket) {
+  async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
@@ -75,11 +75,12 @@ export class ChatGateway {
           if(usersocket !== undefined)
           {
             // console.log("GOT HERE");
-            if(freindship.status == 'BLOCKED')
-            {
-              dto[0].message = "***************";
-            }
-            this.server.to(usersocket.id).emit('newmessage', dto)
+            // if(freindship.status == 'BLOCKED')
+            // {
+            //   dto[0].message = "***************";
+            // }
+            dto[0].sender = id;
+            this.server.to(usersocket.id).emit('newmessage', dto[0])
           }
           else{
             console.log("GOT HERE2222");
