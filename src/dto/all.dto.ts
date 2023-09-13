@@ -11,7 +11,13 @@ export class AuthDto {
 }
 
 
-
+export class NotificationDto{
+    userId: number;
+    from: number;
+    type: string;
+    data: any;
+    read: boolean;
+}
 export class GameRecords {
     @IsNumber()
     @ApiProperty()

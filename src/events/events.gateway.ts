@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { Global, Injectable } from '@nestjs/common';
+import { NotificationDto } from 'src/dto';
 
 const socketConfig = {
   cors: {
@@ -102,7 +103,7 @@ export class EventsGateway {
   }
 
 
-  async hanldleSendNotification(clientId: number, senderId: number, data: any) {
+  async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
       await this.prisma.notification.create({
         data: {
@@ -113,7 +114,7 @@ export class EventsGateway {
           },
           type: data.type,
           from: senderId,
-          data: data,
+          data: data.data,
         },
       });
       await this.prisma.user.update({

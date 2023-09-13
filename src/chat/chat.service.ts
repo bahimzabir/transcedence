@@ -250,8 +250,8 @@ export class ChatService {
       const freindship = await this.prisma.friendShip.findFirst({
         where: {
           OR: [
-            { AND: [ {user1: user1},{user1: user2}]},
-            { AND: [ {user2: user2},{user2: user1}]}
+            { AND: [ {user1: user1},{user2: user2}]},
+            { AND: [ {user1: user2},{user2: user1}]}
           ],
         },
       })

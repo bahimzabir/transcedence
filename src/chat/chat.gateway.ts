@@ -7,6 +7,10 @@ import { Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { connect } from 'http2';
 import { EventsGateway } from 'src/events/events.gateway';
+import { NotificationDto } from 'src/dto';
+enum freindship{
+  BLOCKED
+}
 @WebSocketGateway({
   cors: {
     origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -27,7 +31,7 @@ export class ChatGateway {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      this.sockets.set(id, client);
+      this.sockets[id] = client;
     }
   }
   handleDisconnect(@ConnectedSocket() client: Socket): void {
@@ -66,23 +70,25 @@ export class ChatGateway {
         const userid = users[index].id;
         if(userid !== id)
         {
-          console.log("HIIII")
-          const freindship = this.chatService.getUserfreindship(id, userid);
-          console.log("-------->", (await freindship).status);
+          const freindship = await this.chatService.getUserfreindship(id, userid);
           const usersocket = this.sockets[userid];
-          if(usersocket)
+          if(usersocket !== undefined)
           {
-            if((await freindship).status === 'BLOCKED')
-              dto.message = "***************",
+            // console.log("GOT HERE");
+            if(freindship.status == 'BLOCKED')
+            {
+              dto[0].message = "***************";
+            }
             this.server.to(usersocket.id).emit('newmessage', dto)
           }
           else{
-            const data = {
-              userId : userid,
+            console.log("GOT HERE2222");
+            const data: NotificationDto = {
+              userId: userid,
               from: id,
-              type: "message",
+              type: 'message',
+              data: dto,
               read: false,
-              data: dto[0],
             }
             this.events.hanldleSendNotification(userid, id, data);
           }
