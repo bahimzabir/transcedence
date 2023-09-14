@@ -120,18 +120,6 @@ enum FriendStatus {
   PENDING
 }
 
-model FriendShip {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user1   Int
-  user2   Int
-
-  status FriendStatus @default(NONE)
-
-}
-
 
 model Notification {
   id        Int      @id @default(autoincrement())
