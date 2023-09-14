@@ -192,11 +192,11 @@ export class UserService {
     }
   }
 
-  async getBlockedUsers(req: any) {
+  async getBlockedUsers(userid: number) {
     try {
       const user = await this.prisma.user.findUnique({
         where: {
-          id: req.user.id,
+          id: userid,
         },
         select: {
           blockedUsers: {select: PrismaTypes.BlockedIfosSelect},
@@ -233,15 +233,16 @@ export class UserService {
         },
         select: {blockedUsers: {select: PrismaTypes.BlockedIfosSelect}},
       })
-      this.prisma.friendShip.create({
+      await this.prisma.friendShip.create({
         data:{
-          user1: req.user.id,
-          user2: id,
+          user1: +req.user.id,
+          user2: +id,
+          status: "BLOCKED"
         }
       })
       return user;
     } catch (error) {
-      return error;
+      console.log(error);
     }
   }
 

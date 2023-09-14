@@ -4,7 +4,7 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
 import { ConnectedSocket } from '@nestjs/websockets';
 @Injectable()
@@ -227,18 +227,50 @@ export class ChatService {
         console.log(error)
       }
   }
-  async getroommgs(id: number)
+  async checkBlockusers(userid: number, messages: any)
+  {
+    const blocklist = await this.Blocklist(userid); //blocklist array of object contain id attribute and message object contain attribute
+    // but i need the sender id if he is in block list i want to delete the message
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+    
+      // Find the index of the sender's ID in the blocklist array
+      const blockedSenderIndex = blocklist.findIndex(item => item.id === message.senderId);
+      console.log("THE ID IS ", blockedSenderIndex);
+      // If the sender's ID is in the blocklist, delete the message
+      if (blockedSenderIndex !== -1) {
+        console.log("GOT HERE");
+        messages.splice(i, 1); // Delete the message
+      }
+    }
+    console.log(blocklist)
+    return messages;
+  }
+  async Blocklist(user: number){
+    const list = await this.prisma.user.findMany({
+      where: {
+        id: user,
+      },
+      select: PrismaTypes.blocklist
+    })
+  return [...list[0].blockedBy, ...list[0].blockedUsers];
+  }
+  async getroommsg(userid: number, id: number)
   {
     try {
-      const msg = await this.prisma.chatRoom.findFirst({
+      let msg = await this.prisma.chatRoom.findFirst({
         where: {
           id: +id,
         },
         select:{
           messages: true,
+          isdm: true,
         }
       })
-      return msg;
+      // console.log("->1")
+      if(!msg.isdm)
+        return this.checkBlockusers(userid, msg.messages)
+      return msg.messages;
     } catch (error) {
       console.log(error);
     }

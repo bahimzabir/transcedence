@@ -31,6 +31,18 @@ export class PrismaTypes {
   }
 
   
+  static blocklist: Prisma.UserSelect = {
+    blockedBy: {
+      select: {
+        id: true,
+      }
+    },
+    blockedUsers: {
+      select: {
+        id: true,
+      }
+    }
+  }
   static UserBasicIfosSelect: Prisma.UserSelect = {
     id: true,
     firstname: true,

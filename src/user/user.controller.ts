@@ -56,7 +56,7 @@ export class UserController {
 
   @Get('me/blocklist')
   getBlockList(@Req() req) {
-    return this.userService.getBlockedUsers(req);
+    return this.userService.getBlockedUsers(req.user.id);
   }
 
   @Get('me/getnotifications')
