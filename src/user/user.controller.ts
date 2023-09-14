@@ -103,6 +103,14 @@ export class UserController {
     return this.userService.fillFriendRequest(req, body);
   }
 
+  @Post('/cancelfriendrequest')
+  cancelFriendRequest(@Req() req: any, @Body() body: FillRequestDto) {
+    return this.userService.cancelFriendRequest(req, body);
+  }
+
+  @Post('cancelfrirndship')
+
+
   @Post('readnotification')
   readNotification(@Req() req: any, @Body() body: UpdateNotificationsDto) {
     return this.userService.readNotification(req, body.id);
