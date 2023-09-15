@@ -4,12 +4,13 @@ import { GameController } from './game.controller';
 import { GameGateway } from './game.gateway';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StreamGateway } from './stream.gateway';
+import { BotGateway } from './bot.gateway';
 
 @Module({
   imports: [
     ScheduleModule.forRoot()
   ],
-  providers: [GameService, GameGateway, StreamGateway],
+  providers: [GameService, GameGateway, StreamGateway, BotGateway],
   controllers: [GameController]
 })
 export class GameModule {}

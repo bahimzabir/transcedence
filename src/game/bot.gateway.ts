@@ -12,12 +12,6 @@ import {
 import * as jwt from "jsonwebtoken"
 
 import { Server, Socket } from "socket.io"
-import { GameService } from './game.service';
-import { UserService } from 'src/user/user.service';
-import { Console } from 'console';
-import { RouterModule } from '@nestjs/core';
-import { Injectable } from '@nestjs/common';
-import { StreamGateway } from './stream.gateway';
 import { ConfigService } from '@nestjs/config';
 
 
@@ -31,8 +25,8 @@ interface Ball {
 
 interface GameData {
 	ball: Ball;
-	leftPlayerY: number;
-	rightPlayerY: number;
+	playerY: number;
+	botY: number;
 	leftScore: number;
 	rightScore: number;
 }
@@ -40,12 +34,11 @@ interface GameData {
 interface Player {
 	socket: Socket;
 	id: number;
-	side: string;
 };
 
 interface Room {
 	roomName: string;
-	players: Player[];
+	player: Player;
 	data: GameData;
 	done: boolean;
 }
@@ -55,79 +48,66 @@ const socketConfig = {
 		origin: ['http://localhost:5173', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
 		credentials: true
 	},
-	namespace: 'game'
+	namespace: 'bot'
 };
 
-@Injectable()
+
 @WebSocketGateway( socketConfig )
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(
-		private gameService: GameService,
-		private streamGateway: StreamGateway,
 		private config: ConfigService
 	) {}
 
 	@WebSocketServer()
 	server: Server;
 
-	private queue: Player[] = [];
-
 	private roomNames: String[] = [];
+    private rooms: Room[] = [];
 
 	async handleConnection(client: Socket) : Promise<void> {
+
+        console.log ("connected in bot socket")
+
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
 
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 
-		let player: Player = {
+        let player: Player = {
 			socket: client,
 			id: userId,
-			side: !(this.queue.length % 2) ? "left" : "right"
 		}
 
-		this.queue.push(player);
+        const roomName: string = this.createNewRoom();
+        player.socket.join(roomName);
+        let room: Room = {
+            roomName: roomName,
+            player: player,
+            data: {
+                ball: {
+                    x: 500,
+                    y: 300,
+                    velocityX: 5,
+                    velocityY: 0,
+                    speed: 5,
+                },
+                botY: 250,
+                playerY: 250,
+                leftScore: 0,
+                rightScore: 0
+            },
+            done: false
+        }
 
-		if (this.queue.length >= 2)
-		{
-			console.log("CREATING ROOM ...");
-			const players = this.queue.splice(0, 2);
-			const roomName: string = this.createNewRoom();
+        this.server.to(room.roomName).emit("join_room", {
+            data: room.data,
+            roomName: room.roomName,
+            playerId: player.id,
+        });
 
-			let room: Room = {
-				roomName: roomName,
-				players: players,
-				data: {
-					ball: {
-						x: 500,
-						y: 300,
-						velocityX: 5,
-						velocityY: 0,
-						speed: 5,
-					},
-					leftPlayerY: 250,
-					rightPlayerY: 250,
-					leftScore: 0,
-					rightScore: 0
-				},
-				done: false
-			};
-
-			players.forEach(player => {
-				player.socket.join(roomName);
-			});
-
-			this.server.to(room.roomName).emit("join_room", {
-				data: room.data,
-				roomName: room.roomName,
-				playerOneId: players[0].id,
-				playerTwoId: players[1].id
-			});
-			await this.gameService.addRoom(room);
-			await this.streamGateway.addRoom(room);
-		}
+        this.rooms.push(room);
 	}
 
 	private createNewRoom() : string {
@@ -149,32 +129,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@Interval(10)
 	async moveBall() {
-		for (let room of this.gameService.getRooms()) {
+		for (let room of this.rooms) {
 			room.data.ball.x += room.data.ball.velocityX;
 			room.data.ball.y += room.data.ball.velocityY;
+
+            await this.moveBotPaddle(room);
 
 			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
 				room.data.ball.velocityY *= -1;
 			}
 			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
 				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				this.resetBall(room);
-
-				this.streamGateway.updateScore(
-					room.roomName,
-					room.data.leftScore,
-					room.data.rightScore
-				);
+				await this.resetBall(room);
 			}
 
-			if (room.data.ball.x <= 10 && (room.data.ball.y > room.data.leftPlayerY && room.data.ball.y < room.data.leftPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
-				this.handlePaddleCollision(room.data.ball, room.data.leftPlayerY);
+			if (room.data.ball.x <= 10 && (room.data.ball.y > room.data.playerY && room.data.ball.y < room.data.playerY+80)) {
+				this.handlePaddleCollision(room.data.ball, room.data.playerY);
 				room.data.ball.velocityX *= -1;
 			}
-			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.rightPlayerY && room.data.ball.y < room.data.rightPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
-				this.handlePaddleCollision(room.data.ball, room.data.rightPlayerY);
+			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.botY && room.data.ball.y < room.data.botY+80)) {
+				this.handlePaddleCollision(room.data.ball, room.data.botY);
 				room.data.ball.velocityX *= -1;
 			}
 			this.server.to(room.roomName).emit("update", room.data);
@@ -184,22 +158,24 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			{
 				room.done = true;
 				console.log("MAAAMAAA SALIIIT");
-				const body = {
-					player1Id: room.players[0].id,
-					player2Id: room.players[1].id,
-					player1Score: room.data.leftScore,
-					player2Score: room.data.rightScore,
-					type: "classic",
-					winnerId: (room.data.leftScore > room.data.rightScore) ? room.players[0].id : room.players[1].id,
-					loserId: (room.data.leftScore < room.data.rightScore) ? room.players[0].id : room.players[1].id
-				};
-				await this.gameService.createGameRecord(body);
 				this.server.to(room.roomName).emit("endMatch");
-				await this.gameService.removeRoom(room.roomName);
-				await this.streamGateway.removeRoom(room.roomName);
 			}
 		}
 	}
+
+    private async moveBotPaddle(room: Room) {
+
+            const paddleCenterY  = room.data.botY + 40;
+            if (room.data.ball.velocityX < 0)
+                return ;
+            if (room.data.ball.y > paddleCenterY) {
+                room.data.botY += 2;
+            }
+            else if (room.data.ball.y < paddleCenterY) {
+                room.data.botY -= 2;
+            }
+
+    }
 
 
 	private handlePaddleCollision(ball: Ball, paddleY: number) {
@@ -218,7 +194,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private resetBall(room: Room) : void  {
+	private async resetBall(room: Room) {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
@@ -236,17 +212,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			return ;
 		}
 
-		if (client === room.players[0].socket && data.posY <= 520) {
-			room.data.leftPlayerY = data.posY;
-		}
-		else if (client === room.players[1].socket && data.posY <= 520) {
-			room.data.rightPlayerY = data.posY;
+		if (client === room.player.socket && data.posY <= 520) {
+			room.data.playerY = data.posY;
 		}
 		this.server.to(data.roomName).emit("update", room.data);
 	}
 
 	private getRoomByName(roomName: string) : Room | undefined {
-		for (let room of this.gameService.getRooms()) {
+		for (let room of this.rooms) {
 			if (room.roomName === roomName) {
 				return room;
 			}
@@ -255,4 +228,3 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 }
-
