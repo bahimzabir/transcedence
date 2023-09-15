@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  const startTime = process.hrtime();
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:5173', 'http://localhost:5173'],
@@ -21,6 +22,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   await app.listen(3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  const endTime = process.hrtime(); // Record the end time
+
+  const elapsedSeconds = endTime[0] - startTime[0];
+  const elapsedMilliseconds = (endTime[1] - startTime[1]) / 1e6;
+  console.log(`NestJS application started in ${elapsedSeconds}s ${elapsedMilliseconds}ms`);
+
 }
 bootstrap();

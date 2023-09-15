@@ -35,6 +35,7 @@ export class ChatGateway {
     }
   }
   handleDisconnect(@ConnectedSocket() client: Socket): void {
+    console.log("socket disconnect");
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
@@ -42,11 +43,13 @@ export class ChatGateway {
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
     }
+    console.log("lenght->", this.sockets.size)
     this.sockets.delete(id);
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     let token = client.handshake.headers.cookie;
+    const olddto = dto[0].message;
     let id: number;
     if (token) {
       token = token.split('=')[1];
@@ -61,29 +64,31 @@ export class ChatGateway {
             select: {
               id: true,
             }
-          }
+          },
+          isdm: true,
         }
       })
       const users = ids[0].members;
-      this.chatService.create(dto[0], id);
       for (let index = 0; index < users.length; index++) {
         const userid = users[index].id;
         if(userid !== id)
         {
-          const freindship = await this.chatService.getUserfreindship(id, userid);
           const usersocket = this.sockets[userid];
           if(usersocket !== undefined)
           {
-            // console.log("GOT HERE");
-            // if(freindship.status == 'BLOCKED')
-            // {
-            //   dto[0].message = "***************";
-            // }
-            dto[0].sender = id;
-            this.server.to(usersocket.id).emit('newmessage', dto[0])
+            console.log(userid, " && ", id)
+            const freindship = await this.chatService.getUserfreindship(id, userid);
+            if(freindship && freindship.status == 'BLOCKED'){
+              if(ids[0].isdm)
+                return false;
+            }
+            else
+            {
+              dto[0].sender = id;
+              this.server.to(usersocket.id).emit('newmessage', dto[0])
+            }
           }
           else{
-            console.log("GOT HERE2222");
             const data: NotificationDto = {
               userId: userid,
               from: id,
@@ -95,6 +100,8 @@ export class ChatGateway {
           }
         }
       }
+      dto[0].message = olddto
+      this.chatService.create(dto[0], id);
       return true;
     }    
   }

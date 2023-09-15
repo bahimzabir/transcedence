@@ -49,10 +49,10 @@ export class ChatController {
     {
         this.chatService.joinroom(+req.user.id, roomdId);
     }
-    @Get('getroomsmgs')
-    getroomMgs(@Query('id') roomid: number)
+    @Get('getroomsmsg')
+    getroomMsg(@Req() req, @Query('id') roomid: number)
     {
-        return this.chatService.getroommgs(roomid);
+        return this.chatService.getroommsg(req.user.id, roomid);
     }
     @Get('getdminfos')
     getdmroominfos(@Req() req, @Query('id') roomid: number)
