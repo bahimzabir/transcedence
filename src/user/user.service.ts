@@ -242,7 +242,6 @@ export class UserService {
           ]
         }
       })
-      console.log("chatdm is ->", dm);
       await this.prisma.chatRoom.delete({
         where:{
           id: dm.id,
