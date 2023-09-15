@@ -121,6 +121,3 @@ export class UserController {
     return this.userService.deleteNotification(req, body.id);
   }
 }
-
-
-

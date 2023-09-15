@@ -233,6 +233,21 @@ export class UserService {
         },
         select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
       })
+      console.log(id , "&&" , req.user.id)
+      const dm = await this.prisma.chatRoom.findFirst({
+        where: {
+          OR: [
+            {AND: [ {senderID: +id},{receiverID: +req.user.id }]},
+            {AND: [ {senderID: +req.user.id},{receiverID: +id }]}
+          ]
+        }
+      })
+      console.log("chatdm is ->", dm);
+      await this.prisma.chatRoom.delete({
+        where:{
+          id: dm.id,
+        }
+      })
       await this.prisma.friendShip.create({
         data:{
           user1: +req.user.id,
@@ -242,6 +257,7 @@ export class UserService {
       })
       return user;
     } catch (error) {
+      console.log(error);
       throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
     }
   }

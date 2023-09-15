@@ -34,6 +34,9 @@ export class ChatService {
       }
     })
     room.name = user.username;
+    const friendship = await this.getUserfreindship(+id, +sender);
+    if(friendship && friendship.status == 'BLOCKED')
+      room.photo = "unknown.jpg";
     room.photo = user.photo;
     return room;
   }
