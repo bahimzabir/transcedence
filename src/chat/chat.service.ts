@@ -12,6 +12,28 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
 
+  async getallrooms(){
+    try{
+      const rooms = await this.prisma.chatRoom.findMany({
+        orderBy: {
+          members: {
+            _count: 'desc', 
+          }
+        },
+        select:{
+          id: true,
+          name: true,
+          photo: true,
+          members_size: true,
+
+        }
+      });
+      return rooms;
+    }
+    catch (error){
+      console.log(error)
+    }
+  }
   async getroomembers(userid: number, roomID: number) {
     const room = await this.prisma.chatRoom.findFirst({
       where: {
@@ -110,37 +132,41 @@ export class ChatService {
 
   async createChatRoom(req, body: ChatRoomBody) {
     try {
-      const chatRoom = await this.prisma.chatRoom.create({
-        data: {
-          name: body.name,
-          members: {
-            connect: {
-              id: req.user.id,
-            }
+      let chatRoom
+      await this.prisma.$transaction(async (tsx)=> {
+        chatRoom = await tsx.chatRoom.create({
+          data: {
+            name: body.name,
+            members: {
+              connect: {
+                id: req.user.id,
+              }
+            },
+            members_size: 1,
+          },
+        });
+        await tsx.chatRoom.update({
+          where: {
+            id: chatRoom.id,
+          },
+          data: {
+            photo: "http://localhost:3000/" + chatRoom.id + "room.png",
           }
-        },
-      });
-      await this.prisma.chatRoom.update({
-        where: {
-          id: chatRoom.id,
-        },
-        data: {
-          photo: "http://localhost:3000/" + chatRoom.id + "room.png",
-        }
-      })
-      const roomUser = await this.prisma.roomUser.create({
-        data: {
-          userId: req.user.id,
-          roomId: chatRoom.id,
-        },
-      });
-      const admin = await this.prisma.roomAdmin.create({
-        data: {
-          roomId: +chatRoom.id,
-          userId: +req.user.id,
-        }
-      })
-      console.log("room created successfully with name of ", chatRoom.name)
+        })
+        const roomUser = await tsx.roomUser.create({
+          data: {
+            userId: req.user.id,
+            roomId: chatRoom.id,
+          },
+        });
+        const admin = await tsx.roomAdmin.create({
+          data: {
+            roomId: +chatRoom.id,
+            userId: +req.user.id,
+          }
+        })
+      })     
+      console.log("chatroom->", chatRoom)
       return chatRoom;
     } catch (error) {
       throw new Error('error occured while creating chat room');
@@ -228,6 +254,18 @@ export class ChatService {
 
   async joinroom(userId: number, roomId: number) {
     try {
+      console.log(userId, " 77 ", roomId)
+      const chat = await this.prisma.chatRoom.findFirst({
+        where:{
+          members:{
+            some:{
+              id: userId,
+            },
+          }
+        }
+      })
+      if(chat)
+        return ;
       await this.prisma.$transaction([
         this.prisma.roomUser.create({
           data: {
@@ -244,7 +282,8 @@ export class ChatService {
               connect: {
                 id: +userId,
               }
-            }
+            },
+            members_size: {increment: 1},
           }
         })
       ]);
