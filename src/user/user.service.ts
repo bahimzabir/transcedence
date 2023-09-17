@@ -62,7 +62,6 @@ export class UserService {
           blockedUsers: true,
           blockedBy: true,
           roomUsers: { select: PrismaTypes.roomUserSelect },
-          roomAdmins: { select: PrismaTypes.roomUserSelect },
         },
       });
       return user;

@@ -41,7 +41,6 @@ export class ChatService {
       },
       select: {
         roomUsers: true,
-        admins: true,
         members:{
           select: {
             username: true,
@@ -157,16 +156,10 @@ export class ChatService {
           data: {
             userId: req.user.id,
             roomId: chatRoom.id,
+            status: 'OWNER'
           },
         });
-        const admin = await tsx.roomAdmin.create({
-          data: {
-            roomId: +chatRoom.id,
-            userId: +req.user.id,
-          }
-        })
       })     
-      console.log("chatroom->", chatRoom)
       return chatRoom;
     } catch (error) {
       throw new Error('error occured while creating chat room');
@@ -213,19 +206,9 @@ export class ChatService {
                   username: true,
                   photo: true,
                 }
-              }
-            }
-          },
-          admins: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                  photo: true,
-                }
-              }
-            }
+              },
+              status: true,
+            },
           },
         },
       });
@@ -242,9 +225,9 @@ export class ChatService {
       select: {
         members: true,
         messages: true,
-        admins: {
-          select: {
-            userId: true,
+        roomUsers:{
+          select:{
+            status: true,
           }
         }
       }
