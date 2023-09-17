@@ -62,7 +62,6 @@ export class UserService {
           blockedUsers: true,
           blockedBy: true,
           roomUsers: { select: PrismaTypes.roomUserSelect },
-          roomAdmins: { select: PrismaTypes.roomUserSelect },
         },
       });
       return user;
@@ -242,7 +241,6 @@ export class UserService {
           ]
         }
       })
-      console.log("chatdm is ->", dm);
       await this.prisma.chatRoom.delete({
         where:{
           id: dm.id,

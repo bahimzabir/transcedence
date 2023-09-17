@@ -12,15 +12,59 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
 
-  async getdmroominfos(id: number, sender: number)
-  {
+  async getallrooms(){
+    try{
+      const rooms = await this.prisma.chatRoom.findMany({
+        orderBy: {
+          members: {
+            _count: 'desc', 
+          }
+        },
+        select:{
+          id: true,
+          name: true,
+          photo: true,
+          members_size: true,
+
+        }
+      });
+      return rooms;
+    }
+    catch (error){
+      console.log(error)
+    }
+  }
+  async getroomembers(userid: number, roomID: number) {
+    const room = await this.prisma.chatRoom.findFirst({
+      where: {
+        id: roomID,
+      },
+      select: {
+        roomUsers: true,
+        members:{
+          select: {
+            username: true,
+            id: true,
+          }
+        }
+      }
+    })
+    
+    const r  = room.members.find((member) => {
+      if (member.id == userid){
+        return true
+      }
+    })
+    return r ? room  : []
+  }
+  async getdmroominfos(id: number, sender: number) {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         id: +id,
       }
     })
     let userid: number;
-    if(sender != room.senderID)
+    if (sender != room.senderID)
       userid = room.senderID;
     else
       userid = room.receiverID;
@@ -35,34 +79,33 @@ export class ChatService {
     })
     room.name = user.username;
     const friendship = await this.getUserfreindship(+id, +sender);
-    if(friendship && friendship.status == 'BLOCKED')
+    if (friendship && friendship.status == 'BLOCKED')
       room.photo = "unknown.jpg";
     room.photo = user.photo;
     return room;
   }
-  async createdm(req, body)
-  {
+  async createdm(req, body) {
     try {
       const search = await this.prisma.chatRoom.findFirst({
-        where:{
+        where: {
           OR: [
-          { AND: [ {senderID: +req.user.id},{receiverID: +body.receiver}]},
-          { AND: [ {senderID: +body.receiver},{receiverID: +req.user.id}]}
-        ],
-    
+            { AND: [{ senderID: +req.user.id }, { receiverID: +body.receiver }] },
+            { AND: [{ senderID: +body.receiver }, { receiverID: +req.user.id }] }
+          ],
+
         }
       });
-      if(search)
+      if (search)
         return false;
       const chatRoom = await this.prisma.chatRoom.create({
         data: {
           isdm: true,
           senderID: +req.user.id,
           receiverID: +body.receiver,
-          members :{
+          members: {
             connect: [
-              {id: req.user.id},
-              {id: body.receiver},
+              { id: req.user.id },
+              { id: body.receiver },
             ]
           }
         }
@@ -81,44 +124,42 @@ export class ChatService {
       })
       return true;
     } catch (error) {
-        console.log({error: "error occured when trying create adm between id " + req.user.id +  " and " + body.receiver})
-        return false;
-      }
+      console.log({ error: "error occured when trying create adm between id " + req.user.id + " and " + body.receiver })
+      return false;
+    }
   }
 
   async createChatRoom(req, body: ChatRoomBody) {
     try {
-      const chatRoom = await this.prisma.chatRoom.create({
-        data: {
-          name: body.name,
-          members:{
-            connect:{
-              id: req.user.id,
-            }
+      let chatRoom
+      await this.prisma.$transaction(async (tsx)=> {
+        chatRoom = await tsx.chatRoom.create({
+          data: {
+            name: body.name,
+            members: {
+              connect: {
+                id: req.user.id,
+              }
+            },
+            members_size: 1,
+          },
+        });
+        await tsx.chatRoom.update({
+          where: {
+            id: chatRoom.id,
+          },
+          data: {
+            photo: "http://localhost:3000/" + chatRoom.id + "room.png",
           }
-        },
-      });
-      await this.prisma.chatRoom.update({
-        where: {
-          id: chatRoom.id,
-        },
-        data:{
-          photo: "http://localhost:3000/" + chatRoom.id + "room.png",
-        }
-      })
-      const roomUser = await this.prisma.roomUser.create({
-        data: {
-          userId: req.user.id,
-          roomId: chatRoom.id,
-        },
-      });
-      const admin = await this.prisma.roomAdmin.create({
-        data:{
-          roomId: +chatRoom.id,
-          userId: +req.user.id,
-        }
-      })
-      console.log("room created successfully with name of ", chatRoom.name)
+        })
+        const roomUser = await tsx.roomUser.create({
+          data: {
+            userId: req.user.id,
+            roomId: chatRoom.id,
+            status: 'OWNER'
+          },
+        });
+      })     
       return chatRoom;
     } catch (error) {
       throw new Error('error occured while creating chat room');
@@ -165,19 +206,9 @@ export class ChatService {
                   username: true,
                   photo: true,
                 }
-              }
-            }
-          },
-          admins: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                  photo: true,
-                }
-              }
-            }
+              },
+              status: true,
+            },
           },
         },
       });
@@ -186,18 +217,17 @@ export class ChatService {
       throw new Error('error occured while getting all chat rooms');
     }
   }
-  async roomInfos(id: number)
-  {
+  async roomInfos(id: number) {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-          id: +id,
+        id: +id,
       },
       select: {
         members: true,
         messages: true,
-        admins: {
-          select: {
-              userId: true,
+        roomUsers:{
+          select:{
+            status: true,
           }
         }
       }
@@ -205,88 +235,86 @@ export class ChatService {
     return room;
   }
 
-  async joinroom(userId:number, roomId:number)
-  {
-      try {
-        const roomUser = await this.prisma.roomUser.create({
+  async joinroom(userId: number, roomId: number) {
+    try {
+      console.log(userId, " 77 ", roomId)
+      const chat = await this.prisma.chatRoom.findFirst({
+        where:{
+          members:{
+            some:{
+              id: userId,
+            },
+          }
+        }
+      })
+      if(chat)
+        return ;
+      await this.prisma.$transaction([
+        this.prisma.roomUser.create({
           data: {
             userId: +userId,
             roomId: +roomId,
           },
-        });
-        await this.prisma.chatRoom.update({
-          where:{ 
+        }),
+        this.prisma.chatRoom.update({
+          where: {
             id: +roomId,
           },
           data: {
             members: {
-              connect:{
+              connect: {
                 id: +userId,
               }
-            }
+            },
+            members_size: {increment: 1},
           }
         })
-      } catch (error) {
-        console.log(error)
-      }
-  }
-  async checkBlockusers(userid: number, messages: any)
-  {
-    const blocklist = await this.Blocklist(userid); //blocklist array of object contain id attribute and message object contain attribute
-    // but i need the sender id if he is in block list i want to delete the message
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const message = messages[i];
-    
-      // Find the index of the sender's ID in the blocklist array
-      const blockedSenderIndex = blocklist.findIndex(item => item.id === message.senderId);
-      console.log("THE ID IS ", blockedSenderIndex);
-      // If the sender's ID is in the blocklist, delete the message
-      if (blockedSenderIndex !== -1) {
-        console.log("GOT HERE");
-        messages.splice(i, 1); // Delete the message
-      }
+      ]);
+    } catch (error) {
+      console.log(error)
     }
-    console.log(blocklist)
-    return messages;
   }
-  async Blocklist(user: number){
+  async Blocklist(user: number) {
     const list = await this.prisma.user.findMany({
       where: {
         id: user,
       },
       select: PrismaTypes.blocklist
     })
-  return [...list[0].blockedBy, ...list[0].blockedUsers];
+    return [...list[0].blockedBy, ...list[0].blockedUsers];
   }
-  async getroommsg(userid: number, id: number)
-  {
+  async getroommsg(userid: number, id: number) {
     try {
+      const list = await this.Blocklist(userid);
       let msg = await this.prisma.chatRoom.findFirst({
         where: {
           id: +id,
         },
-        select:{
-          messages: true,
+        select: {
+          messages: {
+            where: {
+              roomId: +id,
+              NOT: {
+                senderId: { in: list.map((user) => user.id) },
+              }
+            }
+          },
           isdm: true,
         }
       })
-      // console.log("->1")
-      if(!msg.isdm)
-        return this.checkBlockusers(userid, msg.messages)
       return msg.messages;
     } catch (error) {
-      console.log(error);
+      return [];
     }
   }
 
-  async getUserfreindship(user1: number, user2: number)
-  {
+  async getUserfreindship(user1: number, user2: number) {
     try {
       const freindship = await this.prisma.friendShip.findFirst({
         where: {
           OR: [
-            { AND: [ {user1: user1},{user2: user2}]},
-            { AND: [ {user1: user2},{user2: user1}]}
+            { AND: [{ user1: user1 }, { user2: user2 }] },
+            { AND: [{ user1: user2 }, { user2: user1 }] }
           ],
         },
       })
@@ -303,7 +331,7 @@ export class ChatService {
   }
 
   remove(id: number) {
-    
+
     return `This action removes a #${id} chat`;
   }
 }
