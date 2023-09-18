@@ -231,6 +231,7 @@ export class ChatService {
   async createChatRoom(req, body: ChatRoomBody) {
     try {
       let chatRoom;
+      console.log('---->',body)
       await this.prisma.$transaction(async (tsx)=> {
         chatRoom = await tsx.chatRoom.create({
           data: {
@@ -241,10 +242,11 @@ export class ChatService {
               }
             },
             members_size: 1,
-            state: body.state,
+            state: body.status,
             password: body.password ? await argon2.hash(body.password) : '',
           },
         });
+        console.log("------>", chatRoom.state)
         await tsx.chatRoom.update({
           where: {
             id: chatRoom.id,
