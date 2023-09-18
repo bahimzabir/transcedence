@@ -48,7 +48,7 @@ const socketConfig = {
 		origin: ['http://localhost:5173', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
 		credentials: true
 	},
-	namespace: 'bot'
+	namespace: 'spectate'
 };
 
 
@@ -65,6 +65,8 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private roomNames: String[] = [];
     private rooms: Room[] = [];
 
+    
+
 	async handleConnection(client: Socket) : Promise<void> {
 
         console.log ("connected in bot socket")
@@ -75,52 +77,15 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 
-        let player: Player = {
+        let spectator: Player = {
 			socket: client,
 			id: userId,
 		}
 
-        const roomName: string = this.createNewRoom();
-        player.socket.join(roomName);
-        let room: Room = {
-            roomName: roomName,
-            player: player,
-            data: {
-                ball: {
-                    x: 500,
-                    y: 300,
-                    velocityX: 5,
-                    velocityY: 0,
-                    speed: 5,
-                },
-                botY: 250,
-                playerY: 250,
-                leftScore: 0,
-                rightScore: 0
-            },
-            done: false
-        }
+        
 
-        this.server.to(room.roomName).emit("join_room", {
-            data: room.data,
-            roomName: room.roomName,
-            playerId: player.id,
-        });
-
-        this.rooms.push(room);
-	}
-
-	private createNewRoom() : string {
-		let roomName: string;
-
-		do {
-			roomName = Math.random().toString(36).substring(7);
-		} while (this.roomNames.includes(roomName));
-
-		this.roomNames.push(roomName);
-
-		return roomName;
-	}
+    }
+        
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
