@@ -1,14 +1,11 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket, Server } from 'socket.io';
-import { Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { connect } from 'http2';
 import { EventsGateway } from 'src/events/events.gateway';
-import { NotificationDto, messageDto } from 'src/dto';
-enum freindship{
+import { NotificationDto, kickuser, messageDto } from 'src/dto';
+enum freindship {
   BLOCKED
 }
 @WebSocketGateway({
@@ -18,92 +15,72 @@ enum freindship{
   },
 })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService, private prisma: PrismaService, private events:EventsGateway) { }
+  constructor(private readonly chatService: ChatService, private prisma: PrismaService, private events: EventsGateway) { }
   @WebSocketServer()
   server: Server;
   sockets = new Map<number, Socket>();
 
 
-  async handleConnection(client: Socket) {
+  async getclientbysocket(client: Socket) {
     let token = await client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
-      this.sockets[id] = client;
+      return id;
     }
+    throw "NOT FOUND";
   }
-  handleDisconnect(@ConnectedSocket() client: Socket): void {
-    console.log("socket disconnect");
-    let token = client.handshake.headers.cookie;
-    let id: number;
-    if (token) {
-      token = token.split('=')[1];
-      const decoded = this.chatService.getUserJwt(token);
-      id = +decoded.sub;
-    }
-    console.log("lenght->", this.sockets.size)
+  async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser) {
+    const userid: number = await this.getclientbysocket(client);
+    this.chatService.kick(userid, dto);
+  }
+
+  async handleConnection(client: Socket) {
+
+    const id: number = await this.getclientbysocket(client);
+    this.sockets[id] = client;
+  }
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+
+    const id: number = await this.getclientbysocket(client);
     this.sockets.delete(id);
+  }
+  sendnotify(receiverid: number, senderid: number , dto: messageDto){
+    const data: NotificationDto = {
+      userId: receiverid,
+      from: senderid,
+      type: 'message',
+      data: dto,
+      read: false,
+    }
+    this.events.hanldleSendNotification(receiverid, senderid, data);
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
-    let token = client.handshake.headers.cookie;
-    const olddto = dto[0].message;
-    let id: number;
-    if (token) {
-      token = token.split('=')[1];
-      const decoded = this.chatService.getUserJwt(token);
-      id = +decoded.sub;
-      const ids = await this.prisma.chatRoom.findMany({
-        where: {
-          id: dto[0].id,
-        },
-        select:{
-          members: {
-            select: {
-              id: true,
-            }
-          },
-          isdm: true,
-        }
-      })
-      const users = ids[0].members;
-      for (let index = 0; index < users.length; index++) {
-        const userid = users[index].id;
-        if(userid !== id)
+    const id = await this.getclientbysocket(client);
+    const room = await this.chatService.getchatroombyid(dto[0].id);
+    room.members.forEach(async (user) => {
+      if(user.id !== id)
+      {
+        if(this.sockets[user.id] !== undefined)
         {
-          const usersocket = this.sockets[userid];
-          if(usersocket !== undefined)
-          {
-            console.log(userid, " && ", id)
-            const freindship = await this.chatService.getUserfreindship(id, userid);
-            if(freindship && freindship.status == 'BLOCKED'){
-              if(ids[0].isdm)
-                return false;
-            }
-            else
-            {
-              dto[0].sender = id;
-              this.server.to(usersocket.id).emit('newmessage', dto[0])
-            }
+          const freindship = await this.chatService.getUserfreindship(id, user.id);
+          if (freindship && freindship.status == 'BLOCKED') {
+            if (room.isdm)
+              return false;
           }
-          else{
-            const data: NotificationDto = {
-              userId: userid,
-              from: id,
-              type: 'message',
-              data: dto,
-              read: false,
-            }
-            this.events.hanldleSendNotification(userid, id, data);
+          else {
+            this.server.to(this.sockets[user.id].id).emit('newmessage', dto[0])
           }
         }
+        else
+          this.sendnotify(user.id, id, dto[0]);
       }
-      dto[0].message = olddto
-      this.chatService.create(dto[0], id);
-      return true;
-    }    
+    })
+    this.chatService.create(dto[0], id);
+    return true;
   }
 
   @SubscribeMessage('findAllChat')

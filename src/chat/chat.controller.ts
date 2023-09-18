@@ -9,12 +9,15 @@ import { RouterModule } from '@nestjs/core';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { Socket } from 'socket.io';
+import {joinroomdto, kickuser } from 'src/dto';
+import { ChatRoomBody } from './entities/chat.entity';
 
 @UseGuards(JwtGard)
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) {
     }
+
     @Post('new')
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
@@ -44,11 +47,10 @@ export class ChatController {
     {
         return this.chatService.roomInfos(id);
     }
-    @Get('joinroom')
-    joinRoom(@Req() req, @Query('id') roomdId: number)
+    @Post('joinroom')
+    joinRoom(@Req() req, @Body() body: joinroomdto)
     {
-        console.log("USERID = ", req.user.id, "ROOMID=", roomdId);
-        this.chatService.joinroom(+req.user.id, roomdId);
+        this.chatService.joinroom(+req.user.id, body);
     }
     @Get('getroomsmsg')
     getroomMsg(@Req() req, @Query('id') roomid: number)
@@ -69,4 +71,14 @@ export class ChatController {
     {   
         return this.chatService.getdmroominfos(roomid, +req.user.id);
     }
+    // @Post('kick')
+    // kickuser(@Req() req, @Body() body: kickuser)
+    // {
+    //     return this.chatService.kick(req.user.id, body);
+    // }
+    // @Post('ban')
+    // banuser(@Req() req, @Body() body: kickuser)
+    // {
+    //     return this.chatService.ban(req.user.id, body);
+    // }
 }
