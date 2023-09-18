@@ -520,7 +520,6 @@ export class UserService {
           chats: true,
         },
       });
-      console.log()
       return chatrooms.chats;
     }
     catch (error) {

@@ -7,11 +7,110 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
 import { ConnectedSocket } from '@nestjs/websockets';
+import { joinroomdto, kickuser } from 'src/dto';
+import * as argon2 from "argon2";
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
-
+  async ban(user: number, dto: kickuser)
+  {
+    const chatroom = this.prisma.$transaction(async(tsx)=>{
+      await tsx.chatRoom.findFirst({
+        where: {
+          id: dto.roomid,
+        },
+      })
+      if(chatroom)
+      {
+        await tsx.chatRoom.update({
+          where: {
+            id: dto.roomid,
+          },
+          data:{
+            members: {
+              disconnect:{
+                id: dto.id,
+              } 
+            },
+            members_size: {decrement: 1},
+            
+            
+          }
+        })
+      }
+    })
+  }
+  async kick(user: number, dto: kickuser) {
+      try {
+        // const userstatus = await this.prisma.roomUser.findFirst({
+        //   where: {
+        //     AND: [{ userId: user }, { roomId: dto.roomid }],
+        //   },
+        //   select: {
+        //     status: true,
+        //   }
+        // })
+        // const kickeduser = await this.prisma.roomUser.findFirst({
+        //   where: {
+        //     AND: [{ userId: dto.id }, { roomId: dto.roomid }],
+        //   },
+        //   select: {
+        //     status: true,
+        //   }
+        // })
+        // if(userstatus.status > kickeduser.status)
+        //   throw new Error("you can't kick this user !!!!STOP PLAYING WITH ME");
+        this.prisma.$transaction(async (tsx)=>{
+          const chatroom = await tsx.chatRoom.findFirst({
+            where:{
+              id: dto.roomid,
+            }
+          })
+          if(chatroom)
+          {
+            await tsx.chatRoom.update({
+              where:{
+                id: dto.roomid,
+              },
+              data:{
+                members: {
+                  disconnect: {
+                    id: dto.id,
+                  }
+                },
+                members_size: {decrement: 1},
+              }
+            })
+            await tsx.roomUser.deleteMany({
+              where: {
+                  AND: [{userId: dto.id}, {roomId: dto.roomid}],
+              }
+            })
+          }
+        })
+      } catch (error) {
+        
+      }
+  }
+  async getchatroombyid(roomID: number)
+  {
+    try{
+      const room = await this.prisma.chatRoom.findFirst({
+        where: {
+          id: roomID,
+        },
+        select: {
+          members: true,
+          isdm: true,
+        }
+      })
+      return room
+    }
+    catch (error){
+      return null;
+    }
+  }
   async getallrooms(){
     try{
       const rooms = await this.prisma.chatRoom.findMany({
@@ -25,7 +124,7 @@ export class ChatService {
           name: true,
           photo: true,
           members_size: true,
-
+          State: true,
         }
       });
       return rooms;
@@ -131,7 +230,7 @@ export class ChatService {
 
   async createChatRoom(req, body: ChatRoomBody) {
     try {
-      let chatRoom
+      let chatRoom;
       await this.prisma.$transaction(async (tsx)=> {
         chatRoom = await tsx.chatRoom.create({
           data: {
@@ -142,6 +241,8 @@ export class ChatService {
               }
             },
             members_size: 1,
+            State: body.state,
+            password: body.password ? await argon2.hash(body.password) : '',
           },
         });
         await tsx.chatRoom.update({
@@ -235,9 +336,8 @@ export class ChatService {
     return room;
   }
 
-  async joinroom(userId: number, roomId: number) {
+  async joinroom(userId: number, body: joinroomdto) {
     try {
-      console.log(userId, " 77 ", roomId)
       const chat = await this.prisma.chatRoom.findFirst({
         where:{
           members:{
@@ -253,12 +353,12 @@ export class ChatService {
         this.prisma.roomUser.create({
           data: {
             userId: +userId,
-            roomId: +roomId,
+            roomId: +body.id,
           },
         }),
         this.prisma.chatRoom.update({
           where: {
-            id: +roomId,
+            id: +body.id,
           },
           data: {
             members: {

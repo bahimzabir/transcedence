@@ -36,15 +36,13 @@ model User {
   notifications Notification[]
   roomUsers     RoomUser[]
   messages      Message[] 
-  chats         ChatRoom[]
-
+  chats         ChatRoom[] @relation("members")
+  BanneddUser   ChatRoom[] @relation("BannedUser")
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
 
-
   blockedUsers User[] @relation("BlockedUsers")
   blockedBy    User[] @relation("BlockedUsers")
-
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
   incomingFriendRequests FriendRequest[] @relation("IncomingFriendRequests")
 
@@ -57,15 +55,16 @@ model ChatRoom {
   name      String?
   password  String?
   photo     String?
-  isPrivate Boolean     @default(false)
   isdm      Boolean     @default(false)
   senderID  Int?
   receiverID Int?
   roomUsers RoomUser[]
   messages  Message[]
   ownerID   Int?
-  members   User[]
+  members    User[]      @relation("members")
+  BannedUser User[]     @relation("BannedUser")
   members_size Int?
+  State     String? @default("public")
 }
 
 model Message {

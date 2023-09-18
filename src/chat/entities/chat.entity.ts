@@ -11,6 +11,7 @@ export class ChatRoomBody {
     @IsNumber()
     @IsNotEmpty()
     password?: string;
+    state?: string;
     receiver: number;
     sender: number;
 }
