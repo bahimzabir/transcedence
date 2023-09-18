@@ -124,7 +124,7 @@ export class ChatService {
           name: true,
           photo: true,
           members_size: true,
-          State: true,
+          state: true,
         }
       });
       return rooms;
@@ -241,7 +241,7 @@ export class ChatService {
               }
             },
             members_size: 1,
-            State: body.state,
+            state: body.state,
             password: body.password ? await argon2.hash(body.password) : '',
           },
         });

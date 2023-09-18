@@ -64,7 +64,7 @@ model ChatRoom {
   members    User[]      @relation("members")
   BannedUser User[]     @relation("BannedUser")
   members_size Int?
-  State     String? @default("public")
+  state     String? @default("public")
 }
 
 model Message {
