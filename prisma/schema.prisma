@@ -38,6 +38,7 @@ model User {
   messages      Message[] 
   chats         ChatRoom[] @relation("members")
   BanneddUser   ChatRoom[] @relation("BannedUser")
+  mutedUser     ChatRoom[] @relation("mutedUser")
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
 
@@ -63,6 +64,7 @@ model ChatRoom {
   ownerID   Int?
   members    User[]      @relation("members")
   BannedUser User[]     @relation("BannedUser")
+  mutedUser  User[]     @relation("mutedUser")
   members_size Int?
   state     String? @default("public")
 }

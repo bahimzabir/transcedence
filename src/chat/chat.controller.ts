@@ -71,14 +71,14 @@ export class ChatController {
     {   
         return this.chatService.getdmroominfos(roomid, +req.user.id);
     }
-    // @Post('kick')
-    // kickuser(@Req() req, @Body() body: kickuser)
-    // {
-    //     return this.chatService.kick(req.user.id, body);
-    // }
-    // @Post('ban')
-    // banuser(@Req() req, @Body() body: kickuser)
-    // {
-    //     return this.chatService.ban(req.user.id, body);
-    // }
+    @Post('kick')
+    kickuser(@Req() req, @Body() body: kickuser)
+    {
+        return this.chatService.kick(req.user.id, body);
+    }
+    @Post('ban')
+    banuser(@Req() req, @Body() body: kickuser)
+    {
+        return this.chatService.ban(req.user.id, body);
+    }
 }

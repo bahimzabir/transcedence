@@ -32,9 +32,21 @@ export class ChatGateway {
     }
     throw "NOT FOUND";
   }
-  async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser) {
+  @SubscribeMessage("banuser")
+  async banuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser)
+  {
     const userid: number = await this.getclientbysocket(client);
-    this.chatService.kick(userid, dto);
+    this.chatService.ban(userid, dto[0]);
+  }
+  @SubscribeMessage("kickuser")
+  async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser) {
+    console.log("GOT HERE WIT DTO", dto);
+    const userid: number = await this.getclientbysocket(client);
+    this.chatService.kick(userid, dto[0]);
+    if(this.sockets[dto[0].id])
+    {
+        this.server.to(this.sockets[dto[0].id].emit("kick"));
+    }
   }
 
   async handleConnection(client: Socket) {
@@ -61,6 +73,8 @@ export class ChatGateway {
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     const id = await this.getclientbysocket(client);
     const room = await this.chatService.getchatroombyid(dto[0].id);
+    if(room.members.find((user) => user.id === id) === undefined)
+      return false
     room.members.forEach(async (user) => {
       if(user.id !== id)
       {
@@ -76,10 +90,10 @@ export class ChatGateway {
           }
         }
         else
-          this.sendnotify(user.id, id, dto[0]);
-      }
-    })
-    this.chatService.create(dto[0], id);
+        this.sendnotify(user.id, id, dto[0]);
+    }
+  })
+  this.chatService.create(dto[0], id);
     return true;
   }
 

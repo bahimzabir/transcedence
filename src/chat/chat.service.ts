@@ -34,7 +34,11 @@ export class ChatService {
               } 
             },
             members_size: {decrement: 1},
-            
+            BannedUser: {
+              connect: {
+                id: dto.id
+              }
+            }
             
           }
         })
