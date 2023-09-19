@@ -19,6 +19,7 @@ import { RouterModule } from '@nestjs/core';
 import { Injectable } from '@nestjs/common';
 import { StreamGateway } from './stream.gateway';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 
 
 interface Ball {
@@ -74,6 +75,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private queue: Player[] = [];
 
 	private roomNames: String[] = [];
+	private map = new Map<Socket, number>();
 
 	async handleConnection(client: Socket) : Promise<void> {
 		const cookie = client.handshake.headers.cookie;
@@ -82,9 +84,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 
+		this.map.set(client, userId);
+		console.log(`connected ====> ${userId}`);
+	}
+
+	@SubscribeMessage("join")
+	async joinQueue(@ConnectedSocket() client: Socket) {
 		let player: Player = {
 			socket: client,
-			id: userId,
+			id: this.map.get(client),
 			side: !(this.queue.length % 2) ? "left" : "right"
 		}
 
@@ -130,6 +138,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@SubscribeMessage("spectate")
+	async watchMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+		console.log("watch");
+		client.join(data.roomName);
+		const room = this.getRoomByName(data.roomName);
+		console.log(data.roomName);
+		if (room) {
+			console.log("joined room")
+			client.emit("join_room", {
+				data: room.data,
+				roomName: room.roomName,
+				playerOneId: room.players[0].id,
+				playerTwoId: room.players[1].id
+			});
+		}
+		else {
+			console.log("no room");
+			client.emit("no_room");
+		}
+	}
+	
+
 	private createNewRoom() : string {
 		let roomName: string;
 
@@ -144,7 +174,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
-		console.log("handle Dis");
+		this.queue = this.queue.filter(player => (player.socket !== client))
 	}
 
 	@Interval(10)
@@ -183,7 +213,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				room.done === false)
 			{
 				room.done = true;
-				console.log("MAAAMAAA SALIIIT");
+				console.log("MAAAMAAA SALIIIT 1");
 				const body = {
 					player1Id: room.players[0].id,
 					player2Id: room.players[1].id,
@@ -198,6 +228,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
+			if ((room.players[0].socket.disconnected || room.players[0].socket.disconnected) && 
+				room.done === false)
+			{
+				room.done = true;
+				console.log("MAAAMAAA SALIIIT 2");
+				const body = {
+					player1Id: room.players[0].id,
+					player2Id: room.players[1].id,
+					player1Score: room.data.leftScore,
+					player2Score: room.data.rightScore,
+					type: "classic",
+					winnerId: (room.players[1].socket.disconnected) ? room.players[0].id : room.players[1].id,
+					loserId: (room.players[0].socket.disconnected) ? room.players[1].id : room.players[0].id
+				};
+				await this.gameService.createGameRecord(body);
+				this.server.to(room.roomName).emit("endMatch");
+				await this.gameService.removeRoom(room.roomName);
+				await this.streamGateway.removeRoom(room.roomName);
+			}
+
 		}
 	}
 
@@ -253,6 +303,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		return undefined;
 	}
+
+
 
 }
 

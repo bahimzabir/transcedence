@@ -124,7 +124,7 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
-		console.log("handle Dis");
+		
 	}
 
 	@Interval(10)
