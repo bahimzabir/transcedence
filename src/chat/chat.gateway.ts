@@ -40,9 +40,10 @@ export class ChatGateway {
   }
   @SubscribeMessage("kickuser")
   async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser) {
-    console.log("GOT HERE WIT DTO", dto);
     const userid: number = await this.getclientbysocket(client);
-    this.chatService.kick(userid, dto[0]);
+    const rvalue = await this.chatService.kick(userid, dto[0])
+    if(typeof rvalue === 'string')
+      this.server.to(this.sockets[userid]).emit("error", rvalue);
     if(this.sockets[dto[0].id])
     {
         this.server.to(this.sockets[dto[0].id].emit("kick", dto[0]));
