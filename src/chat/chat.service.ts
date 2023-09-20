@@ -13,6 +13,36 @@ import * as argon2 from "argon2";
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
 
+
+  async mute(user:number, dto:kickuser)
+  {
+      this.prisma.$transaction(async (tsx)=> {
+        const chatroom = await tsx.chatRoom.findFirst({
+          where:{
+            id: dto.id,
+          },
+          select:{
+            members: true,
+          }
+        })
+        if(chatroom)
+        {
+          tsx.chatRoom.update({
+            where: {
+              id: dto.roomid,
+            },
+            data:{
+              mutedUser: {
+                connect:{
+                  id: dto.id,
+                }
+              }
+            }
+          })
+        }
+      })
+      
+  }
   async ban(user: number, dto: kickuser)
   {
     const chatroom = this.prisma.$transaction(async(tsx)=>{
@@ -107,6 +137,7 @@ export class ChatService {
         select: {
           members: true,
           isdm: true,
+          mutedUser: true,
         }
       })
       return room

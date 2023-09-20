@@ -45,7 +45,7 @@ export class ChatGateway {
     this.chatService.kick(userid, dto[0]);
     if(this.sockets[dto[0].id])
     {
-        this.server.to(this.sockets[dto[0].id].emit("kick"));
+        this.server.to(this.sockets[dto[0].id].emit("kick", dto[0]));
     }
   }
 
@@ -73,7 +73,7 @@ export class ChatGateway {
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     const id = await this.getclientbysocket(client);
     const room = await this.chatService.getchatroombyid(dto[0].id);
-    if(room.members.find((user) => user.id === id) === undefined)
+    if(room.members.find((user) => user.id === id) === undefined || room.mutedUser.find((muted)=> muted.id === id))
       return false
     room.members.forEach(async (user) => {
       if(user.id !== id)
