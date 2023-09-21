@@ -9,9 +9,10 @@ import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { GoogleStrategy } from './google/google.strategy';
 import { GoogleAuthController } from './auth.controller';
 import { WsGuard } from './guard';
+// import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
-  controllers: [AuthController, GoogleAuthController,],
+  controllers: [AuthController, GoogleAuthController],
   providers: [AuthService, FortyTwoStrategy, JwtStartegy, GoogleStrategy, WsGuard],
   exports: [WsGuard],
 })

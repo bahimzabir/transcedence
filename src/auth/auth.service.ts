@@ -10,14 +10,90 @@ import { promises as fs } from 'fs';
 import * as path from 'path'
 import respone from 'express'
 import { buffer } from 'stream/consumers';
+import { authenticator } from 'otplib';
+import { toFileStream } from 'qrcode';
+import { Response } from 'express';
+// import { UserService } from 'src/user/user.service';
+import { UserTfaDto } from 'src/dto/all.dto';
+import TokenPayload from './interfaces/tokenPayload.interface';
+
 @Injectable({})
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    // private readonly userService: UserService,
   ) {}
 
+
+
+
+//   // towFA
+
+  async generateTwoFactorAuthenticationSecret(user: UserTfaDto) {
+    const secret = authenticator.generateSecret();
+    const otpauthUrl = authenticator.keyuri(
+      user.username,
+      this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
+      secret,
+    );
+    // await this.userService.setTwoFactorAuthenticationSecret(secret, user.userId);
+    await this.prisma.user.update({
+      where: {
+        id: user.userId,
+      },
+      data: {
+        twoFactorAuthSecret: secret,
+      },
+    });
+    return {
+      secret,
+      otpauthUrl,
+    };
+  }
+
+  async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+    return toFileStream(stream, otpauthUrl);
+  }
+
+  async turnOnTwoFactorAuthentication(userId: number) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        isTowFactorAuthEnabled: true,
+      },
+    });
+  }
+
+  async turnOffTwoFactorAuthentication(userId: number) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        isTowFactorAuthEnabled: false,
+      },
+    });
+  }
+
+  public isTwoFactorAuthenticationCodeValid(
+    twoFactorAuthenticationCode: string,
+    user: UserTfaDto,
+  ) {
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: user.twoFactorAuthenticationSecret,
+    });
+  }
+
+  public getCookieForLogOut() {
+    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+  }
+
+  ///
   downloadimg(url: string, id: number)
   {
     const filepath = path.join(__dirname, '../../src/chat/img/');
@@ -67,7 +143,6 @@ export class AuthService {
       msg: 'user already exist',
       user,
       token: await this.generateToken(user),
-      
     };
   }
 
@@ -77,6 +152,19 @@ export class AuthService {
       expiresIn: '1d',
       secret: this.config.get('JWT_SECRET'),
     });
+  }
+  public getCookieWithJwtAccessToken(
+    userId: number,
+    isSecondFactorAuthenticated = false,
+  ) {
+    const payload: TokenPayload = { userId, isSecondFactorAuthenticated };
+    const token = this.jwtService.sign(payload, {
+      secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
+      expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
+    });
+    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
+      'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+    )}`;
   }
 }
 

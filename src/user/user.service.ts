@@ -31,6 +31,11 @@ export class UserService {
     }
   }
 
+  // two factor authentication
+  // async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
+    
+  // }
+
   // get user friends
   async getUserFriends(req: any) {
     try {
@@ -481,7 +486,7 @@ export class UserService {
       })
       return user;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -490,7 +495,7 @@ export class UserService {
     try {
       const games = await this.prisma.user.findUnique({
         where: {
-          id: +id
+          id: +id,
         },
         select: {
           games: true,

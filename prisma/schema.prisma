@@ -48,6 +48,9 @@ model User {
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
   incomingFriendRequests FriendRequest[] @relation("IncomingFriendRequests")
 
+  isTowFactorAuthEnabled Boolean @default(false)
+  twoFactorAuthSecret    String?
+
 }
 
 model ChatRoom {

@@ -11,6 +11,20 @@ export class AuthDto {
 }
 
 
+export class TwoFactorAuthenticationCodeDto {
+  @IsString()
+  @IsNotEmpty()
+  twoFactorAuthenticationCode: string;
+}
+export class UserTfaDto {
+    @ApiProperty()
+    username: string;
+    @ApiProperty()
+    userId: number;
+    @ApiProperty()
+    twoFactorAuthenticationSecret: string;
+}
+
 
 export class GameRecords {
     @IsNumber()
@@ -46,26 +60,33 @@ class chatroomUserDto {
 
 
 export class UserUpdateDto {
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-    bio?: string;
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-    photo?: string;
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-    username?: string;
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-    firstname?: string;
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-    lastname?: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  bio?: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  photo?: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  username?: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  firstname?: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  lastname?: string;
+  @IsOptional()
+  @ApiProperty()
+  isTowFactorAuthEnabled: boolean;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  twoFactorAuthSecret: string;
 }
 
 

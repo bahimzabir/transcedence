@@ -16,7 +16,7 @@ export class JwtGard extends AuthGuard('jwt') {
 @Injectable()
 export class WsGuard implements CanActivate {
 
-  constructor(private config: ConfigService, private prisma: PrismaService) { }
+  constructor(private config: ConfigService, private prisma: PrismaService) {}
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
