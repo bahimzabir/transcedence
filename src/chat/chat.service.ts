@@ -156,6 +156,7 @@ export class ChatService {
         where: {
           NOT: {
             isdm: true,
+            state: 'private',
           }
         },
         orderBy: {
@@ -275,7 +276,6 @@ export class ChatService {
   async createChatRoom(req, body: ChatRoomBody) {
     try {
       let chatRoom;
-      console.log('---->',body)
       await this.prisma.$transaction(async (tsx)=> {
         chatRoom = await tsx.chatRoom.create({
           data: {
@@ -290,7 +290,6 @@ export class ChatService {
             password: body.password ? await argon2.hash(body.password) : '',
           },
         });
-        console.log("------>", chatRoom.state)
         await tsx.chatRoom.update({
           where: {
             id: chatRoom.id,
@@ -381,9 +380,14 @@ export class ChatService {
     })
     return room;
   }
-
+  async isprotected(roompassword: string, password:string): Promise<boolean>
+  {
+    const hashedpassword = await argon2.hash(password)
+    if(password == roompassword)
+      return true;
+    throw ({status: 200, type:"popuperror", message:"WRONG PASSWORD"});
+  }
   async joinroom(userId: number, body: joinroomdto) {
-    console.log("userid---->", userId, body)
     try {
       const chat = await this.prisma.chatRoom.findUnique({
         where:{
@@ -396,13 +400,14 @@ export class ChatService {
         },
         select: {
           members: true,
+          state: true,
+          password: true,
         }
       })
+      if(chat.state == 'protected')
+        this.isprotected(chat.password, body.password)
       if(chat)
-      {
-        console.log(chat.members);
-        return ;
-      }
+          return ;
       await this.prisma.$transaction([
         this.prisma.roomUser.create({
           data: {
@@ -428,6 +433,7 @@ export class ChatService {
       console.log(error)
     }
   }
+
   async Blocklist(user: number) {
     const list = await this.prisma.user.findMany({
       where: {
@@ -437,6 +443,7 @@ export class ChatService {
     })
     return [...list[0].blockedBy, ...list[0].blockedUsers];
   }
+
   async getroommsg(userid: number, id: number) {
     try {
       const list = await this.Blocklist(userid);

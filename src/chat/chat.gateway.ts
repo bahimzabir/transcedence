@@ -4,7 +4,7 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
-import { NotificationDto, kickuser, messageDto } from 'src/dto';
+import { NotificationDto, chatroomRequest, kickuser, messageDto } from 'src/dto';
 enum freindship {
   BLOCKED
 }
@@ -65,6 +65,7 @@ export class ChatGateway {
       userId: receiverid,
       from: senderid,
       type: 'message',
+      photo: `http://localhost:3000/${senderid}.png`,
       data: dto,
       read: false,
     }
@@ -111,6 +112,23 @@ export class ChatGateway {
   @SubscribeMessage('updateChat')
   update(@MessageBody() updateChatDto: UpdateChatDto) {
     return this.chatService.update(updateChatDto.id, updateChatDto);
+  }
+
+  @SubscribeMessage("invite")
+  async invitToRoom(@MessageBody() body: chatroomRequest, @ConnectedSocket() client: Socket) {
+    console.log("GOT HERE");
+    const dto: chatroomRequest = body[0];
+    console.log(dto);
+    const clientid: number = await this.getclientbysocket(client);
+    const notify: NotificationDto = {
+        userId: dto.userid,
+        from: clientid,
+        type: 'roomrequest',
+        photo: `http://localhost:3000/${dto.roomid}.png`,
+        data: dto,
+        read: false,
+    }
+    this.events.hanldleSendNotification(body.userid, clientid, notify)
   }
   @SubscribeMessage('removeChat')
   remove(@MessageBody() id: number) {
