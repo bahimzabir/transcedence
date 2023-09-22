@@ -109,12 +109,13 @@ export class EventsGateway {
         data: {
           user: {
             connect: {
-              id: clientId,
+              id: +clientId,
             }
           },
           type: data.type,
           from: senderId,
-          data: data.data,
+          photo: data.photo,
+          username: "",
         },
       });
       await this.prisma.user.update({

@@ -66,7 +66,7 @@ export class ChatGateway {
       from: senderid,
       type: 'message',
       photo: `http://localhost:3000/${senderid}.png`,
-      data: dto,
+      message: dto.message,
       read: false,
     }
     this.events.hanldleSendNotification(receiverid, senderid, data);
@@ -116,19 +116,40 @@ export class ChatGateway {
 
   @SubscribeMessage("invite")
   async invitToRoom(@MessageBody() body: chatroomRequest, @ConnectedSocket() client: Socket) {
-    console.log("GOT HERE");
+    //check if notifaction already sent
+    const notifaction = await this.prisma.notification.findMany({
+      where: {
+        type: 'roomrequest',
+        from: body.userid,
+        roomid: body.roomid,
+      },
+    });
+    if(notifaction.length > 0)
+    {
+      console.log("GOT HERE");
+      this.server.to(client.id).emit("warning");
+      return ;
+      
+    }
     const dto: chatroomRequest = body[0];
     console.log(dto);
     const clientid: number = await this.getclientbysocket(client);
     const notify: NotificationDto = {
-        userId: dto.userid,
-        from: clientid,
-        type: 'roomrequest',
-        photo: `http://localhost:3000/${dto.roomid}.png`,
-        data: dto,
-        read: false,
+      userId: dto.userid,
+      from: clientid,
+      type: 'roomrequest',
+      message: 'you are invited to join a room',
+      photo: `http://localhost:3000/${dto.roomid}.png`,
+      read: false,
     }
-    this.events.hanldleSendNotification(body.userid, clientid, notify)
+
+    try {
+      this.events.hanldleSendNotification(dto.userid, clientid, notify)
+      this.server.to(client.id).emit("success");
+    }
+    catch(error){
+      this.server.to(client.id).emit("error");
+    }
   }
   @SubscribeMessage('removeChat')
   remove(@MessageBody() id: number) {

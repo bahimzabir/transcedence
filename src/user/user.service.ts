@@ -78,10 +78,6 @@ export class UserService {
             id: req.user.id,
           },
         },
-        select: {
-          data: true,
-          read: true,
-        },
         orderBy: {
           createdAt: 'desc',
         },

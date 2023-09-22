@@ -16,7 +16,7 @@ export class NotificationDto{
     from: number;
     photo: string;
     type: string;
-    data: any;
+    message: string;
     read: boolean;
 }
 

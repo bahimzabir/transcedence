@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "downup": "docker-compose down --rmi all --volumes --remove-orphans && docker-compose up -d && sleep 1 && npx prisma migrate dev && rm -rf ~/Desktop/transcendence/backend/src/chat/img/*.png",
+    "downup": "docker-compose down --rmi all --volumes --remove-orphans && docker-compose up -d && sleep 1 && npx prisma migrate dev --name lol  && rm -rf ~/Desktop/transcendence/backend/src/chat/img/*.png",
     "db:dev:rm": "docker compose rm dev-db -s -f -v",
     "db:dev:up": "docker compose up dev-db -d",
     "db:dev:restart": "npm run db:dev:rm && npm run db:dev:up && sleep 2 && npm run prisma:dev:dev &&  sleep 2 && npm run prisma:dev:deploy",
@@ -71,7 +71,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "jest": "^29.5.0",
     "prettier": "^2.8.8",
-    "prisma": "^5.2.0",
+    "prisma": "^5.3.1",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
