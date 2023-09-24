@@ -286,6 +286,11 @@ export class ChatService {
                 id: req.user.id,
               }
             },
+            owner: {
+              connect: {
+                id: req.user.id,
+              }
+            },
             members_size: 1,
             state: body.status,
             password: body.password ? await argon2.hash(body.password) : '',
