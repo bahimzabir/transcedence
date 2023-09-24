@@ -141,8 +141,8 @@ export class ChatGateway {
       message: 'you are invited to join a room',
       photo: `http://localhost:3000/${dto.roomid}.png`,
       read: false,
+      roomid: dto.roomid,
     }
-
     try {
       this.events.hanldleSendNotification(dto.userid, clientid, notify)
       this.server.to(client.id).emit("success");

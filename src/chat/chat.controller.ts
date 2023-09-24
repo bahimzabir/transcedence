@@ -48,7 +48,7 @@ export class ChatController {
         return this.chatService.roomInfos(id);
     }
     @Post('joinroom')
-    joinRoom(@Req() req, @Body() body: joinroomdto)
+    joinRoom(@Req() req, @Body() body: any)
     {
         this.chatService.joinroom(+req.user.id, body);
     }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket } from 'socket.io';
@@ -9,9 +9,10 @@ import { ChatRoomBody } from './entities/chat.entity';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { joinroomdto, kickuser } from 'src/dto';
 import * as argon2 from "argon2";
+import { EventsGateway } from 'src/events/events.gateway';
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) { }
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private event: EventsGateway) { }
 
 
   async mute(user:number, dto:kickuser)
@@ -382,21 +383,15 @@ export class ChatService {
   }
   async isprotected(roompassword: string, password:string): Promise<boolean>
   {
-    const hashedpassword = await argon2.hash(password)
-    if(password == roompassword)
-      return true;
-    throw ({status: 200, type:"popuperror", message:"WRONG PASSWORD"});
+    const isMatch = await argon2.verify(roompassword, password)
+    if(isMatch) return true;
+    else false
   }
   async joinroom(userId: number, body: joinroomdto) {
     try {
-      const chat = await this.prisma.chatRoom.findUnique({
+      const chat = await this.prisma.chatRoom.findFirst({
         where:{
-          id: body.id,
-          members:{
-            some: {
-              id: userId,
-            }
-          },
+          id: +body.id,
         },
         select: {
           members: true,
@@ -404,10 +399,14 @@ export class ChatService {
           password: true,
         }
       })
-      if(chat.state == 'protected')
-        this.isprotected(chat.password, body.password)
-      if(chat)
-          return ;
+      if(chat.state === 'protected') {
+        if(!(await this.isprotected(chat.password, body.password)))
+        {
+          console.log("WRONG PASSWORD");
+          this.event.sendnotify('wrongpassword', userId);
+          return false;
+        }
+      }
       await this.prisma.$transaction([
         this.prisma.roomUser.create({
           data: {
@@ -430,7 +429,7 @@ export class ChatService {
         })
       ]);
     } catch (error) {
-      console.log(error)
+      throw new HttpException('error occured while joining room', 404);
     }
   }
 

@@ -18,6 +18,7 @@ export class NotificationDto{
     type: string;
     message: string;
     read: boolean;
+    roomid?: number;
 }
 
 export class messageDto {
