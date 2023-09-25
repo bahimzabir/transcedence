@@ -14,9 +14,11 @@ export class AuthDto {
 export class NotificationDto{
     userId: number;
     from: number;
+    photo: string;
     type: string;
-    data: any;
+    message: string;
     read: boolean;
+    roomid?: number;
 }
 
 export class messageDto {
@@ -114,4 +116,8 @@ export class  joinroomdto{
     // @IsEmpty()
     @ApiProperty()
     password?: string;
+}
+export class chatroomRequest {
+    roomid: number;
+    userid: number;
 }

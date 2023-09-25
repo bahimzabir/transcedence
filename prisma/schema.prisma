@@ -38,9 +38,10 @@ model User {
   messages      Message[] 
   chats         ChatRoom[] @relation("members")
   BanneddUser   ChatRoom[] @relation("BannedUser")
+  mutedUser     ChatRoom[] @relation("mutedUser")
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
-
+  owneruser  ChatRoom[] @relation("ownerUser")
   blockedUsers User[] @relation("BlockedUsers")
   blockedBy    User[] @relation("BlockedUsers")
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
@@ -60,9 +61,10 @@ model ChatRoom {
   receiverID Int?
   roomUsers RoomUser[]
   messages  Message[]
-  ownerID   Int?
-  members    User[]      @relation("members")
+  owner      User[]     @relation("ownerUser")
+  members    User[]     @relation("members")
   BannedUser User[]     @relation("BannedUser")
+  mutedUser  User[]     @relation("mutedUser")
   members_size Int?
   state     String? @default("public")
 }
@@ -130,6 +132,14 @@ model FriendShip {
 }
 
 
+model Datainter {
+  id Int @id @default(autoincrement())
+  roomid Int
+  userid Int
+  username String?
+  photo String?
+  message String?
+}
 model Notification {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -138,10 +148,14 @@ model Notification {
   user   User @relation(fields: [userId], references: [id])
   userId Int
   from   Int
-  data  Json @default("{}")
   type String
+  roomid Int?
+  message String?
+  photo String
+  username String
   read Boolean @default(false)
 }
+
 
 model game {
   id        Int      @id @default(autoincrement())

@@ -102,19 +102,24 @@ export class EventsGateway {
     }
   }
 
-
+  async sendnotify(val: string, userid: number){
+    this.server.to(this.onlineUsers.get(userid)).emit(val);
+  }
   async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
       await this.prisma.notification.create({
         data: {
           user: {
             connect: {
-              id: clientId,
+              id: +clientId,
             }
           },
           type: data.type,
           from: senderId,
-          data: data.data,
+          photo: data.photo,
+          roomid: data.roomid,
+          message: data.message,
+          username: "",
         },
       });
       await this.prisma.user.update({

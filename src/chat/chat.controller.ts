@@ -48,7 +48,7 @@ export class ChatController {
         return this.chatService.roomInfos(id);
     }
     @Post('joinroom')
-    joinRoom(@Req() req, @Body() body: joinroomdto)
+    joinRoom(@Req() req, @Body() body: any)
     {
         this.chatService.joinroom(+req.user.id, body);
     }
@@ -71,14 +71,4 @@ export class ChatController {
     {   
         return this.chatService.getdmroominfos(roomid, +req.user.id);
     }
-    // @Post('kick')
-    // kickuser(@Req() req, @Body() body: kickuser)
-    // {
-    //     return this.chatService.kick(req.user.id, body);
-    // }
-    // @Post('ban')
-    // banuser(@Req() req, @Body() body: kickuser)
-    // {
-    //     return this.chatService.ban(req.user.id, body);
-    // }
 }

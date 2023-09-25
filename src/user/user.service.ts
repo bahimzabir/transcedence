@@ -78,10 +78,6 @@ export class UserService {
             id: req.user.id,
           },
         },
-        select: {
-          data: true,
-          read: true,
-        },
         orderBy: {
           createdAt: 'desc',
         },
@@ -232,7 +228,6 @@ export class UserService {
         },
         select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
       })
-      console.log(id , "&&" , req.user.id)
       const dm = await this.prisma.chatRoom.findFirst({
         where: {
           OR: [
