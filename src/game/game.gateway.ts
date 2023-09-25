@@ -76,6 +76,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	private roomNames: String[] = [];
 	private map = new Map<Socket, number>();
+	private ids: number[] = [];
 
 	async handleConnection(client: Socket) : Promise<void> {
 		const cookie = client.handshake.headers.cookie;
@@ -83,9 +84,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
-
-		this.map.set(client, userId);
-		console.log(`connected ====> ${userId}`);
+		if (this.ids.includes(userId)) {
+			console.log("user already connected");
+			client.disconnect();
+		}
+		else {
+			this.map.set(client, userId);
+			this.ids.push(userId);
+			console.log(`connected ====> ${userId}`);
+		}
 	}
 
 	@SubscribeMessage("join")
@@ -175,6 +182,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
 		this.queue = this.queue.filter(player => (player.socket !== client))
+		this.ids = this.ids.filter(id => (id !== this.map.get(client)));
+		this.map.delete(client);
 	}
 
 	@Interval(10)
@@ -228,25 +237,25 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
-			if ((room.players[0].socket.disconnected || room.players[0].socket.disconnected) && 
-				room.done === false)
-			{
-				room.done = true;
-				console.log("MAAAMAAA SALIIIT 2");
-				const body = {
-					player1Id: room.players[0].id,
-					player2Id: room.players[1].id,
-					player1Score: room.data.leftScore,
-					player2Score: room.data.rightScore,
-					type: "classic",
-					winnerId: (room.players[1].socket.disconnected) ? room.players[0].id : room.players[1].id,
-					loserId: (room.players[0].socket.disconnected) ? room.players[1].id : room.players[0].id
-				};
-				await this.gameService.createGameRecord(body);
-				this.server.to(room.roomName).emit("endMatch");
-				await this.gameService.removeRoom(room.roomName);
-				await this.streamGateway.removeRoom(room.roomName);
-			}
+			// if ((room.players[0].socket.disconnected || room.players[0].socket.disconnected) && 
+			// 	room.done === false)
+			// {
+			// 	room.done = true;
+			// 	console.log("MAAAMAAA SALIIIT 2");
+			// 	const body = {
+			// 		player1Id: room.players[0].id,
+			// 		player2Id: room.players[1].id,
+			// 		player1Score: room.data.leftScore,
+			// 		player2Score: room.data.rightScore,
+			// 		type: "classic",
+			// 		winnerId: (room.players[1].socket.disconnected) ? room.players[0].id : room.players[1].id,
+			// 		loserId: (room.players[0].socket.disconnected) ? room.players[1].id : room.players[0].id
+			// 	};
+			// 	await this.gameService.createGameRecord(body);
+			// 	this.server.to(room.roomName).emit("endMatch");
+			// 	await this.gameService.removeRoom(room.roomName);
+			// 	await this.streamGateway.removeRoom(room.roomName);
+			// }
 
 		}
 	}
