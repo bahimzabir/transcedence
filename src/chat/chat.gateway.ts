@@ -4,7 +4,7 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
-import { NotificationDto, chatroomRequest, kickuser, messageDto } from 'src/dto';
+import { NotificationDto, chatroomRequest, userevents, messageDto } from 'src/dto';
 enum freindship {
   BLOCKED
 }
@@ -21,7 +21,7 @@ export class ChatGateway {
   sockets = new Map<number, Socket>();
 
 
-  async getclientbysocket(client: Socket) {
+  async   getclientbysocket(client: Socket) {
     let token = await client.handshake.headers.cookie;
     let id: number;
     if (token) {
@@ -32,14 +32,22 @@ export class ChatGateway {
     }
     throw "NOT FOUND";
   }
+
+
+  @SubscribeMessage("setadmin")
+  async setadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
+  {
+    const userid: number = await this.getclientbysocket(client);
+    return this.chatService.setadmin(userid, dto[0]);
+  } 
   @SubscribeMessage("banuser")
-  async banuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser)
+  async banuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
     const userid: number = await this.getclientbysocket(client);
     this.chatService.ban(userid, dto[0]);
   }
   @SubscribeMessage("kickuser")
-  async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: kickuser) {
+  async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents) {
     const userid: number = await this.getclientbysocket(client);
     const rvalue = await this.chatService.kick(userid, dto[0])
     if(typeof rvalue === 'string')
@@ -152,7 +160,8 @@ export class ChatGateway {
     }
   }
   @SubscribeMessage('removeChat')
-  remove(@MessageBody() id: number) {
-    return this.chatService.remove(id);
+  async remove(@ConnectedSocket() client: Socket,@MessageBody() id: number) {
+    const userid: number = await this.getclientbysocket(client);
+    return this.chatService.remove(userid, id);
   }
 }

@@ -9,7 +9,7 @@ import { RouterModule } from '@nestjs/core';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { Socket } from 'socket.io';
-import {joinroomdto, kickuser } from 'src/dto';
+import {joinroomdto, userevents } from 'src/dto';
 import { ChatRoomBody } from './entities/chat.entity';
 
 @UseGuards(JwtGard)
@@ -50,7 +50,7 @@ export class ChatController {
     @Post('joinroom')
     joinRoom(@Req() req, @Body() body: any)
     {
-        this.chatService.joinroom(+req.user.id, body);
+        return this.chatService.joinroom(+req.user.id, body);
     }
     @Get('getroomsmsg')
     getroomMsg(@Req() req, @Query('id') roomid: number)
