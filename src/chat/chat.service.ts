@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket } from 'socket.io';
@@ -6,135 +6,217 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
-import { ConnectedSocket } from '@nestjs/websockets';
-import { joinroomdto, kickuser } from 'src/dto';
+import { ConnectedSocket, WsException } from '@nestjs/websockets';
+import { joinroomdto, systemclass, userevents } from 'src/dto';
 import * as argon2 from "argon2";
 import { EventsGateway } from 'src/events/events.gateway';
+import { async } from 'rxjs';
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private event: EventsGateway) { }
 
 
-  async mute(user:number, dto:kickuser)
-  {
-      this.prisma.$transaction(async (tsx)=> {
-        const chatroom = await tsx.chatRoom.findFirst({
-          where:{
-            id: dto.id,
+  async removeadmin(user: number, dto: userevents) {
+    try {
+      this.prisma.$transaction(async (tsx) => {
+        const chat = await tsx.chatRoom.findFirst({
+          where: {
+            id: dto.roomid,
           },
-          select:{
-            members: true,
+          select: {
+            roomUsers: true,
           }
         })
-        if(chatroom)
+        if(chat.roomUsers.find((roomuser) => {
+          if(roomuser.userId == user && roomuser.status == 'OWNER')
+            return true;
+        }))
         {
-          tsx.chatRoom.update({
-            where: {
-              id: dto.roomid,
+          await tsx.roomUser.update({
+            where:
+            {
+              id: dto.id,
             },
-            data:{
-              mutedUser: {
-                connect:{
-                  id: dto.id,
-                }
-              }
+            data: {
+              status: 'NORMAL',
             }
           })
         }
       })
-      
+    } catch (error) {
+      return new WsException('error occured while removing admin');
+    }
   }
-  async ban(user: number, dto: kickuser)
-  {
-    const chatroom = this.prisma.$transaction(async(tsx)=>{
+  async setadmin(user: number, dto: userevents) {
+    try {
+      console.log("add admine");
+      this.prisma.$transaction(async (tsx) => {
+        const chat = await tsx.chatRoom.findFirst({
+          where: {
+            id: dto.roomid,
+            AND: [
+              { members: { some: { id: dto.id } } },
+              { members: { some: { id: user } } },
+            ],
+          }
+        })
+
+        if (chat) {
+          const roomuser = await tsx.roomUser.findFirst({
+            where: {
+              AND: [
+                { userId: user },
+                { roomId: dto.roomid },
+              ]
+            },
+            select: {
+              status: true,
+              id: true,
+            }
+          })
+          const roomuser2 = await tsx.roomUser.findFirst({
+            where: {
+              AND: [
+                { userId: dto.id },
+                { roomId: dto.roomid },
+              ]
+            },
+            select: {
+              status: true,
+              id: true,
+            }
+          })
+          if (systemclass[roomuser.status] >= systemclass['ADMIN']) {
+            await tsx.roomUser.update({
+              where:
+              {
+                id: roomuser2.id,
+              },
+              data: {
+                status: 'ADMIN',
+              }
+            })
+          }
+        }
+      })
+    }
+    catch (error) {
+      return new WsException('error occured while setting admin');
+    }
+  }
+
+  async mute(user: number, dto: userevents) {
+    this.prisma.$transaction(async (tsx) => {
+      const chatroom = await tsx.chatRoom.findFirst({
+        where: {
+          id: dto.id,
+        },
+        select: {
+          members: true,
+        }
+      })
+      if (chatroom) {
+        tsx.chatRoom.update({
+          where: {
+            id: dto.roomid,
+          },
+          data: { mutedUser: {
+              connect: {
+                id: dto.id,
+              }
+            }
+          }
+        })
+      }
+    })
+
+  }
+  async ban(user: number, dto: userevents) {
+    const chatroom = this.prisma.$transaction(async (tsx) => {
       await tsx.chatRoom.findFirst({
         where: {
           id: dto.roomid,
         },
       })
-      if(chatroom)
-      {
+      if (chatroom) {
         await tsx.chatRoom.update({
           where: {
             id: dto.roomid,
           },
-          data:{
+          data: {
             members: {
-              disconnect:{
+              disconnect: {
                 id: dto.id,
               }
             },
-            members_size: {decrement: 1},
+            members_size: { decrement: 1 },
             BannedUser: {
               connect: {
                 id: dto.id
               }
             }
-            
+
           }
         })
       }
     })
   }
-  async kick(user: number, dto: kickuser) {
-      try {
-        const userstatus = await this.prisma.roomUser.findFirst({
+  async kick(user: number, dto: userevents) {
+    try {
+      const userstatus = await this.prisma.roomUser.findFirst({
+        where: {
+          AND: [{ userId: user }, { roomId: dto.roomid }],
+        },
+        select: {
+          status: true,
+        }
+      })
+      const kickeduser = await this.prisma.roomUser.findFirst({
+        where: {
+          AND: [{ userId: dto.id }, { roomId: dto.roomid }],
+        },
+        select: {
+          status: true,
+        }
+      })
+      if (!kickeduser)
+        throw new Error("this user not any more in this channel")
+      if (userstatus.status < kickeduser.status)
+        throw new Error("you can't kick this user !!!!STOP PLAYING WITH ME");
+      this.prisma.$transaction(async (tsx) => {
+        const chatroom = await tsx.chatRoom.findFirst({
           where: {
-            AND: [{ userId: user }, { roomId: dto.roomid }],
-          },
-          select: {
-            status: true,
+            id: dto.roomid,
           }
         })
-        const kickeduser = await this.prisma.roomUser.findFirst({
-          where: {
-            AND: [{ userId: dto.id }, { roomId: dto.roomid }],
-          },
-          select: {
-            status: true,
-          }
-        })
-        if(!kickeduser)
-          throw new Error("this user not any more in this channel")
-        if(userstatus.status < kickeduser.status)
-          throw new Error("you can't kick this user !!!!STOP PLAYING WITH ME");
-        this.prisma.$transaction(async (tsx)=>{
-          const chatroom = await tsx.chatRoom.findFirst({
-            where:{
-              id: dto.roomid,
+        if (chatroom) {
+          const chat = await tsx.chatRoom.update({
+            where: {
+              id: chatroom.id,
+            },
+            data: {
+              members: {
+                disconnect: {
+                  id: dto.id,
+                },
+              },
+              members_size: { decrement: 1 },
             }
           })
-          if(chatroom)
-          {
-            const chat = await tsx.chatRoom.update({
-              where:{
-                id: chatroom.id,
-              },
-              data:{
-                members: {
-                  disconnect: {
-                    id: dto.id,
-                  },
-                },
-                members_size: {decrement: 1},
-              }
-            })
-            await tsx.roomUser.deleteMany({
-              where: {
-                  AND: [{userId: dto.id}, {roomId: dto.roomid}],
-              }
-            })
-          }
-        })
-      } catch (error) {
-        console.log(error)
-        return error
-      }
-      return true
+          await tsx.roomUser.deleteMany({
+            where: {
+              AND: [{ userId: dto.id }, { roomId: dto.roomid }],
+            }
+          })
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+    return true
   }
-  async getchatroombyid(roomID: number)
-  {
-    try{
+  async getchatroombyid(roomID: number) {
+    try {
       const room = await this.prisma.chatRoom.findFirst({
         where: {
           id: roomID,
@@ -147,25 +229,27 @@ export class ChatService {
       })
       return room
     }
-    catch (error){
+    catch (error) {
       return null;
     }
   }
-  async getallrooms(){
-    try{
+  async getallrooms() {
+    try {
       const rooms = await this.prisma.chatRoom.findMany({
         where: {
           NOT: {
-            isdm: true,
-            state: 'private',
+            OR:[
+              {isdm: true,},
+              {state: 'private'}
+            ]
           }
         },
         orderBy: {
           members: {
-            _count: 'desc', 
+            _count: 'desc',
           }
         },
-        select:{
+        select: {
           id: true,
           name: true,
           photo: true,
@@ -173,9 +257,10 @@ export class ChatService {
           state: true,
         }
       });
+      console.log(rooms)
       return rooms;
     }
-    catch (error){
+    catch (error) {
       console.log(error)
     }
   }
@@ -186,7 +271,7 @@ export class ChatService {
       },
       select: {
         roomUsers: true,
-        members:{
+        members: {
           select: {
             username: true,
             id: true,
@@ -194,13 +279,13 @@ export class ChatService {
         }
       }
     })
-    
-    const r  = room.members.find((member) => {
-      if (member.id == userid){
+
+    const r = room.members.find((member) => {
+      if (member.id == userid) {
         return true
       }
     })
-    return r ? room  : []
+    return r ? room : []
   }
   async getdmroominfos(id: number, sender: number) {
     const room = await this.prisma.chatRoom.findUnique({
@@ -277,16 +362,11 @@ export class ChatService {
   async createChatRoom(req, body: ChatRoomBody) {
     try {
       let chatRoom;
-      await this.prisma.$transaction(async (tsx)=> {
+      await this.prisma.$transaction(async (tsx) => {
         chatRoom = await tsx.chatRoom.create({
           data: {
             name: body.name,
             members: {
-              connect: {
-                id: req.user.id,
-              }
-            },
-            owner: {
               connect: {
                 id: req.user.id,
               }
@@ -311,7 +391,7 @@ export class ChatService {
             status: 'OWNER'
           },
         });
-      })     
+      })
       return chatRoom;
     } catch (error) {
       throw new Error('error occured while creating chat room');
@@ -377,8 +457,8 @@ export class ChatService {
       select: {
         members: true,
         messages: true,
-        roomUsers:{
-          select:{
+        roomUsers: {
+          select: {
             status: true,
           }
         }
@@ -386,28 +466,38 @@ export class ChatService {
     })
     return room;
   }
-  async isprotected(roompassword: string, password:string): Promise<boolean>
-  {
+  async isprotected(roompassword: string, password: string): Promise<boolean> {
     const isMatch = await argon2.verify(roompassword, password)
-    if(isMatch) return true;
+    if (isMatch) return true;
     else false
   }
   async joinroom(userId: number, body: joinroomdto) {
     try {
       const chat = await this.prisma.chatRoom.findFirst({
-        where:{
+        where: {
           id: +body.id,
+          NOT: {
+            members: {
+              some: {
+                id: +userId,
+              }
+            }
         },
-        select: {
-          members: true,
-          state: true,
-          password: true,
-        }
+      },
+      select:{
+        members: true,
+        state: true,
+        password: true,
+      }
       })
+      if(!chat)
+      {
+        throw new HttpException('you are already in this room', 404);
+        return false;
+      }
       if(chat.state === 'protected') {
         if(!(await this.isprotected(chat.password, body.password)))
         {
-          console.log("WRONG PASSWORD");
           this.event.sendnotify('wrongpassword', userId);
           return false;
         }
@@ -429,12 +519,13 @@ export class ChatService {
                 id: +userId,
               }
             },
-            members_size: {increment: 1},
+            members_size: { increment: 1 },
           }
         })
       ]);
+      return HttpStatus.OK;
     } catch (error) {
-      throw new HttpException('error occured while joining room', 404);
+     return error;
     }
   }
 
@@ -495,8 +586,56 @@ export class ChatService {
     return `This action updates a #${id} chat`;
   }
 
-  remove(id: number) {
-
-    return `This action removes a #${id} chat`;
+  async remove(userid: number, id: number) {
+    try {
+      this.prisma.$transaction(async (tsx) => {
+        const chatroom = await this.prisma.chatRoom.findFirst({
+          where: {
+            id: id,
+            members: {
+              some: {
+                id: userid,
+              }
+            }
+          },
+          select: {
+            members: true,
+          }
+        })
+        if (chatroom) {
+          const roomuser = await tsx.roomUser.findFirst({
+            where: {
+              AND: [
+                { userId: userid },
+                { roomId: id },
+              ]
+            },
+            select: {
+              status: true,
+              id: true,
+            }
+          })
+          if (roomuser.status === 'OWNER') {
+            await tsx.chatRoom.delete({
+              where: {
+                id: id,
+              }
+            })
+          }
+        }
+      })
+    } catch (error) {
+      return new WsException('error occured while deleting chat room');
+    }
+  }
+  ismuted(room: any, id: number) {
+    if (room.mutedUser.find((muted) => muted.id === id))
+      return true;
+    return false;
+  }
+  isexist(room: any, id: number) {
+    if (room.members.find((user) => user.id === id))
+      return true;
+    return false;
   }
 }

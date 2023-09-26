@@ -102,7 +102,7 @@ export class UpdateNotificationsDto {
     id: number[];
 }
 
-export class kickuser{
+export class userevents{
     id: number;
     roomid: number;
 }
@@ -120,4 +120,9 @@ export class  joinroomdto{
 export class chatroomRequest {
     roomid: number;
     userid: number;
+}
+export enum systemclass{
+    OWNER = 3,    
+    ADMIN = 2,
+    NORMAL = 1,
 }

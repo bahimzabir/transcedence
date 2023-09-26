@@ -41,7 +41,6 @@ model User {
   mutedUser     ChatRoom[] @relation("mutedUser")
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
-  owneruser  ChatRoom[] @relation("ownerUser")
   blockedUsers User[] @relation("BlockedUsers")
   blockedBy    User[] @relation("BlockedUsers")
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
@@ -61,7 +60,6 @@ model ChatRoom {
   receiverID Int?
   roomUsers RoomUser[]
   messages  Message[]
-  owner      User[]     @relation("ownerUser")
   members    User[]     @relation("members")
   BannedUser User[]     @relation("BannedUser")
   mutedUser  User[]     @relation("mutedUser")
