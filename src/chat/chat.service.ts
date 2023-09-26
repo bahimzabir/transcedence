@@ -18,6 +18,7 @@ export class ChatService {
 
   async setadmin(user: number, dto: userevents) {
     try {
+      console.log("add admine");
       this.prisma.$transaction(async (tsx) => {
         const chat = await tsx.chatRoom.findFirst({
           where: {

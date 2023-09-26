@@ -37,6 +37,7 @@ export class ChatGateway {
   @SubscribeMessage("setadmin")
   async setadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
+    console.log("WLO")
     const userid: number = await this.getclientbysocket(client);
     return this.chatService.setadmin(userid, dto[0]);
   } 
