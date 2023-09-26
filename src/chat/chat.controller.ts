@@ -9,7 +9,7 @@ import { RouterModule } from '@nestjs/core';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { Socket } from 'socket.io';
-import {joinroomdto, kickuser } from 'src/dto';
+import {joinroomdto, userevents } from 'src/dto';
 import { ChatRoomBody } from './entities/chat.entity';
 
 @UseGuards(JwtGard)
