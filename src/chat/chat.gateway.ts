@@ -33,11 +33,15 @@ export class ChatGateway {
     throw "NOT FOUND";
   }
 
-
+  @SubscribeMessage("removeadmin")
+  async removeadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
+  {
+    const userid: number = await this.getclientbysocket(client);
+    return this.chatService.removeadmin(userid, dto[0]);
+  }
   @SubscribeMessage("setadmin")
   async setadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
-    console.log("WLO")
     const userid: number = await this.getclientbysocket(client);
     return this.chatService.setadmin(userid, dto[0]);
   } 
@@ -50,15 +54,17 @@ export class ChatGateway {
   @SubscribeMessage("kickuser")
   async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents) {
     const userid: number = await this.getclientbysocket(client);
-    const rvalue = await this.chatService.kick(userid, dto[0])
-    if(typeof rvalue === 'string')
-      this.server.to(this.sockets[userid]).emit("error", rvalue);
-    if(this.sockets[dto[0].id])
-    {
+    try{
+      const rvalue = await this.chatService.kick(userid, dto[0])
+      if(this.sockets[dto[0].id])
+      {
         this.server.to(this.sockets[dto[0].id].emit("kick", dto[0]));
+      }
+    }
+    catch(error){
+      this.server.to(this.sockets[userid].id).emit("error", error.message);
     }
   }
-
   async handleConnection(client: Socket) {
 
     const id: number = await this.getclientbysocket(client);
@@ -84,8 +90,12 @@ export class ChatGateway {
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
     const id = await this.getclientbysocket(client);
     const room = await this.chatService.getchatroombyid(dto[0].id);
-    if(room.members.find((user) => user.id === id) === undefined || room.mutedUser.find((muted)=> muted.id === id))
+    if(!this.chatService.isexist(room, id)){
+      this.server.to(client.id).emit("error", "you are not in this room");
       return false
+    }
+    if(this.chatService.ismuted(room, id))
+      return false;
     room.members.forEach(async (user) => {
       if(user.id !== id)
       {
@@ -125,7 +135,6 @@ export class ChatGateway {
 
   @SubscribeMessage("invite")
   async invitToRoom(@MessageBody() body: chatroomRequest, @ConnectedSocket() client: Socket) {
-    //check if notifaction already sent
     const notifaction = await this.prisma.notification.findMany({
       where: {
         type: 'roomrequest',
@@ -135,10 +144,8 @@ export class ChatGateway {
     });
     if(notifaction.length > 0)
     {
-      console.log("GOT HERE");
       this.server.to(client.id).emit("warning");
       return ;
-      
     }
     const dto: chatroomRequest = body[0];
     console.log(dto);

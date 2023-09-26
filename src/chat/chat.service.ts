@@ -16,6 +16,37 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private event: EventsGateway) { }
 
 
+  async removeadmin(user: number, dto: userevents) {
+    try {
+      this.prisma.$transaction(async (tsx) => {
+        const chat = await tsx.chatRoom.findFirst({
+          where: {
+            id: dto.roomid,
+          },
+          select: {
+            roomUsers: true,
+          }
+        })
+        if(chat.roomUsers.find((roomuser) => {
+          if(roomuser.userId == user && roomuser.status == 'OWNER')
+            return true;
+        }))
+        {
+          await tsx.roomUser.update({
+            where:
+            {
+              id: dto.id,
+            },
+            data: {
+              status: 'NORMAL',
+            }
+          })
+        }
+      })
+    } catch (error) {
+      return new WsException('error occured while removing admin');
+    }
+  }
   async setadmin(user: number, dto: userevents) {
     try {
       console.log("add admine");
@@ -180,8 +211,7 @@ export class ChatService {
         }
       })
     } catch (error) {
-      console.log(error)
-      return error
+      throw error
     }
     return true
   }
@@ -597,5 +627,15 @@ export class ChatService {
     } catch (error) {
       return new WsException('error occured while deleting chat room');
     }
+  }
+  ismuted(room: any, id: number) {
+    if (room.mutedUser.find((muted) => muted.id === id))
+      return true;
+    return false;
+  }
+  isexist(room: any, id: number) {
+    if (room.members.find((user) => user.id === id))
+      return true;
+    return false;
   }
 }
