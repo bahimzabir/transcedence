@@ -86,6 +86,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {
 			console.log("user already connected");
+			client.emit('inGame');
 			client.disconnect();
 		}
 		else {
@@ -237,7 +238,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
-			// if ((room.players[0].socket.disconnected || room.players[0].socket.disconnected) && 
+			// if ((room.players[0].socket.disconnected || room.players[1].socket.disconnected) && 
 			// 	room.done === false)
 			// {
 			// 	room.done = true;
