@@ -50,7 +50,7 @@ export class ChatController {
     @Post('joinroom')
     joinRoom(@Req() req, @Body() body: any)
     {
-        this.chatService.joinroom(+req.user.id, body);
+        return this.chatService.joinroom(+req.user.id, body);
     }
     @Get('getroomsmsg')
     getroomMsg(@Req() req, @Query('id') roomid: number)

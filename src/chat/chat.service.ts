@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Socket } from 'socket.io';
@@ -156,8 +156,10 @@ export class ChatService {
       const rooms = await this.prisma.chatRoom.findMany({
         where: {
           NOT: {
-            isdm: true,
-            state: 'private',
+            OR:[
+              {isdm: true,},
+              {state: 'private'}
+            ]
           }
         },
         orderBy: {
@@ -173,6 +175,7 @@ export class ChatService {
           state: true,
         }
       });
+      console.log(rooms)
       return rooms;
     }
     catch (error){
@@ -397,17 +400,28 @@ export class ChatService {
       const chat = await this.prisma.chatRoom.findFirst({
         where:{
           id: +body.id,
+          NOT: {
+            members: {
+              some: {
+                id: +userId,
+              }
+            }
         },
-        select: {
-          members: true,
-          state: true,
-          password: true,
-        }
+      },
+      select:{
+        members: true,
+        state: true,
+        password: true,
+      }
       })
+      if(!chat)
+      {
+        throw new HttpException('you are already in this room', 404);
+        return false;
+      }
       if(chat.state === 'protected') {
         if(!(await this.isprotected(chat.password, body.password)))
         {
-          console.log("WRONG PASSWORD");
           this.event.sendnotify('wrongpassword', userId);
           return false;
         }
@@ -433,8 +447,9 @@ export class ChatService {
           }
         })
       ]);
+      return HttpStatus.OK;
     } catch (error) {
-      throw new HttpException('error occured while joining room', 404);
+     return error;
     }
   }
 
