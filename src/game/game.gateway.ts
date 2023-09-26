@@ -20,6 +20,7 @@ import { Injectable } from '@nestjs/common';
 import { StreamGateway } from './stream.gateway';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { EventsGateway } from 'src/events/events.gateway';
 
 
 interface Ball {
@@ -66,7 +67,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private gameService: GameService,
 		private streamGateway: StreamGateway,
-		private config: ConfigService
+		private config: ConfigService,
+		private event: EventsGateway
 	) {}
 
 	@WebSocketServer()
@@ -167,6 +169,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 	
+
+	@SubscribeMessage("challenge")
+	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+		console.log('challenge');
+		await this.event.sendnotify('challenge', data);
+	}
 
 	private createNewRoom() : string {
 		let roomName: string;
