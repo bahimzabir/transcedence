@@ -105,6 +105,11 @@ export class EventsGateway {
   async sendnotify(val: string, userid: number) {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }
+
+  async sendGameRequest(oppId: number, userId: number) {
+    this.server.to(this.onlineUsers.get(userId)).emit("challenge", oppId);
+  }
+
   async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
       await this.prisma.notification.create({

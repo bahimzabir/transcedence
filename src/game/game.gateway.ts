@@ -173,7 +173,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage("challenge")
 	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
 		console.log('challenge');
-		await this.event.sendnotify('challenge', data);
+		await this.event.sendGameRequest(this.map.get(client), data);
 	}
 
 	private createNewRoom() : string {
