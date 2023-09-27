@@ -102,6 +102,8 @@ export class EventsGateway {
     }
   }
 
+  // async notify(data: any, user)
+
   async sendnotify(val: string, userid: number) {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }

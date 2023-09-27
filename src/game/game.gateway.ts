@@ -52,6 +52,7 @@ interface Room {
 	done: boolean;
 }
 
+
 const socketConfig = {
 	cors: {
 		origin: ['http://localhost:5173', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
@@ -59,6 +60,7 @@ const socketConfig = {
 	},
 	namespace: 'game'
 };
+
 
 @Injectable()
 @WebSocketGateway( socketConfig )
@@ -78,6 +80,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	private roomNames: String[] = [];
 	private map = new Map<Socket, number>();
+	private challengers = new Map<number, Socket>();
 	private ids: number[] = [];
 
 	async handleConnection(client: Socket) : Promise<void> {
@@ -172,9 +175,68 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("challenge")
 	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-		console.log('challenge');
+		// console.log('challenge');
 		await this.event.sendGameRequest(this.map.get(client), data);
+		this.challengers.set(this.map.get(client), client)
+		
 	}
+
+	@SubscribeMessage("acceptChallenge")
+	async acceptChallenge(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+		if (this.challengers.has(data)) {
+			const players = [
+				{
+					socket: this.challengers.get(data),
+					id: data,
+					side: "left"
+				},
+				{
+					socket: client,
+					id: this.map.get(client),
+					side: "right"
+				}
+			]
+
+			const roomName: string = this.createNewRoom();
+
+			let room: Room = {
+				roomName: roomName,
+				players: players,
+				data: {
+					ball: {
+						x: 500,
+						y: 300,
+						velocityX: 5,
+						velocityY: 0,
+						speed: 5,
+					},
+					leftPlayerY: 250,
+					rightPlayerY: 250,
+					leftScore: 0,
+					rightScore: 0
+				},
+				done: false
+			};
+
+			players.forEach(player => {
+				player.socket.join(roomName);
+			});
+
+			this.server.to(room.roomName).emit("join_room", {
+				data: room.data,
+				roomName: room.roomName,
+				playerOneId: players[0].id,
+				playerTwoId: players[1].id
+			});
+			await this.gameService.addRoom(room);
+			await this.streamGateway.addRoom(room);
+		}
+		else {
+			this.server.emit('out');
+			this.event.sendnotify('out', this.map.get(client))
+		}
+	}
+
 
 	private createNewRoom() : string {
 		let roomName: string;
@@ -190,8 +252,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
+		console.log("DISCONNECTION");
 		this.queue = this.queue.filter(player => (player.socket !== client))
 		this.ids = this.ids.filter(id => (id !== this.map.get(client)));
+		this.challengers.delete(this.map.get(client));
 		this.map.delete(client);
 	}
 
