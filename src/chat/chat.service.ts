@@ -1,23 +1,22 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
-import { Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
-import { ConnectedSocket, WsException } from '@nestjs/websockets';
+import {WsException } from '@nestjs/websockets';
 import { joinroomdto, systemclass, userevents } from 'src/dto';
 import * as argon2 from 'argon2';
 import { EventsGateway } from 'src/events/events.gateway';
-import { async, timeout } from 'rxjs';
-import { Timeout } from '@nestjs/schedule';
+import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
 @Injectable()
 export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private event: EventsGateway,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async removechat(userid: number, roomid: number) {
@@ -78,7 +77,16 @@ export class ChatService {
           });
           if (rval) {
             if (rval.status === 'OWNER') {
-              if (chat.members_size > 1) chat.roomUsers[0].status = 'OWNER';
+              if (chat.members_size > 1) {
+                await tsx.roomUser.update({
+                  where:{
+                    id: chat.roomUsers[1].id,
+                  },
+                  data: {
+                    status: 'OWNER',
+                  }
+                })
+              }
               else {
                 this.removechat(userid, roomid);
                 return true;
@@ -192,56 +200,56 @@ export class ChatService {
     }
   }
   async mute(user: number, dto: userevents) {
-  try {
-      this.prisma.$transaction(async (tsx) => {
-        const chatroom = await tsx.chatRoom.findFirst({
+    try {
+      const chatroom = await this.prisma.chatRoom.findFirst({
+        where: {
+          id: dto.roomid,
+        },
+        select: {
+          members: true,
+          mutedUser: true,
+        },
+      });
+      if (chatroom) {
+        if (this.ismuted(chatroom, dto.id))
+          throw new Error('user already muted');
+        const  chat = await this.prisma.chatRoom.update({
           where: {
-            id: dto.id,
-            members: {
-              some: {
-                id: user,
+            id: dto.roomid,
+          },
+          data: {
+            mutedUser: {
+              connect: {
+                id: dto.id,
               },
             },
           },
-          select: {
-            members: true,
-          },
         });
-        console.log(chatroom);
-        if (chatroom) {
-          console.log('HIII');
-          tsx.chatRoom.update({
+        const eventloop = setTimeout(async () => {
+          await this.prisma.chatRoom.update({
             where: {
               id: dto.roomid,
             },
             data: {
               mutedUser: {
-                connect: {
+                disconnect: {
                   id: dto.id,
                 },
               },
             },
           });
-          setTimeout(async () => {
-            await tsx.chatRoom.update({
-              where: {
-                id: dto.roomid,
-              },
-              data: {
-                mutedUser: {
-                  disconnect: {
-                    id: dto.id,
-                  },
-                },
-              },
-            });
-            console.log('SHOULD NOW BE UNMUTED');
-          }, 5000); // Unmute after 1 hour
-        }
-      });
-      console.log('NOW MUTED');
-    } catch (error) {
-      console.log(error);
+          // this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
+          console.log('FINISH FUNCTION HERE');
+          this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
+        }, 5000); // Unmute after 1 hour
+        this.schedulerRegistry.addTimeout(
+          `${dto.id}id${dto.roomid}`,
+          eventloop,
+        );
+      }
+    } 
+    catch (error) {
+      throw error
     }
   }
   async ban(user: number, dto: userevents) {
@@ -250,8 +258,19 @@ export class ChatService {
         where: {
           id: dto.roomid,
         },
+        select: {
+          mutedUser: true,
+        },
       });
       if (chatroom) {
+        if (this.ismuted(chatroom, dto.id)) {
+          console.log("gothere")
+          console.log(`${dto.id}id${dto.roomid}`)
+          clearTimeout(
+            this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
+          );
+          this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
+        }
         await tsx.chatRoom.update({
           where: {
             id: dto.roomid,
@@ -297,17 +316,28 @@ export class ChatService {
         throw new Error("you can't kick this user !!!!STOP PLAYING WITH ME");
       await this.prisma.$transaction(async (tsx) => {
         const chatroom = await tsx.chatRoom.findFirst({
-          where: {
+          where:{
             id: dto.roomid,
           },
+          select: {
+            members: true,
+            mutedUser: true,
+            id: true,
+          }
+        
         });
         if (chatroom) {
-          const chat = await tsx.chatRoom.update({
+          await tsx.chatRoom.update({
             where: {
               id: chatroom.id,
             },
             data: {
-              members: {
+              members:{
+                disconnect: {
+                  id: dto.id,
+                },
+              },
+              mutedUser: {
                 disconnect: {
                   id: dto.id,
                 },
@@ -315,6 +345,14 @@ export class ChatService {
               members_size: { decrement: 1 },
             },
           });
+          if (this.ismuted(chatroom, dto.id)) {
+            console.log("gothere")
+            console.log(`${dto.id}id${dto.roomid}`)
+            clearTimeout(
+              this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
+            );
+            this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
+          }
           await tsx.roomUser.deleteMany({
             where: {
               AND: [{ userId: dto.id }, { roomId: dto.roomid }],
@@ -323,6 +361,7 @@ export class ChatService {
         }
       });
     } catch (error) {
+      console.log(error);
       throw error;
     }
     return true;
@@ -732,6 +771,7 @@ export class ChatService {
     }
   }
   ismuted(room: any, id: number) {
+    if (room.mutedUser === undefined) return false;
     if (room.mutedUser.find((muted) => muted.id === id)) return true;
     return false;
   }

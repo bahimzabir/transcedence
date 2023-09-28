@@ -38,7 +38,7 @@ model User {
   messages      Message[] 
   chats         ChatRoom[] @relation("members")
   BanneddUser   ChatRoom[] @relation("BannedUser")
-  mutedUser     ChatRoom[] @relation("mutedUser")
+  mutedUserchats ChatRoom[] @relation("mutedUser")
   friends  User[] @relation("Friends")
   friendOf User[] @relation("Friends")
   blockedUsers User[] @relation("BlockedUsers")

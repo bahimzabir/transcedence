@@ -63,10 +63,13 @@ export class ChatGateway {
   @SubscribeMessage("muteuser")
   async muteuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
-    console.log("GOT HERE")
     const userid: number = this.getclientbysocket(client);
-    this.chatService.mute(userid, dto[0]);
-    console.log("muted now");
+    try {
+        await this.chatService.mute(userid, dto[0]);
+    }
+    catch(error){
+      this.sockets[userid].emit("error", error.message);
+    }
   }
   @SubscribeMessage("setadmin")
   async setadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
@@ -145,21 +148,6 @@ export class ChatGateway {
   })
   this.chatService.create(dto[0], id);
     return true;
-  }
-
-  @SubscribeMessage('findAllChat')
-  findAll() {
-    return this.chatService.findAll();
-  }
-
-  @SubscribeMessage('findOneChat')
-  findOne(@MessageBody() id: number) {
-    return this.chatService.findOne(id);
-  }
-
-  @SubscribeMessage('updateChat')
-  update(@MessageBody() updateChatDto: UpdateChatDto) {
-    return this.chatService.update(updateChatDto.id, updateChatDto);
   }
 
   @SubscribeMessage("invite")
