@@ -57,8 +57,8 @@ export class EventsGateway {
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-      const cookies = await client.handshake.headers.cookie;
-      let userID;
+      const cookies = client.handshake.headers.cookie;
+      let userID: number;
       if (cookies) {
         const token = client.handshake.headers.cookie.split("=")[1];
         userID = await this.validateUser(this.config, this.prisma, true, token);
@@ -80,7 +80,7 @@ export class EventsGateway {
 
   async handleDisconnect(client: Socket): Promise<void> {
     try {
-      const cookies = await client.handshake.headers.cookie;
+      const cookies = client.handshake.headers.cookie;
       if (cookies) {
         const token = cookies.split("=")[1];
         const userID = await this.validateUser(this.config, this.prisma, true, token, null);
@@ -102,9 +102,16 @@ export class EventsGateway {
     }
   }
 
-  async sendnotify(val: string, userid: number){
+  // async notify(data: any, user)
+
+  async sendnotify(val: string, userid: number) {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }
+
+  async sendGameRequest(oppId: number, userId: number) {
+    this.server.to(this.onlineUsers.get(userId)).emit("challenge", oppId);
+  }
+
   async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
       await this.prisma.notification.create({
