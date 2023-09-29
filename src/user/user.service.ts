@@ -7,6 +7,7 @@ import { FriendStatus, Prisma } from '@prisma/client';
 import { FillRequestDto, FriendRequestDto } from 'src/dto';
 import { create } from 'domain';
 import { Http2ServerResponse } from 'http2';
+import { use } from 'passport';
 
 
 
@@ -349,9 +350,14 @@ export class UserService {
           status: FriendStatus.PENDING,
         },
       });
-      // this.event.hanldleSendNotification(body.receiver, req.user.id, {
-      //   type: "friendrequestrecieved", from: user, message: `${user.username} sent you a friend request`
-      // });
+      this.event.hanldleSendNotification(body.receiver, req.user.id, {
+        userId: user.id,
+        type: "friendrequestrecieved",
+        from: body.receiver,
+        photo: user.photo,
+        message: `${user.username} sent you a friend request`,
+        read: false
+      });
       return friendRequest;
     }
     catch (error) {
@@ -392,9 +398,14 @@ export class UserService {
             },
             select: PrismaTypes.UserBasicIfosSelect,
           });
-          // this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
-          //   type: "friendrequestaccepted", from: user, message: `${user.username} accepted your friend request`
-          // });
+          this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
+            userId: user.id,
+            type: "friendrequestaccepted", 
+            from: body.id, 
+            message: `${user.username} accepted your friend request`,
+            photo: user.photo,
+            read: false
+          });
         } else {
           return new HttpException("friend request not found", HttpStatus.NOT_FOUND);
         }
@@ -425,6 +436,33 @@ export class UserService {
         return (friendreq)
       } else {
         return new HttpException('Pending friend request not found', HttpStatus.NOT_FOUND);
+      }
+    } catch (error) {
+      throw new HttpException("database engine can't delete the entity requested", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async removeFriend(req: any, body: FillRequestDto) {
+    try {
+      const friendreq = await this.prisma.friendRequest.delete({
+        where: {
+          id: body.id,
+          OR:[
+            {
+              senderId: req.user.id,
+            },
+            {
+              receiverId: req.user.id,
+            }
+          ],         
+
+          status: FriendStatus.FRIEND
+        },
+      })
+      if (friendreq) {
+        return (friendreq)
+      } else {
+        return new HttpException('friendship not found', HttpStatus.NOT_FOUND);
       }
     } catch (error) {
       throw new HttpException("database engine can't delete the entity requested", HttpStatus.NOT_FOUND);

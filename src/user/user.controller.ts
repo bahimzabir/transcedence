@@ -108,7 +108,10 @@ export class UserController {
     return this.userService.cancelFriendRequest(req, body);
   }
 
-  @Post('cancelfrirndship')
+  @Post('/removefriend')
+  removeFriend(@Req() req: any, @Body() body: FillRequestDto) {
+    return this.userService.removeFriend(req, body);
+  }
 
 
   @Post('readnotification')

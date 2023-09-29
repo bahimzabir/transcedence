@@ -237,6 +237,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	@SubscribeMessage('reject')
+  	async reject(@ConnectedSocket() client: Socket, @MessageBody() userId: number) {
+    	this.event.sendnotify('rejected', userId)
+		client.disconnect();
+    }
+
 
 	private createNewRoom() : string {
 		let roomName: string;
