@@ -1,5 +1,5 @@
 import { AuthGuard } from '@nestjs/passport';
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
@@ -15,12 +15,12 @@ export class JwtGard extends AuthGuard('jwt') {
 
 @Injectable()
 export class WsGuard implements CanActivate {
-
+  
   constructor(private config: ConfigService, private prisma: PrismaService) { }
   canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToWs();
+    ): boolean | Promise<boolean> | Observable<boolean> {
+      const request = context.switchToWs();
     const data = request.getClient<Socket>();
     const cookies = data.handshake.headers.cookie;
     if (cookies) {
@@ -47,5 +47,4 @@ export class WsGuard implements CanActivate {
     throw new WsException('invalid user credentials');
     return false;
   }
-
 }

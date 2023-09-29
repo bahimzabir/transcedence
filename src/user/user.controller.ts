@@ -41,8 +41,8 @@ export class UserController {
   }
 
   @Get('chatrooms')
-  getAllchatRoomsId(@Query('id') id:number) {
-    return this.userService.getallchatrooms(id).then((data) => data);
+  async getAllchatRoomsId(@Query('id') id:number) {
+    return this.userService.getallchatrooms(id);
   }
   @Get('me/friendrequests')
   getFriendRequests(@Req() req) {
