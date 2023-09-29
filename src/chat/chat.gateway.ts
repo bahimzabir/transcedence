@@ -5,6 +5,7 @@ import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { NotificationDto, chatroomRequest, userevents, messageDto } from 'src/dto';
+import { subscribe } from 'diagnostics_channel';
 enum freindship {
   BLOCKED
 }
@@ -21,8 +22,8 @@ export class ChatGateway {
   sockets = new Map<number, Socket>();
 
 
-  async   getclientbysocket(client: Socket) {
-    let token = await client.handshake.headers.cookie;
+  getclientbysocket(client: Socket) {
+    let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
       token = token.split('=')[1];
@@ -33,46 +34,77 @@ export class ChatGateway {
     throw "NOT FOUND";
   }
 
+
+  @SubscribeMessage("rmchat")
+  async removeroom(@ConnectedSocket() client: Socket, @MessageBody() roomid: number)
+  {
+    const userid: number =  this.getclientbysocket(client);
+    this.chatService.removechat(userid, roomid[0]);
+  }
+
+  @SubscribeMessage("leaveroom")
+  async leaveroom(@ConnectedSocket() client:Socket, @MessageBody() roomid: number)
+  {
+    const userid:number = this.getclientbysocket(client)
+    try {
+      this.chatService.leaveroom(userid, roomid[0]);
+      this.server.to(client.id).emit("leavebyexit",  "👋 you left the room");
+    } catch (error) {
+      this.server.to(client.id).emit("error", error);
+    }
+  }
   @SubscribeMessage("removeadmin")
   async removeadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
-    const userid: number = await this.getclientbysocket(client);
+    const userid: number = this.getclientbysocket(client);
     return this.chatService.removeadmin(userid, dto[0]);
+  }
+
+  @SubscribeMessage("muteuser")
+  async muteuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
+  {
+    const userid: number = this.getclientbysocket(client);
+    try {
+        await this.chatService.mute(userid, dto[0]);
+    }
+    catch(error){
+      this.sockets[userid].emit("error", error.message);
+    }
   }
   @SubscribeMessage("setadmin")
   async setadmin(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
-    const userid: number = await this.getclientbysocket(client);
+    const userid: number = this.getclientbysocket(client);
     return this.chatService.setadmin(userid, dto[0]);
   } 
   @SubscribeMessage("banuser")
   async banuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents)
   {
-    const userid: number = await this.getclientbysocket(client);
+    const userid: number =  this.getclientbysocket(client);
     this.chatService.ban(userid, dto[0]);
   }
   @SubscribeMessage("kickuser")
   async kickuser(@ConnectedSocket() client: Socket, @MessageBody() dto: userevents) {
-    const userid: number = await this.getclientbysocket(client);
+    const userid: number =  this.getclientbysocket(client);
     try{
-      const rvalue = await this.chatService.kick(userid, dto[0])
-      if(this.sockets[dto[0].id])
-      {
-        this.server.to(this.sockets[dto[0].id].emit("kick", dto[0]));
+      await this.chatService.kick(userid, dto[0])
+      if(this.sockets[dto[0].id]){
+        this.server.to(this.sockets[dto[0].id].id).emit("leave");
+        client.emit("info", "the user got kicked");        
       }
     }
     catch(error){
-      this.server.to(this.sockets[userid].id).emit("error", error.message);
+      this.sockets[userid].emit("error", error.message);
     }
   }
   async handleConnection(client: Socket) {
 
-    const id: number = await this.getclientbysocket(client);
+    const id: number =  this.getclientbysocket(client);
     this.sockets[id] = client;
   }
   async handleDisconnect(@ConnectedSocket() client: Socket) {
 
-    const id: number = await this.getclientbysocket(client);
+    const id: number = this.getclientbysocket(client);
     this.sockets.delete(id);
   }
   sendnotify(receiverid: number, senderid: number , dto: messageDto){
@@ -88,10 +120,10 @@ export class ChatGateway {
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client: Socket) {
-    const id = await this.getclientbysocket(client);
+    const id =  this.getclientbysocket(client);
     const room = await this.chatService.getchatroombyid(dto[0].id);
     if(!this.chatService.isexist(room, id)){
-      this.server.to(client.id).emit("error", "you are not in this room");
+      client.emit("error", "you are not in this room");
       return false
     }
     if(this.chatService.ismuted(room, id))
@@ -107,7 +139,7 @@ export class ChatGateway {
               return false;
           }
           else {
-            this.server.to(this.sockets[user.id].id).emit('newmessage', dto[0])
+            this.sockets[user.id].emit('newmessage', dto[0])
           }
         }
         else
@@ -116,21 +148,6 @@ export class ChatGateway {
   })
   this.chatService.create(dto[0], id);
     return true;
-  }
-
-  @SubscribeMessage('findAllChat')
-  findAll() {
-    return this.chatService.findAll();
-  }
-
-  @SubscribeMessage('findOneChat')
-  findOne(@MessageBody() id: number) {
-    return this.chatService.findOne(id);
-  }
-
-  @SubscribeMessage('updateChat')
-  update(@MessageBody() updateChatDto: UpdateChatDto) {
-    return this.chatService.update(updateChatDto.id, updateChatDto);
   }
 
   @SubscribeMessage("invite")
@@ -144,12 +161,12 @@ export class ChatGateway {
     });
     if(notifaction.length > 0)
     {
-      this.server.to(client.id).emit("warning");
+      client.emit("warning");
       return ;
     }
     const dto: chatroomRequest = body[0];
     console.log(dto);
-    const clientid: number = await this.getclientbysocket(client);
+    const clientid: number = this.getclientbysocket(client);
     const notify: NotificationDto = {
       userId: dto.userid,
       from: clientid,
@@ -161,15 +178,15 @@ export class ChatGateway {
     }
     try {
       this.events.hanldleSendNotification(dto.userid, clientid, notify)
-      this.server.to(client.id).emit("success");
+      client.emit("success");
     }
     catch(error){
-      this.server.to(client.id).emit("error");
+      client.emit("error");
     }
   }
   @SubscribeMessage('removeChat')
   async remove(@ConnectedSocket() client: Socket,@MessageBody() id: number) {
-    const userid: number = await this.getclientbysocket(client);
+    const userid: number =  this.getclientbysocket(client);
     return this.chatService.remove(userid, id);
   }
 }
