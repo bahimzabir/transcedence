@@ -153,7 +153,6 @@ export class ChatService {
   }
   async setadmin(user: number, dto: userevents) {
     try {
-      console.log('add admine');
       this.prisma.$transaction(async (tsx) => {
         const chat = await tsx.chatRoom.findFirst({
           where: {
@@ -196,8 +195,9 @@ export class ChatService {
           }
         }
       });
+      return "done"
     } catch (error) {
-      return new WsException('error occured while setting admin');
+      return error;
     }
   }
   async mute(user: number, dto: userevents) {

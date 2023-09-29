@@ -206,6 +206,7 @@ export class UserService {
 
   async blockUser(req: any, id: number) {
     try {
+      console.log("---------->",id)
       const user = await this.prisma.user.update({
         where: {
           id: req.user.id,
@@ -237,6 +238,7 @@ export class UserService {
           ]
         }
       })
+      console.log( id, " && ", req.user.id)
       await this.prisma.chatRoom.delete({
         where:{
           id: dm.id,

@@ -4,7 +4,7 @@ import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway} from 'src/events/events.gateway';
 import { NotificationDto, chatroomRequest, userevents, messageDto } from 'src/dto';
-import { UseGuards } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 enum freindship {
   BLOCKED
 }
@@ -75,7 +75,12 @@ export class ChatGateway {
   async setadmin(@ConnectedSocket() client, @MessageBody() dto: userevents)
   {
     const userid: number = client.user.id;
-    return this.chatService.setadmin(userid, dto[0]);
+    try {
+      this.chatService.setadmin(userid, dto[0]);
+      this.server.to(client.id).emit("info", "the user is now admin");
+    } catch (error) {
+      this.server.to(client.id).emit("error", error.message);
+    }
   } 
   @SubscribeMessage("banuser")
   async banuser(@ConnectedSocket() client, @MessageBody() dto: userevents)
@@ -133,9 +138,14 @@ export class ChatGateway {
         if(this.sockets[user.id] !== undefined)
         {
           const freindship = await this.chatService.getUserfreindship(id, user.id);
+          console.log(freindship)
           if (freindship && freindship.status == 'BLOCKED') {
+            console.log("get inside here")
             if (room.isdm)
+            {
+              console.log("blocked");
               return false;
+            }
           }
           else {
             this.sockets[user.id].emit('newmessage', dto[0])

@@ -20,7 +20,6 @@ export class AuthService {
 
 
   async verifyToken(token: string) {
-    console.log("--->", token)
     const payload: any = await this.jwtService.verify(token, {
       secret: this.config.get('JWT_SECRET'),
     });
