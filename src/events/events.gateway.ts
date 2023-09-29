@@ -6,9 +6,9 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import { Global, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Global, Injectable } from '@nestjs/common';
 import { NotificationDto } from 'src/dto';
-
+import { AuthService } from 'src/auth/auth.service';
 const socketConfig = {
   cors: {
     origin: ['http://localhost:3000', 'http://127.0.0.1:5501', 'http://localhost:5501', 'http://localhost:5173'],
@@ -43,7 +43,6 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
     return null;
   }
 }
-
 
 @Injectable()
 @WebSocketGateway(socketConfig)

@@ -18,6 +18,26 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
+
+  async verifyToken(token: string) {
+    console.log("--->", token)
+    const payload: any = await this.jwtService.verify(token, {
+      secret: this.config.get('JWT_SECRET'),
+    });
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: payload.sub,
+        email: payload.email,
+      },
+    });
+    if (user) {
+      delete user.token;
+      delete user.password;
+      delete user.email;
+    }
+    return user;
+  }
+  
   downloadimg(url: string, id: number)
   {
     const filepath = path.join(__dirname, '../../src/chat/img/');
@@ -79,40 +99,3 @@ export class AuthService {
     });
   }
 }
-
-// @Injectable()
-// export class AuthService {
-//     constructor(private prisma: PrismaService) { }
-
-//     async signUp(dto: AuthDto) {
-
-//         //const hash = await argon.hash(dto.password);
-
-//         const user = await this.prisma.user.create({
-//             data: {
-//                 email: dto.email,
-//                 //password: hash,
-//             }
-//         });
-//         delete user.password;
-//         return user;
-//     }
-
-//     async signIn(dto: AuthDto) {
-//        // const hash = await argon.hash(dto.password);
-//         const user = await this.prisma.user.findUnique({
-//             where: {
-//                 email: dto.email
-//             }
-//         });
-//         if (!user) {
-//             throw new ForbiddenException("Invalid email");
-//         }
-//         // const isPasswordValid = await argon.verify(hash ,dto.password);
-//         // if (!isPasswordValid) {
-//         //     throw new ForbiddenException("Invalid password");
-//         // }
-//         delete user.password;
-//         return user;
-//     }
-// }

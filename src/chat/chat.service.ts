@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import * as jwt from 'jsonwebtoken';
@@ -9,7 +9,8 @@ import {WsException } from '@nestjs/websockets';
 import { joinroomdto, systemclass, userevents } from 'src/dto';
 import * as argon2 from 'argon2';
 import { EventsGateway } from 'src/events/events.gateway';
-import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { AuthService } from 'src/auth/auth.service';
 @Injectable()
 export class ChatService {
   constructor(
@@ -264,7 +265,6 @@ export class ChatService {
       });
       if (chatroom) {
         if (this.ismuted(chatroom, dto.id)) {
-          console.log("gothere")
           console.log(`${dto.id}id${dto.roomid}`)
           clearTimeout(
             this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
@@ -778,5 +778,28 @@ export class ChatService {
   isexist(room: any, id: number) {
     if (room.members.find((user) => user.id === id)) return true;
     return false;
+  }
+}
+
+@Injectable()
+export class JwtWebSocketGuard implements CanActivate {
+  constructor(private authService: AuthService) {
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const client = context.switchToWs().getClient();
+    const token = client.handshake.headers.cookie.split('=')[1]; // Extract the token from the WebSocket handshake query
+    if (!token) {
+      return false;
+    }
+    
+    const user = await this.authService.verifyToken(token);
+    
+    if (!user) {
+      return false;
+    }
+    
+    client.user = user; // Attach the user to the WebSocket client object
+    return true;
   }
 }
