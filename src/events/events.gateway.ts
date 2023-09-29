@@ -1,4 +1,6 @@
 import {
+  MessageBody,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -77,6 +79,16 @@ export class EventsGateway {
     }
   }
 
+  // @SubscribeMessage('reject')
+  // async reject(@MessageBody() userId: number) {
+  //   const sockets = this.onlineUsers.get(userId);
+  //   if (sockets) {
+  //     console.log("reject");
+  //     this.server.to(sockets).emit('rejected');
+  //     this.onlineUsers.delete(userId)
+  //   }
+  // }
+
   async handleDisconnect(client: Socket): Promise<void> {
     try {
       const cookies = client.handshake.headers.cookie;
@@ -111,8 +123,10 @@ export class EventsGateway {
     this.server.to(this.onlineUsers.get(userId)).emit("challenge", oppId);
   }
 
+
   async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
+      console.log('haaa')
       await this.prisma.notification.create({
         data: {
           user: {
