@@ -23,9 +23,13 @@ model User {
   username  String @unique
   firstname String?
   lastname  String?
+  fullname  String?
   photo     String?
   bio       String?
   online    Boolean @default(false)
+  linkedin   String?
+  github    String?
+  instagram String?
   pendingmessages Int @default(0)
   pendingnotifications Int @default(0)
 

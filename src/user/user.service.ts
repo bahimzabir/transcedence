@@ -9,12 +9,19 @@ import { create } from 'domain';
 import { Http2ServerResponse } from 'http2';
 import { use } from 'passport';
 
-
-
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService, private event: EventsGateway) { }
+  constructor(private prisma: PrismaService, private event: EventsGateway) {}
   async editUser(req: any, body: any) {
+    console.log(body);
+    try {
+      if (body.fullname) {
+        const fullname = body.fullname.split(' ');
+        if (!body.firstname) body.firstname = fullname[0];
+        if (!body.lastname) body.lastname = fullname[1];
+        console.log(body.firstname, body.lastname);
+      }
+    } catch (error) {}
     try {
       const user = await this.prisma.user.update({
         where: {
@@ -26,10 +33,17 @@ export class UserService {
           photo: body.photo,
           firstname: body.firstname,
           lastname: body.lastname,
+          fullname: body.fullname ?? (body.firstname + ' ' + body.lastname),
+          github: body.github,
+          linkedin: body.linkedin,
+          instagram: body.instagram,
         },
       });
     } catch (error) {
-      throw new HttpException("database engine can't update the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't update the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -45,7 +59,10 @@ export class UserService {
       // this.event.hanldleSendNotification(req.user.id, "hello world");
       return user;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -67,7 +84,10 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -85,15 +105,17 @@ export class UserService {
       });
       return notifications;
     } catch (error) {
-      throw new HttpException("database engine can't find the entities requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entities requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
-  };
-
+  }
 
   async readNotification(req: any, ids: number[]) {
     const count = ids.length;
     const intIds = ids.map((id) => +id);
-    console.log(ids);
+    console.log("iread: " ,ids);
     try {
       const notifications = await this.prisma.notification.updateMany({
         where: {
@@ -115,7 +137,10 @@ export class UserService {
       });
       return notifications;
     } catch (error) {
-      throw new HttpException("database engine can't find the entities requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entities requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -133,10 +158,12 @@ export class UserService {
       });
       return notifications;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
-
 
   async getUserbyId(req: any, id: number) {
     try {
@@ -176,15 +203,19 @@ export class UserService {
             },
           },
         },
-      })
+      });
       return {
-        user, friendShip: {
+        user,
+        friendShip: {
           recieved: friendShip.incomingFriendRequests[0],
           sent: friendShip.outgoingFriendRequests[0],
-        }
+        },
       };
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -200,7 +231,10 @@ export class UserService {
       });
       return user;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -228,31 +262,34 @@ export class UserService {
           },
         },
         select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
-      })
+      });
       const dm = await this.prisma.chatRoom.findFirst({
         where: {
           OR: [
-            {AND: [ {senderID: +id},{receiverID: +req.user.id }]},
-            {AND: [ {senderID: +req.user.id},{receiverID: +id }]}
-          ]
-        }
-      })
+            { AND: [{ senderID: +id }, { receiverID: +req.user.id }] },
+            { AND: [{ senderID: +req.user.id }, { receiverID: +id }] },
+          ],
+        },
+      });
       await this.prisma.chatRoom.delete({
-        where:{
+        where: {
           id: dm.id,
-        }
-      })
+        },
+      });
       await this.prisma.friendShip.create({
-        data:{
+        data: {
           user1: +req.user.id,
           user2: +id,
-          status: "BLOCKED"
-        }
-      })
+          status: 'BLOCKED',
+        },
+      });
       return user;
     } catch (error) {
       console.log(error);
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -270,13 +307,15 @@ export class UserService {
           },
         },
         select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
-      })
+      });
       return user;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
-
 
   async sendFriendRequest(req: any, body: FriendRequestDto) {
     try {
@@ -290,16 +329,16 @@ export class UserService {
                   some: {
                     id: body.receiver,
                   },
-                }
-              }, {
+                },
+              },
+              {
                 blockedBy: {
                   some: {
                     id: body.receiver,
                   },
                 },
-              }
-            ]
-
+              },
+            ],
           },
         },
         select: {
@@ -352,22 +391,24 @@ export class UserService {
       });
       this.event.hanldleSendNotification(body.receiver, req.user.id, {
         userId: user.id,
-        type: "friendrequestrecieved",
+        type: 'friendrequestrecieved',
         from: body.receiver,
         photo: user.photo,
         message: `${user.username} sent you a friend request`,
-        read: false
+        read: false,
       });
       return friendRequest;
-    }
-    catch (error) {
-      throw new HttpException("database engine can't create the entity requested", HttpStatus.NOT_FOUND);
+    } catch (error) {
+      throw new HttpException(
+        "database engine can't create the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
   async fillFriendRequest(req: any, body: FillRequestDto) {
     try {
-      let friendRequest : any;
+      let friendRequest: any;
       if (body.response) {
         friendRequest = await this.prisma.friendRequest.update({
           where: {
@@ -378,7 +419,7 @@ export class UserService {
             status: FriendStatus.FRIEND,
           },
         });
-        console.log({friendRequest}, {len: friendRequest.length})
+        console.log({ friendRequest }, { len: friendRequest.length });
         if (friendRequest) {
           const user = await this.prisma.user.update({
             where: {
@@ -398,16 +439,23 @@ export class UserService {
             },
             select: PrismaTypes.UserBasicIfosSelect,
           });
-          this.event.hanldleSendNotification(friendRequest.senderId, req.user.id, {
-            userId: user.id,
-            type: "friendrequestaccepted", 
-            from: body.id, 
-            message: `${user.username} accepted your friend request`,
-            photo: user.photo,
-            read: false
-          });
+          this.event.hanldleSendNotification(
+            friendRequest.senderId,
+            req.user.id,
+            {
+              userId: user.id,
+              type: 'friendrequestaccepted',
+              from: body.id,
+              message: `${user.username} accepted your friend request`,
+              photo: user.photo,
+              read: false,
+            },
+          );
         } else {
-          return new HttpException("friend request not found", HttpStatus.NOT_FOUND);
+          return new HttpException(
+            'friend request not found',
+            HttpStatus.NOT_FOUND,
+          );
         }
       } else {
         friendRequest = await this.prisma.friendRequest.delete({
@@ -419,7 +467,10 @@ export class UserService {
       //console.log(friendRequest);
       return friendRequest;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -429,16 +480,22 @@ export class UserService {
         where: {
           id: body.id,
           senderId: req.user.id,
-          status: FriendStatus.PENDING
+          status: FriendStatus.PENDING,
         },
-      })
+      });
       if (friendreq) {
-        return (friendreq)
+        return friendreq;
       } else {
-        return new HttpException('Pending friend request not found', HttpStatus.NOT_FOUND);
+        return new HttpException(
+          'Pending friend request not found',
+          HttpStatus.NOT_FOUND,
+        );
       }
     } catch (error) {
-      throw new HttpException("database engine can't delete the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't delete the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -447,25 +504,28 @@ export class UserService {
       const friendreq = await this.prisma.friendRequest.delete({
         where: {
           id: body.id,
-          OR:[
+          OR: [
             {
               senderId: req.user.id,
             },
             {
               receiverId: req.user.id,
-            }
-          ],         
+            },
+          ],
 
-          status: FriendStatus.FRIEND
+          status: FriendStatus.FRIEND,
         },
-      })
+      });
       if (friendreq) {
-        return (friendreq)
+        return friendreq;
       } else {
         return new HttpException('friendship not found', HttpStatus.NOT_FOUND);
       }
     } catch (error) {
-      throw new HttpException("database engine can't delete the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't delete the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -482,7 +542,10 @@ export class UserService {
       });
       return friendRequest;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -490,7 +553,8 @@ export class UserService {
     try {
       const users = await this.prisma.user.findMany({
         where: {
-          OR: [ // search by username
+          OR: [
+            // search by username
             {
               username: {
                 contains: username,
@@ -539,7 +603,10 @@ export class UserService {
       });
       return users;
     } catch (error) {
-      throw new HttpException("database engine can't find the entities requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entities requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -554,9 +621,11 @@ export class UserService {
         },
       });
       return chatrooms.chats;
-    }
-    catch (error) {
-      throw new HttpException("database engine can't find the entities requested", HttpStatus.NOT_FOUND);
+    } catch (error) {
+      throw new HttpException(
+        "database engine can't find the entities requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
   async getUserinfos(id: number) {
@@ -566,10 +635,13 @@ export class UserService {
           id: id,
         },
         select: PrismaTypes.UserBasicIfosSelect,
-      })
+      });
       return user;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 
@@ -578,16 +650,18 @@ export class UserService {
     try {
       const games = await this.prisma.user.findUnique({
         where: {
-          id: +id
+          id: +id,
         },
         select: {
           games: true,
-        }
+        },
       });
-      return (games);
+      return games;
     } catch (error) {
-      throw new HttpException("database engine can't find the entity requested", HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        "database engine can't find the entity requested",
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
-
 }

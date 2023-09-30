@@ -56,6 +56,7 @@ export class AuthService {
           firstname: req.user.firstName,
           lastname: req.user.lastName,
           username: req.user.email.split('@')[0],
+          bio: "Hello there, I am Playing Pong",
       };
       const user = await this.prisma.user.create({
         data: userInput,
