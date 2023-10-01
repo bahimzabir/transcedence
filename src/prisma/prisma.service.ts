@@ -47,11 +47,15 @@ export class PrismaTypes {
     id: true,
     firstname: true,
     lastname: true,
+    fullname: true,
     username: true,
     photo: true,
     online: true,
     wins: true,
     losses: true,
+    github: true,
+    linkedin: true,
+    instagram: true,
   }
 
   static BlockedIfosSelect: Prisma.UserSelect = {

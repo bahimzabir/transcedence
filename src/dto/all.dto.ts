@@ -1,4 +1,4 @@
-import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsOptional, IsString, isArray } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsOptional, IsString, isArray, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { isInt16Array, isInt32Array } from 'util/types';
@@ -74,6 +74,18 @@ export class UserUpdateDto {
     @IsOptional()
     @ApiProperty()
     lastname?: string;
+    @IsUrl()
+    @IsOptional()
+    @ApiProperty()
+    github?: string;
+    @IsUrl()
+    @IsOptional()
+    @ApiProperty()
+    linkedin?: string;
+    @IsUrl()
+    @IsOptional()
+    @ApiProperty()
+    instagram?: string;
 }
 
 
@@ -121,6 +133,13 @@ export class chatroomRequest {
     roomid: number;
     userid: number;
 }
+
+export class LinkDto {
+    @IsUrl()
+    @ApiProperty()
+    link: string;
+}
+
 export enum systemclass{
     OWNER = 3,    
     ADMIN = 2,
