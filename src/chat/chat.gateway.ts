@@ -191,8 +191,15 @@ export class ChatGateway {
     }
   }
   @SubscribeMessage('removeChat')
-  async remove(@ConnectedSocket() client, @MessageBody() id: number) {
+  async remove(@ConnectedSocket() client, @MessageBody('id') id: number) {
     const userid: number =  client.user.id;
     return this.chatService.remove(userid, id);
+  }
+  @SubscribeMessage("messageSeen")
+  async messageSeen(@ConnectedSocket() client, @MessageBody() roomid: number) {
+    
+    const userid: number =  client.user.id;
+    console.log("USERID", userid, "roomid", roomid[0])
+    return this.chatService.messageSeen(userid, roomid[0]);
   }
 }

@@ -1,4 +1,4 @@
-import {CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
+import {CanActivate, ConsoleLogger, ExecutionContext, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import * as jwt from 'jsonwebtoken';
@@ -18,8 +18,25 @@ export class ChatService {
     private readonly config: ConfigService,
     private event: EventsGateway,
     private schedulerRegistry: SchedulerRegistry,
+    private consoleLogger : ConsoleLogger,
   ) {}
-
+  
+  async messageSeen(id: number, roomid: number) {
+    try {
+      this.prisma.$transaction(async (tsx) => {
+        await tsx.roomUser.updateMany({
+          where:{
+            AND: [{userId: id}, {roomId: roomid}]
+          },
+          data:{
+            unreadMessage: false,
+          }
+        })
+      })
+    } catch (error) {
+      this.consoleLogger.error(error)
+    }
+  }
   async removechat(userid: number, roomid: number) {
     try {
       await this.prisma.$transaction(async (tsx) => {
@@ -797,6 +814,7 @@ export class ChatService {
     return false;
   }
 }
+
 
 @Injectable()
 export class JwtWebSocketGuard implements CanActivate {

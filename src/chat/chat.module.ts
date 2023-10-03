@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ConsoleLogger, Module } from '@nestjs/common';
 import { ChatService, JwtWebSocketGuard } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { ChatController } from './chat.controller';
@@ -15,6 +15,7 @@ import { JwtGard } from 'src/auth/guard';
     JwtService,
     AuthService,
     JwtWebSocketGuard,
+    ConsoleLogger,
   ],
   controllers: [ChatController],
 })
