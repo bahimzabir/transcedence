@@ -4,7 +4,7 @@ import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway} from 'src/events/events.gateway';
 import { NotificationDto, chatroomRequest, userevents, messageDto } from 'src/dto';
-import { Controller, UseGuards } from '@nestjs/common';
+import { ConsoleLogger, Controller, UseGuards } from '@nestjs/common';
 enum freindship {
   BLOCKED
 }
@@ -107,20 +107,27 @@ export class ChatGateway {
     this.sockets[id] = client;
   }
   async handleDisconnect(@ConnectedSocket() client) {
-
+    console.log("DISCONNECTED")
     const id = this.getclientbysocket(client);
     this.sockets.delete(id);
   }
-  sendnotify(receiverid: number, senderid: number , dto: messageDto){
-    const data: NotificationDto = {
-      userId: receiverid,
-      from: senderid,
-      type: 'message',
-      photo: `http://localhost:3000/${senderid}.png`,
-      message: dto.message,
-      read: false,
-    }
-    this.events.hanldleSendNotification(receiverid, senderid, data);
+  async unreadmessage(receiverid: number, dto: messageDto){
+    await this.prisma.$transaction(async (tsx)=>{
+      const roomuser = await tsx.roomUser.findFirst({
+        where:{
+          userId: receiverid,
+          roomId: dto.roomid,
+        }
+      })
+      await tsx.roomUser.update({
+        where:{
+          id: roomuser.id,
+        },
+        data:{
+          unreadMessage: true,
+        }
+      })
+    })
   }
   @SubscribeMessage('createMessage')
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client) {
@@ -132,29 +139,20 @@ export class ChatGateway {
     }
     if(this.chatService.ismuted(room, id))
       return false;
-    room.members.forEach(async (user) => {
+    for(const user of room.members) {
       if(user.id !== id)
       {
-        if(this.sockets[user.id] !== undefined)
-        {
-          const freindship = await this.chatService.getUserfreindship(id, user.id);
-          console.log(freindship)
-          if (freindship && freindship.status == 'BLOCKED') {
-            console.log("get inside here")
-            if (room.isdm)
-            {
-              console.log("blocked");
-              return false;
-            }
-          }
-          else {
-            this.sockets[user.id].emit('newmessage', dto[0])
-          }
+        const freindship = await this.chatService.getUserfreindship(id, user.id);
+        if (freindship && freindship.status === 'BLOCKED') {
+          if (room.isdm)
+            return false;
         }
+        else if(this.sockets[user.id])
+            this.sockets[user.id].emit('newmessage', dto[0])
         else
-        this.sendnotify(user.id, id, dto[0]);
+          this.unreadmessage(user.id, dto[0]);
     }
-  })
+  }
   this.chatService.create(dto[0], id);
     return true;
   }

@@ -25,6 +25,7 @@ export class messageDto {
     id: number;
     message: string;
     sender: number;
+    roomid: number;
 }
 
 export class GameRecords {

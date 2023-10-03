@@ -433,10 +433,19 @@ export class ChatService {
     return r ? room : [];
   }
   async getdmroominfos(id: number, sender: number) {
-    const room = await this.prisma.chatRoom.findUnique({
+    const room = await this.prisma.chatRoom.findFirst({
       where: {
         id: +id,
       },
+      include:{
+        roomUsers:{
+          where:{
+            NOT:{
+              userId: sender,
+            }
+          }
+        }
+      }
     });
     let userid: number;
     if (sender != room.senderID) userid = room.senderID;
@@ -553,14 +562,22 @@ export class ChatService {
 
   async create(createMessageDto: CreateChatDto, sender: number) {
     const id: number = +createMessageDto.id;
-    await this.prisma.message.create({
+    const message = await this.prisma.message.create({
       data: {
         content: createMessageDto.message,
         senderId: sender,
         roomId: id,
       },
     });
-  }
+    await this.prisma.chatRoom.update({
+      where: {
+        id: id,
+      },
+      data: {
+        updatedAt: message.createdAt,
+      },
+    });
+}
 
   async findAll() {
     try {

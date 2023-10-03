@@ -84,12 +84,12 @@ export class UserController {
   }
 
   @Post('block')
-  blockUser(@Req() req: any, @Query('id') id: number) {
+  blockUser(@Req() req: any, @Body('id') id: number) {
     return this.userService.blockUser(req, id);
   }
 
   @Post('unblock')
-  unblockUser(@Req() req: any, @Query('id') id: number) {
+  unblockUser(@Req() req: any, @Body('id') id: number) {
     return this.userService.unblockUser(req, id);
   }
 

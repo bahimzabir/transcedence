@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { triggerAsyncId } from 'async_hooks';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
@@ -73,5 +74,4 @@ export class PrismaTypes {
       },
     }
   }
-
 }

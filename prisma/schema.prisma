@@ -96,6 +96,7 @@ model RoomUser {
   room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId Int
   status userSTATUS @default(NORMAL)
+  unreadMessage Boolean @default(false)
 }
 
 

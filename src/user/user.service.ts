@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
+import { HttpCode, HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { count } from 'console';
 import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
@@ -8,10 +8,11 @@ import { FillRequestDto, FriendRequestDto } from 'src/dto';
 import { create } from 'domain';
 import { Http2ServerResponse } from 'http2';
 import { use } from 'passport';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService, private event: EventsGateway) {}
+  constructor(private prisma: PrismaService, private event: EventsGateway, private chatServices: ChatService) {}
   async editUser(req: any, body: any) {
     console.log(body);
     try {
@@ -240,7 +241,9 @@ export class UserService {
 
   async blockUser(req: any, id: number) {
     try {
-      console.log("---------->",id)
+      const freindship = await this.chatServices.getUserfreindship(req.user.id, id);
+      if(freindship && freindship.status == 'BLOCKED')
+        return HttpStatus.CONFLICT;
       const user = await this.prisma.user.update({
         where: {
           id: req.user.id,
@@ -272,11 +275,14 @@ export class UserService {
           ],
         },
       });
-      await this.prisma.chatRoom.delete({
-        where: {
-          id: dm.id,
-        },
-      });
+      if(dm)
+      {
+        await this.prisma.chatRoom.delete({
+          where: {
+            id: dm.id,
+          },
+        });
+      }
       await this.prisma.friendShip.create({
         data: {
           user1: +req.user.id,
@@ -284,13 +290,9 @@ export class UserService {
           status: 'BLOCKED',
         },
       });
-      return user;
+      return HttpStatus.ACCEPTED
     } catch (error) {
-      console.log(error);
-      throw new HttpException(
-        "database engine can't find the entity requested",
-        HttpStatus.NOT_FOUND,
-      );
+      return HttpStatus.CONFLICT
     }
   }
 
@@ -618,7 +620,21 @@ export class UserService {
           id: id,
         },
         select: {
-          chats: true,
+          chats: {
+            orderBy:{
+              updatedAt: "desc"       
+            },
+            include:{
+              roomUsers: {
+                where:{
+                  userId: id
+                },
+                select:{
+                  unreadMessage: true,
+                }
+              }
+            }
+          }
         },
       });
       return chatrooms.chats;
