@@ -21,6 +21,22 @@ export class ChatService {
     private consoleLogger : ConsoleLogger,
   ) {}
   
+  async messagedontseen(id: number, roomid: number) {
+    try {
+      this.prisma.$transaction(async (tsx) => {
+        await tsx.roomUser.updateMany({
+          where:{
+            AND: [{userId: id}, {roomId: roomid}]
+          },
+          data:{
+            unreadMessage: true,
+          }
+        })
+      })
+    } catch (error) {
+      this.consoleLogger.error(error)
+    }
+  }
   async messageSeen(id: number, roomid: number) {
     try {
       this.prisma.$transaction(async (tsx) => {

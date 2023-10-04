@@ -1,4 +1,10 @@
-import { HttpCode, HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
+import {
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Req,
+} from '@nestjs/common';
 import { count } from 'console';
 import { PrismaService, PrismaTypes } from 'src/prisma/prisma.service';
 import { EventsGateway } from 'src/events/events.gateway';
@@ -12,7 +18,11 @@ import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService, private event: EventsGateway, private chatServices: ChatService) {}
+  constructor(
+    private prisma: PrismaService,
+    private event: EventsGateway,
+    private chatServices: ChatService,
+  ) {}
   async editUser(req: any, body: any) {
     console.log(body);
     try {
@@ -34,7 +44,7 @@ export class UserService {
           photo: body.photo,
           firstname: body.firstname,
           lastname: body.lastname,
-          fullname: body.fullname ?? (body.firstname + ' ' + body.lastname),
+          fullname: body.fullname ?? body.firstname + ' ' + body.lastname,
           github: body.github,
           linkedin: body.linkedin,
           instagram: body.instagram,
@@ -116,7 +126,7 @@ export class UserService {
   async readNotification(req: any, ids: number[]) {
     const count = ids.length;
     const intIds = ids.map((id) => +id);
-    console.log("iread: " ,ids);
+    console.log('iread: ', ids);
     try {
       const notifications = await this.prisma.notification.updateMany({
         where: {
@@ -205,11 +215,22 @@ export class UserService {
           },
         },
       });
+      console.log(id, req.user.id);
+      const relation = await this.prisma.friendShip.findFirst({
+        where: {
+          OR: [
+            { AND: [{ user1: +id }, { user2: +req.user.id }] },
+            { AND: [{ user1: +req.user.id }, { user2: +id }] },
+          ],
+        },
+      });
+      console.log({ relation });
       return {
         user,
         friendShip: {
           recieved: friendShip.incomingFriendRequests[0],
           sent: friendShip.outgoingFriendRequests[0],
+          relation: relation ? relation.status : null,
         },
       };
     } catch (error) {
@@ -241,8 +262,11 @@ export class UserService {
 
   async blockUser(req: any, id: number) {
     try {
-      const freindship = await this.chatServices.getUserfreindship(req.user.id, id);
-      if(freindship && freindship.status == 'BLOCKED')
+      const freindship = await this.chatServices.getUserfreindship(
+        req.user.id,
+        id,
+      );
+      if (freindship && freindship.status == 'BLOCKED')
         return HttpStatus.CONFLICT;
       const user = await this.prisma.user.update({
         where: {
@@ -275,8 +299,7 @@ export class UserService {
           ],
         },
       });
-      if(dm)
-      {
+      if (dm) {
         await this.prisma.chatRoom.delete({
           where: {
             id: dm.id,
@@ -290,28 +313,39 @@ export class UserService {
           status: 'BLOCKED',
         },
       });
-      return HttpStatus.ACCEPTED
+      return HttpStatus.ACCEPTED;
     } catch (error) {
-      return HttpStatus.CONFLICT
+      return HttpStatus.CONFLICT;
     }
   }
 
   async unblockUser(req: any, id: number) {
     try {
-      const user = await this.prisma.user.update({
-        where: {
-          id: req.user.id,
-        },
-        data: {
-          blockedUsers: {
-            disconnect: {
-              id: +id,
+      const freindship = await this.chatServices.getUserfreindship(
+        req.user.id,
+        id,
+      );
+      if (freindship && freindship.status == 'BLOCKED') {
+        const user = await this.prisma.user.update({
+          where: {
+            id: req.user.id,
+          },
+          data: {
+            blockedUsers: {
+              disconnect: {
+                id: +id,
+              },
             },
           },
-        },
-        select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
-      });
-      return user;
+          select: { blockedUsers: { select: PrismaTypes.BlockedIfosSelect } },
+        });
+        await this.prisma.friendShip.deleteMany({
+          where: {
+            id: freindship.id,
+          },
+        });
+        return user;
+      } else return HttpStatus.CONFLICT;
     } catch (error) {
       throw new HttpException(
         "database engine can't find the entity requested",
@@ -621,20 +655,20 @@ export class UserService {
         },
         select: {
           chats: {
-            orderBy:{
-              updatedAt: "desc"       
+            orderBy: {
+              updatedAt: 'desc',
             },
-            include:{
+            include: {
               roomUsers: {
-                where:{
-                  userId: id
+                where: {
+                  userId: id,
                 },
-                select:{
+                select: {
                   unreadMessage: true,
-                }
-              }
-            }
-          }
+                },
+              },
+            },
+          },
         },
       });
       return chatrooms.chats;

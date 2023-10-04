@@ -21,7 +21,6 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
   sockets = new Map<number, Socket>();
-
   getclientbysocket(client: Socket) {
     let token = client.handshake.headers.cookie;
     let id: number;
@@ -103,13 +102,14 @@ export class ChatGateway {
     }
   }
   async handleConnection(client: any) {
+    console.log("CONNECTED")
     const id = this.getclientbysocket(client);
     this.sockets[id] = client;
   }
   async handleDisconnect(@ConnectedSocket() client) {
     console.log("DISCONNECTED")
     const id = this.getclientbysocket(client);
-    this.sockets.delete(id);
+    delete this.sockets[id];
   }
   async unreadmessage(receiverid: number, dto: messageDto){
     await this.prisma.$transaction(async (tsx)=>{
@@ -144,13 +144,20 @@ export class ChatGateway {
       {
         const freindship = await this.chatService.getUserfreindship(id, user.id);
         if (freindship && freindship.status === 'BLOCKED') {
+          console.log(freindship)
           if (room.isdm)
             return false;
         }
         else if(this.sockets[user.id])
-            this.sockets[user.id].emit('newmessage', dto[0])
+        {
+          console.log("!!! 222")
+          this.sockets[user.id].emit('newmessage', dto[0])
+        }
         else
+        {
+          console.log("HIIII")
           this.unreadmessage(user.id, dto[0]);
+        }
     }
   }
   this.chatService.create(dto[0], id);
@@ -199,7 +206,11 @@ export class ChatGateway {
   async messageSeen(@ConnectedSocket() client, @MessageBody() roomid: number) {
     
     const userid: number =  client.user.id;
-    console.log("USERID", userid, "roomid", roomid[0])
     return this.chatService.messageSeen(userid, roomid[0]);
+  }
+  @SubscribeMessage("messagedontseen")
+  async messagedontseen(@ConnectedSocket() client, @MessageBody() roomid: number) {
+    const userid: number =  client.user.id;
+    return this.chatService.messagedontseen(userid, roomid[0]);
   }
 }
