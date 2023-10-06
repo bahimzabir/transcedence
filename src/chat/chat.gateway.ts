@@ -209,8 +209,7 @@ export class ChatGateway {
     return this.chatService.messageSeen(userid, roomid[0]);
   }
   @SubscribeMessage("messagedontseen")
-  async messagedontseen(@ConnectedSocket() client, @MessageBody() roomid: number) {
-    const userid: number =  client.user.id;
-    return this.chatService.messagedontseen(userid, roomid[0]);
+  async messagedontseen(@MessageBody() dto) {
+    return this.chatService.messagedontseen(dto[0].id, dto[0].roomid);
   }
 }

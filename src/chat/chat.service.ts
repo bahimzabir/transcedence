@@ -39,8 +39,8 @@ export class ChatService {
   }
   async messageSeen(id: number, roomid: number) {
     try {
-      this.prisma.$transaction(async (tsx) => {
-        await tsx.roomUser.updateMany({
+      await this.prisma.$transaction(async (tsx) => {
+        const r = await tsx.roomUser.updateMany({
           where:{
             AND: [{userId: id}, {roomId: roomid}]
           },
@@ -48,6 +48,14 @@ export class ChatService {
             unreadMessage: false,
           }
         })
+        console.log(r)
+        const roomuser = await tsx.roomUser.findFirst({
+          where:{
+            userId: id,
+            roomId: roomid,
+          }
+        })
+        console.log(roomuser.id)
       })
     } catch (error) {
       this.consoleLogger.error(error)
@@ -473,9 +481,7 @@ export class ChatService {
       include:{
         roomUsers:{
           where:{
-            NOT:{
               userId: sender,
-            }
           }
         }
       }

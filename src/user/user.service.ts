@@ -658,21 +658,29 @@ export class UserService {
             orderBy: {
               updatedAt: 'desc',
             },
-            include: {
+            select:{
+              id: true,
+              name: true,
+              photo: true,
+              state: true,
+              isdm: true,
               roomUsers: {
                 where: {
                   userId: id,
                 },
-                select: {
+                select:{
                   unreadMessage: true,
                 },
+                take: 1,
               },
             },
           },
         },
-      });
+      });      
+
       return chatrooms.chats;
     } catch (error) {
+      console.log(error)
       throw new HttpException(
         "database engine can't find the entities requested",
         HttpStatus.NOT_FOUND,
