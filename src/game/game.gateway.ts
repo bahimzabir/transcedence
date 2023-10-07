@@ -50,6 +50,7 @@ interface Room {
 	players: Player[];
 	data: GameData;
 	done: boolean;
+	pause: boolean;
 }
 
 
@@ -92,6 +93,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (this.ids.includes(userId)) {
 			console.log("user already connected");
 			client.emit('inGame');
+			await this.event.sendnotify('inGame', userId)
 			client.disconnect();
 		}
 		else {
@@ -133,7 +135,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
+				done: false,
+				pause: false,
 			};
 
 			players.forEach(player => {
@@ -215,7 +218,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
+				done: false,
+				pause: false
 			};
 
 			players.forEach(player => {
@@ -233,7 +237,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		else {
 			this.server.emit('out');
-			this.event.sendnotify('out', this.map.get(client))
+			await this.event.sendnotify('out', this.map.get(client))
 		}
 	}
 
@@ -258,40 +262,43 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
-		console.log("DISCONNECTION");
+		console.log("DISCONNECTION ....");
 		this.queue = this.queue.filter(player => (player.socket !== client))
 		this.ids = this.ids.filter(id => (id !== this.map.get(client)));
 		this.challengers.delete(this.map.get(client));
 		this.map.delete(client);
 	}
 
-	@Interval(10)
+	@Interval(8)
 	async moveBall() {
 		for (let room of this.gameService.getRooms()) {
-			room.data.ball.x += room.data.ball.velocityX;
-			room.data.ball.y += room.data.ball.velocityY;
+			if (!room.pause) {
+				room.data.ball.x += room.data.ball.velocityX;
+				room.data.ball.y += room.data.ball.velocityY;
+			}
 
 			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
 				room.data.ball.velocityY *= -1;
 			}
-			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
-				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				this.resetBall(room);
+			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
+				(room.data.ball.x > 1010) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				await this.resetBall(room, (room.data.ball.x > 1010) ? 'left' : 'right');
 
 				this.streamGateway.updateScore(
 					room.roomName,
 					room.data.leftScore,
 					room.data.rightScore
 				);
+				room.pause = true;
+      			await new Promise(resolve => setTimeout(resolve, 500));
+      			room.pause = false;
 			}
 
 			if (room.data.ball.x <= 10 && (room.data.ball.y > room.data.leftPlayerY && room.data.ball.y < room.data.leftPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
 				this.handlePaddleCollision(room.data.ball, room.data.leftPlayerY);
 				room.data.ball.velocityX *= -1;
 			}
 			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.rightPlayerY && room.data.ball.y < room.data.rightPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
 				this.handlePaddleCollision(room.data.ball, room.data.rightPlayerY);
 				room.data.ball.velocityX *= -1;
 			}
@@ -356,11 +363,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private resetBall(room: Room) : void  {
+	private async resetBall(room: Room, side: string) {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
-			velocityX: 5,
+			velocityX: (side === 'right') ? 5 : -5,
 			velocityY: 0,
 			speed: 5,
 		};
