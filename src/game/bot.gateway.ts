@@ -127,7 +127,7 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		
 	}
 
-	@Interval(10)
+	@Interval(8)
 	async moveBall() {
 		for (let room of this.rooms) {
 			room.data.ball.x += room.data.ball.velocityX;
@@ -169,10 +169,10 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
             if (room.data.ball.velocityX < 0)
                 return ;
             if (room.data.ball.y >= paddleCenterY + 40) {
-                room.data.botY += 2;
+                room.data.botY += 3;
             }
             else if (room.data.ball.y <= paddleCenterY - 40) {
-                room.data.botY -= 2;
+                room.data.botY -= 3;
             }
 
     }
