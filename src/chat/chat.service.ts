@@ -48,14 +48,12 @@ export class ChatService {
             unreadMessage: false,
           }
         })
-        console.log(r)
         const roomuser = await tsx.roomUser.findFirst({
           where:{
             userId: id,
             roomId: roomid,
           }
         })
-        console.log(roomuser.id)
       })
     } catch (error) {
       this.consoleLogger.error(error)
@@ -88,7 +86,6 @@ export class ChatService {
         }
       });
     } catch (error) {
-      console.log('HOLLA');
       throw error;
     }
   }
@@ -280,8 +277,6 @@ export class ChatService {
               },
             },
           });
-          // this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
-          console.log('FINISH FUNCTION HERE');
           this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
         }, 5000); // Unmute after 1 hour
         this.schedulerRegistry.addTimeout(
@@ -306,7 +301,6 @@ export class ChatService {
       });
       if (chatroom) {
         if (this.ismuted(chatroom, dto.id)) {
-          console.log(`${dto.id}id${dto.roomid}`)
           clearTimeout(
             this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
           );
@@ -387,8 +381,6 @@ export class ChatService {
             },
           });
           if (this.ismuted(chatroom, dto.id)) {
-            console.log("gothere")
-            console.log(`${dto.id}id${dto.roomid}`)
             clearTimeout(
               this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
             );
@@ -402,7 +394,6 @@ export class ChatService {
         }
       });
     } catch (error) {
-      console.log(error);
       throw error;
     }
     return true;
@@ -447,7 +438,6 @@ export class ChatService {
       });
       return rooms;
     } catch (error) {
-      console.log(error);
     }
   }
   async getroomembers(userid: number, roomID: number) {
@@ -544,13 +534,6 @@ export class ChatService {
       });
       return true;
     } catch (error) {
-      console.log({
-        error:
-          'error occured when trying create adm between id ' +
-          req.user.id +
-          ' and ' +
-          body.receiver,
-      });
       return false;
     }
   }
@@ -777,7 +760,6 @@ export class ChatService {
       });
       return freindship;
     } catch (error) {
-      console.log(error);
     }
   }
   findOne(id: number) {
