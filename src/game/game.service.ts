@@ -106,5 +106,14 @@ export class GameService {
         }
     }
 
+    async findRoom(userId: number) {
+        const room  = this.rooms.find(r => {
+            if (r.players[0].id === userId || r.players[1].id === userId)
+                return r
+            return null
+        })
+        return room
+    }
+
 
 }

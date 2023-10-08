@@ -180,10 +180,10 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
             if (room.data.ball.velocityX < 0)
                 return ;
             if (room.data.ball.y >= paddleCenterY + 40) {
-                room.data.botY += 2;
+                room.data.botY += 3;
             }
             else if (room.data.ball.y <= paddleCenterY - 40) {
-                room.data.botY -= 2;
+                room.data.botY -= 3;
             }
 
     }
@@ -194,14 +194,11 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	const paddleCenterY = paddleY + 40;
     	const deltaY = ball.y - paddleCenterY;
 
-    	// Calculate the normalized bounce angle
     	const normalizedDeltaY = deltaY / 40;
     	const maxBounceAngle = Math.PI / 4;
 
-    	// Calculate the bounce angle based on the normalized delta
     	const bounceAngle = normalizedDeltaY * maxBounceAngle;
 
-    	// Update the ball's velocity based on the new angle
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 

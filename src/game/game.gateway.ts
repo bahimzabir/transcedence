@@ -171,14 +171,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 		else {
 			console.log("no room");
-			client.emit("no_room");
+			client.emit("endMatch");
 		}
 	}
 	
 
 	@SubscribeMessage("challenge")
 	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-		// console.log('challenge');
 		await this.event.sendGameRequest(this.map.get(client), data);
 		this.challengers.set(this.map.get(client), client)
 		
@@ -261,8 +260,29 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	// handle disconnection of one of the players
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		console.log("DISCONNECTION ....");
+
+		const room  = await this.gameService.findRoom(this.map.get(client));
+		if (room) {
+			room.done = true;
+			console.log("MAAAMAAA SALIIIT 2");
+			const body = {
+				player1Id: room.players[0].id,
+				player2Id: room.players[1].id,
+				player1Score: (room.players[0].id === this.map.get(client)) ? -1 : room.data.leftScore,
+				player2Score: (room.players[1].id === this.map.get(client)) ? -1 : room.data.rightScore,
+				type: "classic",
+				winnerId: (room.players[0].id !== this.map.get(client)) ? room.players[0].id : room.players[1].id,
+				loserId: this.map.get(client)
+			};
+			await this.gameService.createGameRecord(body);
+			this.server.to(room.roomName).emit("endMatch");
+			await this.gameService.removeRoom(room.roomName);
+			await this.streamGateway.removeRoom(room.roomName);
+		}
+
+
 		this.queue = this.queue.filter(player => (player.socket !== client))
 		this.ids = this.ids.filter(id => (id !== this.map.get(client)));
 		this.challengers.delete(this.map.get(client));
@@ -323,26 +343,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
-			// if ((room.players[0].socket.disconnected || room.players[1].socket.disconnected) && 
-			// 	room.done === false)
-			// {
-			// 	room.done = true;
-			// 	console.log("MAAAMAAA SALIIIT 2");
-			// 	const body = {
-			// 		player1Id: room.players[0].id,
-			// 		player2Id: room.players[1].id,
-			// 		player1Score: room.data.leftScore,
-			// 		player2Score: room.data.rightScore,
-			// 		type: "classic",
-			// 		winnerId: (room.players[1].socket.disconnected) ? room.players[0].id : room.players[1].id,
-			// 		loserId: (room.players[0].socket.disconnected) ? room.players[1].id : room.players[0].id
-			// 	};
-			// 	await this.gameService.createGameRecord(body);
-			// 	this.server.to(room.roomName).emit("endMatch");
-			// 	await this.gameService.removeRoom(room.roomName);
-			// 	await this.streamGateway.removeRoom(room.roomName);
-			// }
-
 		}
 	}
 
@@ -352,14 +352,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	const paddleCenterY = paddleY + 40;
     	const deltaY = ball.y - paddleCenterY;
 
-    	// Calculate the normalized bounce angle
     	const normalizedDeltaY = deltaY / 40;
     	const maxBounceAngle = Math.PI / 4;
 
-    	// Calculate the bounce angle based on the normalized delta
     	const bounceAngle = normalizedDeltaY * maxBounceAngle;
 
-    	// Update the ball's velocity based on the new angle
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
