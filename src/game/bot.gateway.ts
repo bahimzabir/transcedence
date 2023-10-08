@@ -41,6 +41,7 @@ interface Room {
 	player: Player;
 	data: GameData;
 	done: boolean;
+	pause: boolean;
 }
 
 const socketConfig = {
@@ -98,7 +99,8 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 leftScore: 0,
                 rightScore: 0
             },
-            done: false
+            done: false,
+			pause: false
         }
 
         this.server.to(room.roomName).emit("join_room", {
@@ -127,30 +129,39 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		
 	}
 
-	@Interval(10)
+	@Interval(7)
 	async moveBall() {
 		for (let room of this.rooms) {
-			room.data.ball.x += room.data.ball.velocityX;
-			room.data.ball.y += room.data.ball.velocityY;
 
-            await this.moveBotPaddle(room);
+			if (!room.pause) {
+				room.data.ball.x += room.data.ball.velocityX;
+				room.data.ball.y += room.data.ball.velocityY;
+				await this.moveBotPaddle(room);
+			}
+
 
 			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
 				room.data.ball.velocityY *= -1;
 			}
-			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
-				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				await this.resetBall(room);
+			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
+				(room.data.ball.x > 1010) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				await this.resetBall(room, (room.data.ball.x > 1010) ? 'left' : 'right');
+
+				room.pause = true;
+      			await new Promise(resolve => setTimeout(resolve, 1000));
+      			room.pause = false;
 			}
 
-			if (room.data.ball.x <= 10 && (room.data.ball.y >= room.data.playerY && room.data.ball.y <= room.data.playerY+80)) {
+			if (room.data.ball.x === 15 && (room.data.ball.y >= room.data.playerY && room.data.ball.y <= room.data.playerY+80)) {
 				this.handlePaddleCollision(room.data.ball, room.data.playerY);
 				room.data.ball.velocityX *= -1;
 			}
-			if (room.data.ball.x >= 990 && (room.data.ball.y >= room.data.botY && room.data.ball.y <= room.data.botY+80)) {
+			if (room.data.ball.x === 985 && (room.data.ball.y >= room.data.botY && room.data.ball.y <= room.data.botY+80)) {
 				this.handlePaddleCollision(room.data.ball, room.data.botY);
 				room.data.ball.velocityX *= -1;
 			}
+
+			
 			this.server.to(room.roomName).emit("update", room.data);
 
 			if ((room.data.leftScore === 9 || room.data.rightScore === 9) &&
@@ -194,11 +205,11 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private async resetBall(room: Room) {
+	private async resetBall(room: Room, side: string) {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
-			velocityX: 5,
+			velocityX: (side === 'right') ? 5 : -5,
 			velocityY: 0,
 			speed: 5,
 		};

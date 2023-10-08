@@ -119,6 +119,8 @@ export class EventsGateway {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }
 
+  
+
   async sendGameRequest(oppId: number, userId: number) {
     this.server.to(this.onlineUsers.get(userId)).emit("challenge", oppId);
   }

@@ -31,6 +31,7 @@ interface Room {
 	players: Player[];
 	data: GameData;
     done: boolean;
+    pause: boolean;
 }
 
 @Injectable()
