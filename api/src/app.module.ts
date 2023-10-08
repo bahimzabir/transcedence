@@ -7,14 +7,8 @@ import { HomeModule } from './home/home.module';
 import { ChatModule } from './chat/chat.module';
 import { EventsGateway } from './events/events.gateway';
 import { GameModule } from './game/game.module';
-import { ServeStaticModule} from '@nestjs/serve-static';
-import { join } from 'path';
-import { EventsModule } from './events/events.module';
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'src/chat/img'),
-    }),
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UserModule,

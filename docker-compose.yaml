@@ -20,15 +20,15 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
+      - devdb
       - client
-      - api
 
   client:
     volumes:
       - ./client:/app
     build: ./client
     depends_on:
-      - api
+      - devdb
     
     
 
