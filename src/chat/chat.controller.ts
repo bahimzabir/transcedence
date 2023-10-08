@@ -15,7 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { v4 as uuidv4 } from 'uuid';
 @UseGuards(JwtGard)
 @Controller('chat')
 export class ChatController {
@@ -26,6 +26,11 @@ export class ChatController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './src/chat/img',
+        filename: (req, file, callback) => {
+          // Generate new filename using a unique identifier
+          const newFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+          callback(null, newFilename);
+        },
       }),
     }),
   )

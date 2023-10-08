@@ -24,7 +24,6 @@ export class UserService {
     private chatServices: ChatService,
   ) {}
   async editUser(req: any, body: any) {
-    console.log(body);
     try {
       if (body.fullname) {
         const fullname = body.fullname.split(' ');

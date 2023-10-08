@@ -46,7 +46,6 @@ export class AuthController {
   @UseGuards(AuthGuard('42'))
   async callback(@Req() req, @Res() res) {
     const url = await redirectUrl(this.prisma, req);
-    console.log(url);
     const r = await this.authService.SignIn(req);
     await res.cookie('jwt', r.token, {
         domain: 'localhost', // Set to your domain

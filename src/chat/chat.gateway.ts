@@ -38,7 +38,12 @@ export class ChatGateway {
   async removeroom(@ConnectedSocket() client, @MessageBody() roomid: number)
   {
     const userid: number =  client.user.id;
-    this.chatService.removechat(userid, roomid[0]);
+    try{
+      this.chatService.removechat(userid, roomid[0]);
+    }
+    catch(error){
+      this.sockets[userid].emit("error", error.message);
+    }
   }
 
   @SubscribeMessage("leaveroom")
@@ -144,20 +149,13 @@ export class ChatGateway {
       {
         const freindship = await this.chatService.getUserfreindship(id, user.id);
         if (freindship && freindship.status === 'BLOCKED') {
-          console.log(freindship)
           if (room.isdm)
             return false;
         }
         else if(this.sockets[user.id])
-        {
-          console.log("!!! 222")
           this.sockets[user.id].emit('newmessage', dto[0])
-        }
         else
-        {
-          console.log("HIIII")
           this.unreadmessage(user.id, dto[0]);
-        }
     }
   }
   this.chatService.create(dto[0], id);
