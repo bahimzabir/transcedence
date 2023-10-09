@@ -74,7 +74,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
             <div className="overlay">
                 <div className="pop-up-container">
                     <div className="flex justify-center items-center relative">
-                        <div className="add-channel w-[30em] h-[60vh] max-sm:w-[80vw] max-dm:w-[80vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vh] max-sm:py-[4vw] max-md:py-[4vw]">
+                        <div className="add-channel w-[50em] h-[65vh] max-sm:w-[40vw] max-md:w-[40vw] max-lg:w-[40vw] max-xl:w-[40vw] max-2xl:w-[40vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vw] max-sm:py-[4vw] max-md:py-[4vw]">
                             <div className="qr-code-container mt-[2vw]">
                                 <div className="qr-code">
                                     <div className="flex flex-col justify-between items-center gap-[1.4vw]">
@@ -86,7 +86,10 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             scan to activate 2 factor
                                             authentication
                                         </h3>
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Example" />
+                                        <img
+                                            className="w-[15vw]"
+                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Example"
+                                        />
                                         <form action="#" id="form">
                                             <div className="flex justify-center items-center">
                                                 <input
@@ -128,7 +131,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             </div>
                                             <button
                                                 type="submit"
-                                                className="verify-btn font-medium font-satoshi"
+                                                className="verify-btn font-medium font-satoshi text-[1vw]"
                                             >
                                                 Verify account
                                             </button>

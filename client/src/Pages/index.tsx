@@ -13,4 +13,13 @@ export { default as FriendComponent } from "../components/FriendComponent";
 export { default as PublicChannel } from "../components/PublicChannel";
 export { default as LiveGame } from "../components/LiveGame";
 export { default as AddChannel } from "../components/AddChannel";
-
+export { default as Member } from "../components/Member";
+export { default as MatchCard } from "../components/MatchCard";
+export { default as PasswordPopup } from "../components/PasswordPopup";
+export { default as AddFriend } from "../components/AddFriend";
+export { default as Error404 } from "./Error404";
+export { default as Error500 } from "./Error500";
+export { default as Game } from "../Game/Game";
+export { default as Practice } from "../Game/Practice";
+export { default as Spectate } from "../Game/Spectate";
+export { default as Challenge } from "../Game/Challenge";

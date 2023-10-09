@@ -1,19 +1,17 @@
-import Apollo from "../assets/Apollo.jpg";
-
 type props = {
     message: string;
     isSentByMe: boolean;
     img: string;
+    date: string;
 };
 
-const MessageContainer = ({ message, isSentByMe, img }: props) => {
-    console.log(img);
+const MessageContainer = ({ message, isSentByMe, img, date }: props) => {
     return (
         <>
             {isSentByMe ? (
                 <div className="flex justify-end items-end ml-[15vw] mb-[.5vw] gap-[.5vw]">
                     <span className="text-[.6vw] max-sm:text-[1.1vw] opacity-40 whitespace-nowrap">
-                        23:16 PM
+                        {date}
                     </span>
                     <div className="flex justify-end items-end">
                         <div className="flex justify-end">
@@ -39,7 +37,7 @@ const MessageContainer = ({ message, isSentByMe, img }: props) => {
                             </p>
                         </div>
                         <span className="text-[.6vw] max-sm:text-[1.1vw] opacity-40 whitespace-nowrap">
-                            23:16 PM
+                        {date}
                         </span>
                     </div>
                 </div>
