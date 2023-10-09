@@ -321,7 +321,7 @@ const Chat = () => {
         const newmember: MemberProps = {
           id: element.id,
           username: element.username,
-          img: "/api/images/" + element.id + ".png",
+          img: "/api/" + element.id + ".png",
           isAdmin: me != element.id ? true : false,
           roomid: selectedChannel.id,
         };

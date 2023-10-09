@@ -1,8 +1,10 @@
-import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res } from '@nestjs/common';
+import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
 import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto } from 'src/dto';
 import { promises } from 'dns';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @UseGuards(JwtGard)
 @Controller('users')
@@ -72,13 +74,19 @@ export class UserController {
   getUserGames(@Query("id") id: number) {
     return this.userService.getUserGames(id);
   }
-
-  //// Post Requests
-
-  @Post('me')
-  editUser(@Req() req: any, @Body() body: UserUpdateDto) {
-    console.log({ edituser: req.user });
-    console.log({ editbody: body });
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './src/chat/img',
+        filename: (req: any, file, callback) => {
+          const originalName = file.originalname;
+          const newName = req.user.id + ".png"
+          callback(null, newName);
+        },
+      }),
+    }),
+  )
+  editUser(@Req() req: any, @Body('body') body: UserUpdateDto, @UploadedFile() file: Express.Multer.File) {
     try {
       this.userService.editUser(req, body);
       return { message: 'user updated', data: body };
