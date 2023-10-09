@@ -274,7 +274,7 @@ const Chat = () => {
   }, [socket, channels]);
   useEffect(() => {
     if (socketRef.current === null) {
-      socketRef.current = io("http://localhost:8000/socket.io/chat", {
+      socketRef.current = io("/api", {
         withCredentials: true,
       });
       setSocket(socketRef.current);
