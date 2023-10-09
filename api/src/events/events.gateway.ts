@@ -13,7 +13,7 @@ import { NotificationDto } from 'src/dto';
 import { AuthService } from 'src/auth/auth.service';
 const socketConfig = {
   cors: {
-    origin: ['http://client', 'http://localhost:3000', 'http://localhost:8000', 'http://nginx:80'],
+    origin: ['http://client/', 'http://localhost:3000', 'http://localhost:8000', 'http://nginx:80'],
     credentials: true,
   },
   namespace: 'user',

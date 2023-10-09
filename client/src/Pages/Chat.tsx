@@ -274,9 +274,7 @@ const Chat = () => {
   }, [socket, channels]);
   useEffect(() => {
     if (socketRef.current === null) {
-      socketRef.current = io("/api", {
-        withCredentials: true,
-      });
+      socketRef.current = io("/api/chat")
       setSocket(socketRef.current);
     }
     socket?.on("error", (val: string) => {
@@ -318,11 +316,12 @@ const Chat = () => {
           return true;
         }
       });
-      getmember.members.forEach((element: { username: string; id: number }) => {
+      getmember.members.forEach((element: any) => {
+        console.log(element)
         const newmember: MemberProps = {
           id: element.id,
           username: element.username,
-          img: "/api/" + element.id + ".png",
+          img: element.photo,
           isAdmin: me != element.id ? true : false,
           roomid: selectedChannel.id,
         };

@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const socket = io("http://localhost:3000/user", {
+const socket = io("/api/user", {
     withCredentials: true,
 });
 
@@ -68,7 +68,7 @@ const CustomNotification: React.FC<NotificationData> = ({
 
     const decline = () => {
         toast.dismiss();
-        const gameSock = io("http://localhost:3000/game", {
+        const gameSock = io("http://api/game", {
             withCredentials: true,
         });
         gameSock.emit('reject', senderId)
@@ -177,7 +177,7 @@ const recieveNotification = () => {
     socket?.on("challenge", (data: number) => {
         console.log("Challenge user: ", data);
         axios.get(
-            `http://localhost:3000/users/userinfos?id=${data}`,
+            `http://api/users/userinfos?id=${data}`,
             { withCredentials: true }
         ).then((res) => {
             const data = res.data;

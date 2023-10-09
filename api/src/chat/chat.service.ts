@@ -461,6 +461,7 @@ export class ChatService {
           select: {
             username: true,
             id: true,
+            photo: true,
           },
         },
       },

@@ -77,7 +77,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './src/chat/img',
+        destination:'/app/src/img',
         filename: (req: any, file, callback) => {
           const originalName = file.originalname;
           const newName = req.user.id + ".png"

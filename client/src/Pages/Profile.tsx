@@ -143,7 +143,6 @@ const Profile = () => {
         }
         console.log(data)
         // form.append("photo", data.photo);
-        console.log(body);
         await axios.post("/api/users/me", form, {
             withCredentials: true,
         });

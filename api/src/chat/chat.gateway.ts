@@ -12,9 +12,10 @@ enum freindship {
 @UseGuards(JwtWebSocketGuard)
 @WebSocketGateway({
   cors: {
-    origin: ['http://client', 'http://localhost:3000'],
+    origin: ['http://client',  'http://nginx:80'], 
     credentials: true,
   },
+  namespace: 'chat',
 })
 export class ChatGateway {
   constructor(private readonly chatService: ChatService, private prisma: PrismaService, private events: EventsGateway) { }

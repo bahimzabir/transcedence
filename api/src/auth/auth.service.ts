@@ -113,11 +113,10 @@ export class AuthService {
   
   downloadimg(url: string, id: number)
   {
-    const filepath = path.join(__dirname, '../../src/chat/img/');
     fetch(url)
     .then((response) => response.buffer())
     .then((buffer) => {
-      fs.writeFile(path.join(filepath, id + ".png"), buffer)}
+      fs.writeFile(path.join("/app/src/img/", id + ".png"), buffer)}
     );
   }
   async Signup(req) {
@@ -140,7 +139,7 @@ export class AuthService {
           id: user.id,
         },
         data:{
-          photo: "/images" + user.id + ".png",
+          photo: "/images/" + user.id + ".png",
         }
       })
       return user;
