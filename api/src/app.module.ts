@@ -7,6 +7,7 @@ import { HomeModule } from './home/home.module';
 import { ChatModule } from './chat/chat.module';
 import { EventsGateway } from './events/events.gateway';
 import { GameModule } from './game/game.module';
+import { ImagesModule } from './images/images.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -16,6 +17,7 @@ import { GameModule } from './game/game.module';
     HomeModule,
     ChatModule,
     GameModule,
+    ImagesModule,
   ],
   //controllers: [GameController],
 })

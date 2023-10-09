@@ -120,7 +120,7 @@ const Chat = () => {
     };
     const getimg = async (roomid: number) => {
         const res = await axios.get(
-            "/api/" + roomid + "room.png",
+            "/api/images/" + roomid + "room.png",
             {
                 withCredentials: true,
             }
@@ -193,7 +193,7 @@ const Chat = () => {
                         messages = [...messages, { message: msgs[i].content, isSentByMe: true,  img: ""}]
                     }
                     else {
-                        messages = [...messages, { message: msgs[i].content, isSentByMe: false, img: "/api/" + msgs[i].senderId + ".png" }]
+                        messages = [...messages, { message: msgs[i].content, isSentByMe: false, img: "/api/images/" + msgs[i].senderId + ".png" }]
                     }
                 }
                 setMessages(messages);
@@ -230,7 +230,7 @@ const Chat = () => {
                 {
                     message: dto[0].message,
                     isSentByMe: false,
-                    img: "/api/" + dto[0].senderId + ".png",
+                    img: "/api/images/" + dto[0].senderId + ".png",
                 },
             ]);
         });
