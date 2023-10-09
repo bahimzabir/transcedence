@@ -274,7 +274,10 @@ const Chat = () => {
   }, [socket, channels]);
   useEffect(() => {
     if (socketRef.current === null) {
-      socketRef.current = io("/api/chat")
+      socketRef.current = io({
+        path: "/socket.io",
+      })
+      console.log(socketRef.current)
       setSocket(socketRef.current);
     }
     socket?.on("error", (val: string) => {

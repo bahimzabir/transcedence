@@ -4,8 +4,8 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const socket = io("/api/user", {
-    withCredentials: true,
+const socket = io({
+    path: "/socket.io/user",
 });
 
 const setOnline = async () => {
