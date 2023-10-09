@@ -149,6 +149,7 @@ const Chat = () => {
     let newchannel: intersetchannel[] = [];
     const rooms = await getRoomChannels();
     for (const element of rooms) {
+      console.log(element)
       if (element.isdm !== true) {
         const room: intersetchannel = {
           name: element.name,
@@ -257,7 +258,7 @@ const Chat = () => {
           {
             message: dto.message,
             isSentByMe: false,
-            img: "/api/images/" + dto.sender + ".png",
+            img: "/images/" + dto.sender + ".png",
             date: `${now.getHours()}:${now.getMinutes()}`,
           },
         ]);
@@ -273,7 +274,7 @@ const Chat = () => {
   }, [socket, channels]);
   useEffect(() => {
     if (socketRef.current === null) {
-      socketRef.current = io("/api", {
+      socketRef.current = io("http://localhost:8000/socket.io/chat", {
         withCredentials: true,
       });
       setSocket(socketRef.current);

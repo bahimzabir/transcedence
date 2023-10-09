@@ -1,9 +1,6 @@
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
-import Challenge from "../Game/Challenge";
-import Apollo from "../assets/Apollo.jpg";
 import React, { useEffect } from "react";
-import "../styles/CustomNotification.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 

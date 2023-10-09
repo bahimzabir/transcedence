@@ -577,7 +577,7 @@ export class ChatService {
             id: chatRoom.id,
           },
           data: {
-            photo: 'http://api/images/' + chatRoom.id + 'room.png',
+            photo: '/images/' + chatRoom.id + 'room.png',
           },
         });
         const roomUser = await tsx.roomUser.create({
