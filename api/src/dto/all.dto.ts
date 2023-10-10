@@ -12,7 +12,6 @@ export class AuthDto {
 
 
 export class TwoFactorAuthenticationCodeDto {
-  @IsString()
   @IsNotEmpty()
   twoFactorAuthenticationCode: string;
 }
@@ -20,9 +19,9 @@ export class UserTfaDto {
     @ApiProperty()
     username: string;
     @ApiProperty()
-    userId: number;
+    id: number;
     @ApiProperty()
-    twoFactorAuthenticationSecret: string;
+    twoFactorAuthSecret: string;
 }
 
 export class NotificationDto{

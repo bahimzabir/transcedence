@@ -28,9 +28,9 @@ export class AuthService {
 
 
 
-//   // towFA
 
-  async generateTwoFactorAuthenticationSecret(user: UserTfaDto) {
+
+  async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
     const otpauthUrl = authenticator.keyuri(
       user.username,
@@ -40,7 +40,7 @@ export class AuthService {
     // await this.userService.setTwoFactorAuthenticationSecret(secret, user.userId);
     await this.prisma.user.update({
       where: {
-        id: user.userId,
+        id: user.id,
       },
       data: {
         twoFactorAuthSecret: secret,
@@ -57,6 +57,7 @@ export class AuthService {
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
+    console.log("turnOnTwoFactorAuthentication");
     return this.prisma.user.update({
       where: {
         id: userId,
@@ -84,14 +85,13 @@ export class AuthService {
   ) {
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
-      secret: user.twoFactorAuthenticationSecret,
+      secret: user.twoFactorAuthSecret,
     });
   }
 
   public getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
-
 
   async verifyToken(token: string) {
     const payload: any = await this.jwtService.verify(token, {
@@ -163,7 +163,7 @@ export class AuthService {
       token: await this.generateToken(user),
     };
   }
-
+  
   async generateToken(user: any) {
     const payload = { sub: user.id, email: user.email };
     return this.jwtService.sign(payload, {
@@ -172,10 +172,10 @@ export class AuthService {
     });
   }
   public getCookieWithJwtAccessToken(
-    userId: number,
-    isSecondFactorAuthenticated = false,
+    id: number,
+    isTowFactorAuthEnabled = false,
   ) {
-    const payload: TokenPayload = { userId, isSecondFactorAuthenticated };
+    const payload: TokenPayload = { id, isTowFactorAuthEnabled };
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
