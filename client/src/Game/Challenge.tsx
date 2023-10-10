@@ -30,9 +30,11 @@ interface PlayerData {
     photo: string;
 }
 
-function Game() {
+function Challenge() {
     const [started, setStarted] = useState<boolean>(false);
+
     const [roomName, setRoomName] = useState<string>();
+
     const [socket, setSocket] = useState<Socket | null>(null);
 
     const [data, setData] = useState<GameData>();
@@ -71,11 +73,23 @@ function Game() {
     }, []);
 
     useEffect(() => {
-        socket?.on("inGame", () => {
-            navigate("/home");
-        });
+        const queryParams = new URLSearchParams(window.location.search);
+        let opp = queryParams.get("opp");
+        if (opp === null) opp = "0";
+        let n = queryParams.get("num");
+        if (n === null) n = "0";
 
-        socket?.emit("join");
+        const num: number = +n
+        const oppId: number = +opp;
+        console.log('num === ', num);
+        socket?.on("inGame", () => {
+            console.log("User already in a game");
+            navigate(-1);
+        });
+        if (num === 1)
+            socket?.emit("challenge", oppId);
+        else if (num === 2)
+            socket?.emit("acceptChallenge", oppId);
 
         socket?.on("join_room", (obj: any) => {
             console.log("JOINING ROOM ...");
@@ -117,6 +131,10 @@ function Game() {
             setEndMatch(true);
         });
 
+        socket?.on('out', () => {
+            navigate(-1);
+        })
+
         return () => {
             socket?.off("update");
             socket?.off("join_room");
@@ -131,6 +149,13 @@ function Game() {
         socket?.emit("move", { posY, roomName });
     };
 
+    const replay = () => {
+        socket?.connect();
+        socket?.emit("join");
+        setStarted(false);
+        setEndMatch(false);
+    };
+
     if (endMatch) {
         socket?.disconnect();
         return (
@@ -143,14 +168,14 @@ function Game() {
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/game")}
+                        onClick={() => replay()}
                     >
                         Yes
                     </button>
 
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/home")}
+                        onClick={() => navigate(-1)}
                     >
                         No
                     </button>
@@ -161,7 +186,7 @@ function Game() {
         return (
             <div className="flex flex-col items-center justify-center w-full h-screen absolute">
                 <h2 className="font-bold font-satoshi text-[1.5vw] text-center">
-                    Waiting for a Player to join...
+                    Waiting your opponent to accept your challenge...
                 </h2>
                 <Lottie animationData={waiting} loop={true} className="w-60" />
             </div>
@@ -230,4 +255,4 @@ function Game() {
     );
 }
 
-export default Game;
+export default Challenge;

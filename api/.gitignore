@@ -15,12 +15,9 @@ lerna-debug.log*
 # OS
 .DS_Store
 
-<<<<<<< HEAD
-=======
 bun.lockb
 
 
->>>>>>> master/master
 # Tests
 /coverage
 /.nyc_output
@@ -49,6 +46,5 @@ database/db/*
 
 prisma/migrations
 #images
-src/chat/img/*
 *.png
 .env

@@ -5,7 +5,6 @@ import axios from "axios";
 import { QrCode } from "./index";
 import "../styles/Profile.css";
 
-
 interface Data {
     photo?: string;
     username?: string;
@@ -15,10 +14,20 @@ interface Data {
     github?: string;
     linkedin?: string;
     instagram?: string;
-};
+}
 
 const Profile = () => {
-    const [data, setData] = useState<Data>({});
+    const [data, setData] = useState<Data>({
+        photo: "",
+        username: "",
+        fullname: "",
+        bio: "",
+        online: false,
+        github: "",
+        linkedin: "",
+        instagram: "",
+    });
+    const [photo, setPhoto] = useState<File>();
 
     const [isBioEditing, setIsBioEditing] = useState(false);
     // const [isAuthOn, setIsAuthOn] = useState(false);
@@ -33,17 +42,17 @@ const Profile = () => {
         axios
             .get("/api/users/me", { withCredentials: true })
             .then((res) => {
-                const data: Data = {
+                const _data: Data = {
                     photo: res.data.photo,
                     username: res.data.username,
                     fullname: `${res.data.firstname} ${res.data.lastname}`,
                     bio: res.data.bio,
                     online: res.data.online,
-                    github: "",
-                    linkedin: "",
-                    instagram: "",
+                    github: res.data.github,
+                    linkedin: res.data.linkedin,
+                    instagram: res.data.instagram,
                 };
-                setData(data);
+                setData(_data);
             });
     }, []);
 
@@ -62,9 +71,7 @@ const Profile = () => {
     };
 
     const handleBioChange = (e: any) => {
-        setData({...data,
-            bio: e.target.value,
-        });
+        setData({ ...data, bio: e.target.value });
     };
 
     const handleBioSave = () => {
@@ -78,68 +85,68 @@ const Profile = () => {
     //     }));
     // };
 
-    // const handleOnline = () => {        
+    // const handleOnline = () => {
     //     setOnline(!online);
     // };
 
     const handleGithubChange = (e: any) => {
         if (e.target.value !== null) {
-            setData({...data,
-                github: e.target.value,
-            });
+            setData({ ...data, github: e.target.value });
         }
     };
 
     const handleLinkedinChange = (e: any) => {
         if (e.target.value !== null) {
-            setData({...data,
-                linkedin: e.target.value,
-            });
+            setData({ ...data, linkedin: e.target.value });
         }
     };
 
     const handleInstagramChange = (e: any) => {
         if (e.target.value !== null) {
-            setData({...data,
-                instagram: e.target.value,
-            });
+            setData({ ...data, instagram: e.target.value });
         }
     };
 
     const handleUsernameChange = (e: any) => {
         if (e.target.value !== null) {
-            setData({...data,
-                username: e.target.value,
-            });
+            setData({ ...data, username: e.target.value });
         }
     };
 
     const handleFullNameChange = (e: any) => {
         if (e.target.value !== null) {
-            setData({...data,
-                fullname: e.target.value,
-            });
+            setData({ ...data, fullname: e.target.value });
         }
     };
 
-    const handleImageChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-        // const file = e.target.files && e.target.files[0];
-        // // setImage(file);
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setData({ ...data, photo: URL.createObjectURL(e.target.files[0]) });
+            setPhoto(e.target.files[0]);
+        }
     };
 
     const postData = async () => {
+        const form = new FormData();
         const body: any = {
             bio: data.bio,
             username: data.username,
+            firstname: data.fullname?.split(" ")[0],
+            lastname: data.fullname?.split(" ")[1],
+            github: data.github,
+            linkedin: data.linkedin,
+            instagram: data.instagram,
         };
-        
-        console.log(body);
-        await axios.post(
-            "/api/users/me",
-            body,
-            { withCredentials: true }
-        );
-        navigate(-1);
+        form.append("body", JSON.stringify(body));
+        if (photo) {
+            form.append("file", photo);
+        }
+        console.log(data)
+        // form.append("photo", data.photo);
+        await axios.post("/api/users/me", form, {
+            withCredentials: true,
+        });
+        navigate('/home');
     };
 
     const navigate = useNavigate();
@@ -151,7 +158,7 @@ const Profile = () => {
                     <div className="img-holder absolute top-[6vw] max-sm:top-[6vw] max-md:top-[3vw]">
                         <label htmlFor="imageInput">
                             <img
-                                className="w-[6vw] h-[6vw] max-sm:w-[14vw] max-sm:h-[14vw] max-md:w-[14vw] max-md:h-[14vw] rounded-full cursor-pointer"
+                                className="w-[6vw] h-[6vw] max-sm:w-[14vw] max-sm:h-[14vw] max-md:w-[14vw] max-md:h-[14vw] rounded-full cursor-pointer object-cover"
                                 src={data?.photo}
                                 alt="Apollo"
                             />
@@ -340,7 +347,7 @@ const Profile = () => {
                             <h3 className="font-light text-[1vw] max-sm:text-[2vw] max-md:text-[2vw]">
                                 <a
                                     className=" hover:cursor-pointer"
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => navigate('/home')}
                                 >
                                     CANCEL
                                 </a>

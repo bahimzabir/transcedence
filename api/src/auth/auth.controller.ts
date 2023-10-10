@@ -50,7 +50,8 @@ export class AuthController {
 
   @Get('signin')
   @UseGuards(AuthGuard('42'))
-  SignIn() { }
+  SignIn() {
+  }
 
   @Get('callback')
   @UseGuards(AuthGuard('42'))

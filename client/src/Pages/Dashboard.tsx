@@ -51,6 +51,13 @@ interface Score {
     score2: number;
 }
 
+interface room {
+    id: number;
+    photo: string;
+    members_size: number;
+    name: string;
+    state: string;
+}
 const Dashboard = () => {
     const [isHovered, setIsHovered] = useState(null);
     const [isActiveUser, setIsActiveUser] = useState(null);
@@ -63,7 +70,6 @@ const Dashboard = () => {
     const handleUserClick = (userId: any) => {
         setIsActiveUser(userId === isActiveUser ? null : userId);
     };
-
     // const [userHover, setUserHover] = useState(null);
     // const handleUserHoverEnter = (userId: any) => {
     //     setUserHover(userId);
@@ -74,12 +80,14 @@ const Dashboard = () => {
 
     const [users, setUsers] = useState<User[]>([]);
     const [query, setQuery] = useState("");
+    const [notifications, setNotifications] = useState([]);
     const searchContainerRef = useRef<HTMLDivElement | null>(null);
 
     const [friends, setFriends] = useState<Friend[]>([]);
     const [socket, setSocket] = useState<Socket>();
     const [games, setGames] = useState<Game[]>([]);
     const [gamesMap, setGamesMap] = useState(new Map<string, Score>());
+    const [rooms, setRooms] = useState<room[]>([]);
 
     useEffect(() => {
         setSocket(
@@ -141,7 +149,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         socket?.on("removeRoom", (data) => {
-            console.log("remove ===> \n");
+
             setGamesMap(new Map<string, any>(data.map));
             const newGames: Game[] = games.filter(
                 (game) => game.roomName !== data.roomName
@@ -167,6 +175,22 @@ const Dashboard = () => {
                         ...prevFriends,
                         ...newFriends,
                     ]);
+                });
+        } catch (error) {
+            console.error("Error fetching friends:", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            axios
+                .get("/api/users/me/getnotifications", {
+                    withCredentials: true,
+                })
+                .then((res) => {
+                    console.log(res.data);
+                    const newNotifications = res.data;
+                    setNotifications(newNotifications);
                 });
         } catch (error) {
             console.error("Error fetching friends:", error);
@@ -202,6 +226,34 @@ const Dashboard = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [searchContainerRef]);
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const res = await axios.get(
+                    "/api/chat/getallrooms",
+                    {
+                        withCredentials: true,
+                    }
+                );
+                const rooms = res.data;
+                let setrooms: room[] = [];
+                rooms.forEach((element: room) => {
+                    setrooms = [
+                        ...setrooms,
+                        {
+                            id: element.id,
+                            photo: element.photo,
+                            members_size: element.members_size,
+                            name: element.name,
+                            state: element.state,
+                        },
+                    ];
+                });
+                setRooms(setrooms);
+            } catch (error) {}
+        };
+        fetchRooms();
+    }, []);
 
     return (
         <div className="my-[1vw] max-sm:my-[2vw] flex flex-col">
@@ -217,7 +269,7 @@ const Dashboard = () => {
                         className="flex flex-col items-center"
                         ref={searchContainerRef}
                     >
-                        <div className="search flex items-center container-1 outline-none absolute z-10 h-[2vw] max-sm:h-[3vh] max-md:h-[2.5vh] max-lg:h-[2.5vh] top-[2.3vw] right-[13.5vw] max-sm:top-[5.2vw] max-sm:right-[27.5vw] max-md:top-[2.8vw] max-md:right-[24.5vw] max-lg:top-[2.3vw] max-lg:right-[19.5vw]">
+                        <div className="search flex items-center container-1 outline-none absolute z-10 h-[2vw] max-sm:h-[3vh] max-md:h-[2.5vh] max-lg:h-[2.5vh] top-[2.1vw] right-[13.5vw] max-sm:top-[5.2vw] max-sm:right-[27.5vw] max-md:top-[2.8vw] max-md:right-[24.5vw] max-lg:top-[2.3vw] max-lg:right-[19.5vw]">
                             <input
                                 className="search-txt border-none outline-none bg-transparent float-left px-[.5vw] max-sm:px-[1vw] max-md:px-[1vw] max-lg:px-[1vw] text-[.6vw] max-sm:text-[2vw] max-md:text-[1.1vw] max-lg:text-[.8vw]"
                                 type="text"
@@ -263,7 +315,7 @@ const Dashboard = () => {
                     </div>
                     <div className="iconBtn">
                         <BsFillBellFill className="hover:scale-110 text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]" />
-                        <Notifications />
+                        <Notifications notifications={notifications}/>
                     </div>
                     <div className="iconBtn user-btn">
                         <BsFillPersonFill className="hover:scale-110 text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]" />
@@ -280,7 +332,7 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                     </Link>
-                                    <Link to="/api/logout">
+                                    <Link to="/">
                                         <div className="container-1 m-[.6vw] p-[.5vw] flex justify-center items-center">
                                             <div className="flex justify-between items-center gap-[.6vw]">
                                                 <FiLogOut className="text-[.8vw] max-sm:text-[1vh] max-md:text-[1.1vh] max-lg:text-[1.1vh]" />
@@ -353,7 +405,7 @@ const Dashboard = () => {
                                     <Link to="/game">
                                         <div className="card easy-mode flex justify-center items-center">
                                             <p className="font-bold font-satoshi lowercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
-                                                EASY
+                                                CLASSIC
                                             </p>
                                         </div>
                                     </Link>
@@ -364,10 +416,10 @@ const Dashboard = () => {
                                             </p>
                                         </div>
                                     </Link>
-                                    <Link to="/game">
+                                    <Link to="/practice">
                                         <div className="card hard-mode flex justify-center items-center">
                                             <p className="font-bold font-satoshi lowercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
-                                                Hard
+                                                Practice
                                             </p>
                                         </div>
                                     </Link>
@@ -393,7 +445,16 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 popular public channels
                             </h2>
-                            <PublicChannel />
+                            {rooms.map((room) => (
+                                <PublicChannel
+                                    name={room.name}
+                                    img={room.photo}
+                                    member_size={room.members_size}
+                                    id={room.id}
+                                    status={room.state}
+                                    key={room.id}
+                                />
+                            ))}
                         </div>
                         <div className="forth-container container-1 mt-[1vw] p-[1.5vw] max-sm:p-[3vw] w-1/2 overflow-y-scroll no-scrollbar max-sm:w-full max-sm:h-full max-md:w-full max-md:h-full">
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">

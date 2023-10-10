@@ -1,40 +1,40 @@
 
 
 all:
-	sudo sudo docker-compose up --build
+	  docker-compose up --build
 up:
-	sudo docker-compose up
+	 docker-compose up
 
 up-d:
-	sudo docker-compose up -d
+	 docker-compose up -d
 
 down:
-	sudo docker-compose down
+	 docker-compose down
 
 build:
-	sudo docker-compose build
+	 docker-compose build
 
 rebuild:
-	sudo docker-compose build --no-cache
+	 docker-compose build --no-cache
 
 clean:
-	sudo docker-compose down --rmi all --volumes
+	 docker-compose down --rmi all --volumes
 
 ps:
-	sudo docker-compose ps
+	 docker-compose ps
 
 logs:
-	sudo docker-compose logs
+	 docker-compose logs
 
 logs-f:
-	sudo docker-compose logs -f
+	 docker-compose logs -f
 
 
 # restart:
-#     sudo docker-compose restart
+#      docker-compose restart
 
 purne:
-	sudo docker system prune
+	 docker system prune
 
 purne-a:
-	sudo docker system prune -a
+	 docker system prune -a

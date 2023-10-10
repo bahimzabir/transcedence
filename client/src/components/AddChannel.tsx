@@ -4,7 +4,7 @@ import "../styles/AddChannel.css";
 
 type Props = {
     togglePopup: () => void;
-    addChannel: (channelProps: { name: string; img: File | null }) => void;
+    addChannel: (channelProps: any) => void;
 };
 
 const AddChannel = ({ togglePopup, addChannel }: Props) => {
@@ -13,14 +13,14 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
     const [isPrivate, setIsPrivate] = useState(false);
     const [isProtected, setIsProtected] = useState(false);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
-
+    const [password, setPassword] = useState("");
     const handleChange = (e: any) => {
         setChannelName(e.target.value);
     };
 
     const handleSave = () => {
         if (channelName !== "" && (isPublic || isPrivate || isProtected) && selectedImage) {
-            addChannel({ name: channelName, img: selectedImage });
+            addChannel({ name: channelName, img: selectedImage, password: password, status: isPublic ? "public" : isPrivate ? "private" : "protected"});
             setChannelName("");
             setSelectedImage(null);
             togglePopup();
@@ -49,13 +49,15 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
         const file = e.target.files && e.target.files[0];
         setSelectedImage(file);
     };
-
+    const handleChangepassword = (e: any) => {
+        setPassword(e.target.value);
+    };
     return (
         <div className="pop-up">
             <div className="overlay">
                 <div className="pop-up-container">
                     <div className="flex justify-center items-center relative">
-                        <div className="add-channel w-[30em] max-sm:w-[80vw] max-dm:w-[80vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vh] max-sm:py-[4vw] max-md:py-[4vw]">
+                        <div className="add-channel w-[30em] max-sm:w-[80vw] max-md:w-[80vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vh] max-sm:py-[4vw] max-md:py-[4vw]">
                             <div className="pop-up w-[25em] max-sm:w-full max-md:w-full flex flex-col gap-[.5vw] max-sm:gap-[2vw] max-md:gap-[2vw] max-sm:mx-[4vw] max-md:mx-[4vw]">
                                 <div className="flex flex-col items-center gap-[.5vw] max-sm:gap-[2.5vw] max-md:gap-[2.5vw]">
                                     <h3 className="text-[1em] uppercase font-semibold max-sm:text-[3vw] max-md:text-[2vw]">
@@ -141,7 +143,8 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                         </h3>
                                         <input
                                             type="password"
-                                            maxLength={42}
+                                            maxLength={8}
+                                            onChange={handleChangepassword}
                                             className="w-full h-[3vw] mt-2 max-sm:w-full max-sm:h-[5vh] max-md:w-full max-md:h-[5vh] rounded-[.5vw] max-sm:rounded-[1.2vw] max-md:rounded-[1.2vw] input-container outline-none indent-[1vw] text-[1vw] max-sm:text-[3vw] max-md:text-[2vw]"
                                         />
                                     </>

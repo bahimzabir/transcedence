@@ -15,6 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @UseGuards(JwtGard)
 @Controller('chat')
@@ -25,7 +26,11 @@ export class ChatController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './src/chat/img',
+        destination: '/app/src/img',
+        filename: (req, file, callback) => {
+          const newFilename = `${uuidv4()}${path.extname(file.originalname)}`;
+          callback(null, newFilename);
+        },
       }),
     }),
   )
@@ -33,10 +38,10 @@ export class ChatController {
     @Req() req: any,
     @Body() body,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+) {
     const creatroom = await this.chatService.createChatRoom(req, body);
     const filename = +creatroom.id + 'room.png';
-    await fs.rename(file.path, path.join('src/chat/img/', filename), () => {});
+    await fs.rename(file.path, path.join('/app/src/img/', filename), () => {});
     return creatroom;
   }
   @Post('newdm')

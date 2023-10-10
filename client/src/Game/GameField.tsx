@@ -1,7 +1,5 @@
 import { Sketch, SketchProps } from "@p5-wrapper/react";
 
-
-
 interface Ball {
     x: number;
     y: number;
@@ -14,6 +12,7 @@ interface GameProps extends SketchProps {
     leftPlayerY: number;
     rightPlayerY: number;
     ball: Ball;
+    scale: number;
 }
 
 const GameField: Sketch<GameProps> = (p5: any) => {
@@ -27,33 +26,19 @@ const GameField: Sketch<GameProps> = (p5: any) => {
 
     let scale = 1;
 
-    const getWidth = () => {
-        if (p5.windowWidth <= 600) {
-            scale = 0.4;
-        } else if (p5.windowWidth <= 800) {
-            scale = 0.5;
-        } else if (p5.windowWidth <= 1000) {
-            scale = 0.6;
-        } else if (p5.windowWidth <= 1400) {
-            scale = 0.8;
-        } else {
-            scale = 1;
-        }
-    };
-
-    p5.setup = () => {
-        getWidth();
-        p5.createCanvas(width * scale, height * scale);
-    };
-
     p5.updateWithProps = (props: GameProps) => {
         leftPlayerY = props.leftPlayerY;
         rightPlayerY = props.rightPlayerY;
         ball = props.ball;
+        scale = props.scale;
+        p5.resizeCanvas(width * scale, height * scale);
+    };
+
+    p5.setup = () => {
+        p5.createCanvas(width * scale, height * scale);
     };
 
     p5.windowResized = () => {
-        getWidth();
         p5.resizeCanvas(width * scale, height * scale);
     };
 

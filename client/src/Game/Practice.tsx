@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import GameField from "./GameField";
 import axios from "axios";
 import "../styles/Game.css";
-import waiting from "../assets/waiting.json";
-import Lottie from "lottie-react";
+import Apollo from "../assets/Apollo.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import { BsArrowLeftShort } from "react-icons/bs";
+import waiting from "../assets/waiting.json";
+import Lottie from "lottie-react";
 
 interface Ball {
     x: number;
@@ -19,8 +20,8 @@ interface Ball {
 
 interface GameData {
     ball: Ball;
-    leftPlayerY: number;
-    rightPlayerY: number;
+    playerY: number;
+    botY: number;
     leftScore: number;
     rightScore: number;
 }
@@ -30,14 +31,14 @@ interface PlayerData {
     photo: string;
 }
 
-function Game() {
-    const [started, setStarted] = useState<boolean>(false);
+function Practice() {
+    const [started, setStarted] = useState<boolean>(false)
     const [roomName, setRoomName] = useState<string>();
+
     const [socket, setSocket] = useState<Socket | null>(null);
 
     const [data, setData] = useState<GameData>();
-    const [playerOne, setPlayerOne] = useState<PlayerData>();
-    const [playerTwo, setPlayerTwo] = useState<PlayerData>();
+    const [player, setPlayer] = useState<PlayerData>();
     const [scale, setScale] = useState<number>(1);
     const [endMatch, setEndMatch] = useState<boolean>(false);
 
@@ -58,7 +59,7 @@ function Game() {
     };
 
     useEffect(() => {
-        setSocket(io("/api/game", { withCredentials: true }));
+        setSocket(io("/api/bot", { withCredentials: true }));
     }, []);
 
     useEffect(() => {
@@ -71,12 +72,7 @@ function Game() {
     }, []);
 
     useEffect(() => {
-        socket?.on("inGame", () => {
-            navigate("/home");
-        });
-
-        socket?.emit("join");
-
+        console.log("SOCKET ...");
         socket?.on("join_room", (obj: any) => {
             console.log("JOINING ROOM ...");
             setData(obj.data);
@@ -84,29 +80,16 @@ function Game() {
 
             axios
                 .get(
-                    `/api/users/userinfos?id=${obj.playerOneId}`,
+                    `/api/users/userinfos?id=${obj.playerId}`,
                     { withCredentials: true }
                 )
                 .then((res) => {
-                    setPlayerOne({
+                    setPlayer({
                         username: res.data.username,
                         photo: res.data.photo,
                     });
                 });
-
-            axios
-                .get(
-                    `/api/users/userinfos?id=${obj.playerTwoId}`,
-                    { withCredentials: true }
-                )
-                .then((res) => {
-                    setPlayerTwo({
-                        username: res.data.username,
-                        photo: res.data.photo,
-                    });
-                });
-
-            setStarted(true);
+                setStarted(true)
         });
 
         socket?.on("update", (data: GameData) => {
@@ -143,21 +126,22 @@ function Game() {
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/game")}
+                        onClick={() => navigate("/practice")}
                     >
                         Yes
                     </button>
 
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/home")}
+                        onClick={() => window.location.replace("/home")}
                     >
                         No
                     </button>
                 </div>
             </div>
         );
-    } else if (!started) {
+    }
+    else if (!started) {
         return (
             <div className="flex flex-col items-center justify-center w-full h-screen absolute">
                 <h2 className="font-bold font-satoshi text-[1.5vw] text-center">
@@ -168,7 +152,7 @@ function Game() {
         );
     }
     return (
-        <div className="bg-black h-screen flex flex-col py-12 items-center justify-center space-y-4  overflow-y-scroll">
+        <div className="bg-black h-screen flex flex-col items-center justify-center py-12  space-y-12  overflow-y-scroll">
             {/* This Link ain't working, Need to FIX!!!! */}
             <Link to="/home">
             <div className="absolute top-12 left-12 flex items-center space-x-2">
@@ -181,11 +165,11 @@ function Game() {
             <div className="flex space-x-16 lg:space-x-48 items-center">
                 <span className="flex flex-col items-center space-y-2">
                     <img
-                        src={playerOne?.photo}
+                        src={player?.photo}
                         className="h-16 lg:h-20 w-16 lg:w-20 rounded-full"
                     />
                     <span className="font-bold font-satoshi text-white text-lg">
-                        {playerOne?.username}
+                        {player?.username}
                     </span>
                 </span>
                 <span className="font-black font-satoshi text-4xl lg:text-6xl text-white">
@@ -193,19 +177,19 @@ function Game() {
                 </span>
                 <span className="flex flex-col items-center space-y-2">
                     <img
-                        src={playerTwo?.photo}
+                        src={Apollo}
                         className="h-16 lg:h-20 w-16 lg:w-20 rounded-full"
                     />
                     <span className="font-bold font-satoshi text-white text-lg">
-                        {playerTwo?.username}
+                        Apollo
                     </span>
                 </span>
             </div>
-            <div className="canvas" onMouseMove={handleMouseMove}>
+            <div className="canvas " onMouseMove={handleMouseMove}>
                 <ReactP5Wrapper
                     sketch={GameField}
-                    leftPlayerY={data?.leftPlayerY}
-                    rightPlayerY={data?.rightPlayerY}
+                    leftPlayerY={data?.playerY}
+                    rightPlayerY={data?.botY}
                     ball={data?.ball}
                     scale={scale}
                 />
@@ -230,4 +214,4 @@ function Game() {
     );
 }
 
-export default Game;
+export default Practice;
