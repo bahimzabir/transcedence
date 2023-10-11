@@ -18,7 +18,6 @@ const socketConfig = {
   namespace: 'user',
 };
 
-
 const validateUser = async (config: ConfigService, prisma: PrismaService, status: boolean, token?: string, id?: number,) => {
   let userID = id ? id : null
   if (!userID) {

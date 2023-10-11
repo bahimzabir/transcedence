@@ -42,13 +42,13 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
   async validate(payload: TokenPayload) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: payload.userId,
+        id: payload.id,
       },
     });
     if (!user.isTowFactorAuthEnabled) {
       return user;
     }
-    if (payload.isSecondFactorAuthenticated) {
+    if (payload.isTowFactorAuthEnabled) {
       return user;
     }
   }

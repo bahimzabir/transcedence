@@ -19,10 +19,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import RequestWithUser from './interfaces/requestWithUser.interface';
-import { TwoFactorAuthenticationCodeDto } from '../dto/all.dto';
 import { Response, response } from 'express';
 import { EventsGateway } from 'src/events/events.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto, TwoFactorAuthenticationCodeDto,  } from 'src/dto';
+import { use } from 'passport';
 
 // get redirect url 
 
@@ -84,7 +85,7 @@ export class GoogleAuthController {
     await res.cookie("jwt", r.token , {
       httpOnly: true,
       secure: true,
-    })
+    });
     res.redirect(url);
     // console.log({redirected: r});
   }
@@ -110,53 +111,67 @@ export class LogoutController {
   }
 }
 
+@UseGuards(JwtGard)
 @Controller('2fa')
 // @UseInterceptors(ClassSerializerInterceptor)
 export class TwoFactorAuthenticationController {
   constructor(private readonly authService: AuthService) {}
   //! this function is for debugging purposes but the whole controller is not working
   @Get()
-  a(@Req() request: Request) {
-    console.log({ request });
+  a(@Req() request: RequestWithUser) {
+    // console.log({ request });
     console.log("helldo");
-    return "hellodasf";
+    return request.user;
   }
 
   @Post('generate') //! generatin qr code and puthing teh secret key in db
   //! use jwt guard here
   async register(@Res() response: Response, @Req() request: RequestWithUser) {
+    // console.log({ request });
     const { otpauthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
         request.user,
       );
-    console.log({ otpauthUrl });
-    console.log({ request });
     return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
-  @Post('turn-on') //! hadi bayna kat turniha on
+  @Post('turn-on') //! hadi bayna kat turniha 
   @HttpCode(200)
   //! use jwt guard here
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
-    @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto,
+    // @Body() twoFactorAuthenticationCode: string,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
+      request.body.twoFactorAuthenticationCode,
       request.user,
     );
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
-    await this.authService.turnOnTwoFactorAuthentication(request.user.userId);
+    await this.authService.turnOnTwoFactorAuthentication(request.user.id);
   }
 
   @Post('turn-off') //! hadi bayna kat turniha of
+  // @UseGuards()
   @HttpCode(200)
   //! use jwt guard here
-  async turnOffTwoFactorAuthentication(@Req() request: RequestWithUser) {
-    await this.authService.turnOffTwoFactorAuthentication(request.user.userId);
-    response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
+  async turnOffTwoFactorAuthentication(
+    @Res() res: Response,
+    @Req() request: RequestWithUser,
+  ) {
+    console.log(request.user);
+    await this.authService.turnOffTwoFactorAuthentication(request.user.id);
+    await res.cookie(
+      "jwt",
+      this.authService.generateToken(request.user),
+    {
+      httpOnly: true,
+      secure: true,
+    });
+    res.redirect("http://localhost:8000/profile");
+    // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
+
   }
 
   @Post('authenticate') //
@@ -176,7 +191,7 @@ export class TwoFactorAuthenticationController {
     }
 
     const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(
-      request.user.userId,
+      request.user.id,
       true,
     );
     if (setCookies) {

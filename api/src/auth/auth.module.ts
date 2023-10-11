@@ -3,6 +3,7 @@ import {
   AuthController,
   GoogleAuthController,
   LogoutController,
+  TwoFactorAuthenticationController,
 } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -13,13 +14,14 @@ import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { EventsGateway } from 'src/events/events.gateway';
 import { GoogleStrategy } from './google/google.strategy';
 import { WsGuard } from './guard';
-
+import { JwtTwoFactorStrategy } from './startegy/jwt.startegy';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
   controllers: [
     AuthController,
     GoogleAuthController,
     LogoutController,
+    TwoFactorAuthenticationController,
   ],
   providers: [
     AuthService,
@@ -28,6 +30,7 @@ import { WsGuard } from './guard';
     GoogleStrategy,
     WsGuard,
     EventsGateway,
+    JwtTwoFactorStrategy,
   ],
   exports: [WsGuard],
 })
