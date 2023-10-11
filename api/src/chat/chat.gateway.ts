@@ -13,6 +13,7 @@ enum freindship {
 @WebSocketGateway({
   cors: {
     origin: ['http://client',  'http://nginx:80'], 
+    namespace: "chat"
   },
 })
 export class ChatGateway {
@@ -29,7 +30,6 @@ export class ChatGateway {
       id = +decoded.sub;
       return id;
     }
-    throw "NOT FOUND";
   }
 
 
@@ -41,7 +41,7 @@ export class ChatGateway {
       this.chatService.removechat(userid, roomid[0]);
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }  
   }
 
@@ -71,7 +71,7 @@ export class ChatGateway {
         await this.chatService.mute(userid, dto[0]);
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }
   }
   @SubscribeMessage("setadmin")
@@ -102,7 +102,7 @@ export class ChatGateway {
       }
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }
   }
   async handleConnection(client: any) {
