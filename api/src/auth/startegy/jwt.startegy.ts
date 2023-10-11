@@ -54,7 +54,7 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
           return request?.cookies?.Authentication;
         },
       ]),
-      secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
+      secretOrKey: "1111",
     });
   }
   async validate(payload: {

@@ -6,7 +6,6 @@ services:
     image: postgres:13-alpine
     ports:
       - 5432:5432
-      - 5556:5555
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "123"
@@ -24,8 +23,8 @@ services:
       - client
 
   client:
-    # volumes:
-    #   - ./client:/app
+    volumes:
+      - ./client:/app
     build: ./client
     depends_on:
       - devdb
@@ -34,9 +33,11 @@ services:
     
 
   api:
-    # volumes:
-    #   - ./api:/app
+    volumes:
+      - ./api:/app
     depends_on:
       - devdb
+    ports:
+    - 5555:5555
     build: ./api
 

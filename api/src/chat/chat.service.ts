@@ -1,4 +1,4 @@
-import {CanActivate, ConsoleLogger, ExecutionContext, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
+import {CanActivate, ConflictException, ConsoleLogger, ExecutionContext, HttpCode, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import * as jwt from 'jsonwebtoken';
@@ -11,6 +11,8 @@ import * as argon2 from 'argon2';
 import { EventsGateway } from 'src/events/events.gateway';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { AuthService } from 'src/auth/auth.service';
+import { dot } from 'node:test/reporters';
+import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
 @Injectable()
 export class ChatService {
   constructor(
@@ -159,37 +161,6 @@ export class ChatService {
       });
     } catch (error) {
       throw error;
-    }
-  }
-  async removeadmin(user: number, dto: userevents) {
-    try {
-      this.prisma.$transaction(async (tsx) => {
-        const chat = await tsx.chatRoom.findFirst({
-          where: {
-            id: dto.roomid,
-          },
-          select: {
-            roomUsers: true,
-          },
-        });
-        if (
-          chat.roomUsers.find((roomuser) => {
-            if (roomuser.userId == user && roomuser.status == 'OWNER')
-              return true;
-          })
-        ) {
-          await tsx.roomUser.update({
-            where: {
-              id: dto.id,
-            },
-            data: {
-              status: 'NORMAL',
-            },
-          });
-        }
-      });
-    } catch (error) {
-      return new WsException('error occured while removing admin');
     }
   }
   async setadmin(user: number, dto: userevents) {
@@ -402,7 +373,6 @@ export class ChatService {
         }
       });
     } catch (error) {
-      console.log(error);
       throw error;
     }
     return true;
@@ -675,6 +645,56 @@ export class ChatService {
     if (isMatch) return true;
     else false;
   }
+
+  async forcejoining(userId: number, roomid: number)
+  {
+    try{
+      await this.prisma.$transaction(async (tsx)=>{
+        const chatroom = await tsx.chatRoom.findFirst({
+          where: {
+            id: roomid,
+          },
+          select: {
+            members:{
+              where:{
+                id: userId,
+              }
+            },
+            id: true,
+          }
+        })
+        if(chatroom){
+          if(chatroom.members.length)
+            throw HttpStatus.CONFLICT
+          await this.prisma.chatRoom.update({
+            where:{
+              id: roomid,
+            },
+            data:{
+              members: {
+                connect:{
+                  id: userId,
+                },
+              },
+              members_size: {increment:1}
+            }
+          })
+          await this.prisma.roomUser.create({
+            data:{
+              userId: userId,
+              roomId: chatroom.id,
+            }
+          })
+        }
+        else
+          throw HttpStatus.CONFLICT
+        return HttpStatus.OK
+      })
+    }
+    catch(error) {
+      throw new ConflictException("user already exists")
+    }
+  }
   async joinroom(userId: number, body: joinroomdto) {
     try {
       const chat = await this.prisma.chatRoom.findFirst({
@@ -843,7 +863,6 @@ export class ChatService {
 export class JwtWebSocketGuard implements CanActivate {
   constructor(private authService: AuthService) {
   }
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
     const token = client.handshake.headers.cookie.split('=')[1]; // Extract the token from the WebSocket handshake query
