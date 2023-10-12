@@ -5,14 +5,11 @@ import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto
 import { promises } from 'dns';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
 @UseGuards(JwtGard)
-@Controller('users')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  //// Get Requests
-
+@Controller('test')
+export class TestController {
+  constructor(private readonly userService: UserService) { }
   @Get('me')
   getUser(@Req() req: any) {
     return req.user;
@@ -26,6 +23,12 @@ export class UserController {
   getUserTree(@Req() req: any) {
     return this.userService.getUserTree(req);
   }
+}
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
 
   @Get('me/friends')
   getUserFriends(@Req() req: any) {

@@ -24,6 +24,7 @@ import { EventsGateway } from 'src/events/events.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto, TwoFactorAuthenticationCodeDto,  } from 'src/dto';
 import { use } from 'passport';
+import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
 
 // get redirect url 
 
@@ -31,7 +32,7 @@ const redirectUrl = async (prisma: PrismaService, req: any) => {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        email: req.user.email
+        email: req.user.email,
       },
     });
     if (user) {
@@ -91,7 +92,9 @@ export class GoogleAuthController {
   }
 }
 
-@UseGuards(JwtGard)
+
+// @UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller("logout")
 export class LogoutController {
   constructor(
@@ -100,7 +103,7 @@ export class LogoutController {
   ) {}
   @Get()
   async Logout(@Req() req, @Res() res) {
-
+    console.log("logout");
     // what if the user saved his token?
     await res.clearCookie("jwt");
     // set the user to offline
@@ -111,11 +114,13 @@ export class LogoutController {
   }
 }
 
-@UseGuards(JwtGard)
 @Controller('2fa')
 // @UseInterceptors(ClassSerializerInterceptor)
 export class TwoFactorAuthenticationController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService,
+  ) {}
   //! this function is for debugging purposes but the whole controller is not working
   @Get()
   a(@Req() request: RequestWithUser) {
@@ -123,7 +128,7 @@ export class TwoFactorAuthenticationController {
     console.log("helldo");
     return request.user;
   }
-
+  @UseGuards(JwtGard)
   @Post('generate') //! generatin qr code and puthing teh secret key in db
   //! use jwt guard here
   async register(@Res() response: Response, @Req() request: RequestWithUser) {
@@ -135,6 +140,7 @@ export class TwoFactorAuthenticationController {
     return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
+  @UseGuards(JwtGard)
   @Post('turn-on') //! hadi bayna kat turniha 
   @HttpCode(200)
   //! use jwt guard here
@@ -142,6 +148,10 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     // @Body() twoFactorAuthenticationCode: string,
   ) {
+    console.log('turnOnTwoFactorAuthentication')
+    console.log(request.body);
+    console.log(request.body.twoFactorAuthenticationCode);
+    console.log('turnOnTwoFactorAuthentication')
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       request.body.twoFactorAuthenticationCode,
       request.user,
@@ -153,7 +163,7 @@ export class TwoFactorAuthenticationController {
   }
 
   @Post('turn-off') //! hadi bayna kat turniha of
-  // @UseGuards()
+  // @UseGuards(JwtTwoFactorGuard)
   @HttpCode(200)
   //! use jwt guard here
   async turnOffTwoFactorAuthentication(
@@ -162,24 +172,18 @@ export class TwoFactorAuthenticationController {
   ) {
     console.log(request.user);
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    await res.cookie(
-      "jwt",
-      this.authService.generateToken(request.user),
-    {
-      httpOnly: true,
-      secure: true,
-    });
-    res.redirect("http://localhost:8000/profile");
+    res.redirect("http://localhost:8000/");
     // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
 
   }
 
+  @UseGuards(JwtGard)
   @Post('authenticate') //
   @HttpCode(200)
   //! use jwt guard here
   async authenticate(
     @Req() request: RequestWithUser,
-    @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto,
+    @Body() twoFactorAuthenticationCode: string,
     setCookies = true,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
@@ -189,9 +193,8 @@ export class TwoFactorAuthenticationController {
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-
-    const accessTokenCookie = this.authService.getCookieWithJwtAccessToken(
-      request.user.id,
+    const accessTokenCookie = this.authService.generateToken(
+      request.user,
       true,
     );
     if (setCookies) {

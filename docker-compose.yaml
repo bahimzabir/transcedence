@@ -12,31 +12,32 @@ services:
       POSTGRES_PASSWORD: "123"
       POSTGRES_DB: nest
 
-  nginx:
-    build: ./nginx
-    ports:
-      - 8000:80
-    restart: always
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - devdb
-      - client
+#   nginx:
+#     build: ./nginx
+#     ports:
+#       - 8000:80
+#     restart: always
+#     volumes:
+#       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+#     depends_on:
+#       - devdb
+#       - client
 
-  client:
-    # volumes:
-    #   - ./client:/app
-    build: ./client
-    depends_on:
-      - devdb
-      - api
+#   client:
+#     # volumes:
+#     #   - ./client:/app
+#     build: ./client
+#     depends_on:
+#       - devdb
+#       - api
     
     
 
-  api:
-    # volumes:
-    #   - ./api:/app
-    depends_on:
-      - devdb
-    build: ./api
+#   api:
+#     # volumes:
+#     #   - ./api:/app
+#     depends_on:
+#       - devdb
+#     build: ./api
 
+# # 

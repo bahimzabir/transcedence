@@ -20,6 +20,7 @@ export class WsGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    console.log("context", context);
     const request = context.switchToWs();
     const data = request.getClient<Socket>();
     const cookies = data.handshake.headers.cookie;
@@ -32,6 +33,7 @@ export class WsGuard implements CanActivate {
   }
   async validateRequest(token: any): Promise<any> {
     const payload: any = await jwt.verify(token, this.config.get('JWT_SECRET'));
+    console.log("payload", payload);
     const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,

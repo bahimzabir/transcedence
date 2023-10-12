@@ -177,6 +177,12 @@ export class UserService {
     }
   }
 
+  //find user by id as a paramiter functio
+
+  // async findsUserbyId(_id: number) {
+  //   return 
+  // }
+
   async getUserbyId(req: any, id: number) {
     try {
       const user = await this.prisma.user.findUnique({
