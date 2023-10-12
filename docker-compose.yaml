@@ -24,8 +24,8 @@ services:
       - client
 
   client:
-    # volumes:
-    #   - ./client:/app
+    volumes:
+      - ./client:/app
     build: ./client
     depends_on:
       - devdb
@@ -34,8 +34,8 @@ services:
     
 
   api:
-    # volumes:
-    #   - ./api:/app
+    volumes:
+      - ./api:/app
     depends_on:
       - devdb
     build: ./api

@@ -55,7 +55,7 @@ function Spectate() {
     };
 
     useEffect(() => {
-        setSocket(io("/api/game", { withCredentials: true }));
+        setSocket(io("/socket.io/game"));
     }, []);
 
     useEffect(() => {

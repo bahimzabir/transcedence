@@ -14,7 +14,7 @@ import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { EventsGateway } from 'src/events/events.gateway';
 import { GoogleStrategy } from './google/google.strategy';
 import { WsGuard } from './guard';
-import { JwtTwoFactorStrategy } from './startegy/jwt.startegy';
+// import { JwtTwoFactorStrategy } from './startegy/jwt.startegy';
 @Module({
   imports: [PrismaModule, JwtModule.register({})],
   controllers: [
@@ -30,7 +30,7 @@ import { JwtTwoFactorStrategy } from './startegy/jwt.startegy';
     GoogleStrategy,
     WsGuard,
     EventsGateway,
-    JwtTwoFactorStrategy,
+    // JwtTwoFactorStrategy,
   ],
   exports: [WsGuard],
 })
