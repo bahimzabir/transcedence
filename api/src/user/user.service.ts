@@ -157,9 +157,7 @@ export class UserService {
   }
 
   async deleteNotification(req: any, ids: number[]) {
-    // convert all ids to number
     const intIds = ids.map((id) => +id);
-    console.log(+ids);
     try {
       const notifications = await this.prisma.notification.deleteMany({
         where: {

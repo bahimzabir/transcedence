@@ -8,6 +8,8 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  HttpException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { ChatService } from './chat.service';
@@ -60,6 +62,17 @@ export class ChatController {
   @Post('joinroom')
   joinRoom(@Req() req, @Body() body: any) {
     return this.chatService.joinroom(+req.user.id, body);
+  }
+  @Post("joinByinvt")
+  async joinroombyinvetation(@Req() req, @Body("roomid") body)
+  {
+    console.log(body);
+    try{
+      await this.chatService.forcejoining(req.user.id, body);
+    } 
+    catch(error){
+      throw new ConflictException("user already exists")
+    }
   }
   @Get('getroomsmsg')
   getroomMsg(@Req() req, @Query('id') roomid: number) {

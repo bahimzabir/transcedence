@@ -1,6 +1,5 @@
 #!/bin/sh
-sleep 5
-npm i
-npx prisma migrate dev --name init
+sleep 10
+npx prisma migrate dev --name init || npx prisma migrate deploy --schema ./prisma/schema.prisma
+sleep 30
 npm run start:dev
-npx prisma studio

@@ -8,9 +8,8 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import { CanActivate, ExecutionContext, Global, Injectable } from '@nestjs/common';
+import {Injectable } from '@nestjs/common';
 import { NotificationDto } from 'src/dto';
-import { AuthService } from 'src/auth/auth.service';
 const socketConfig = {
   cors: {
     origin: ['http://client/', 'http://nginx:80'],
@@ -55,7 +54,7 @@ export class EventsGateway {
   constructor(private prisma: PrismaService, private config: ConfigService) { }
 
   async handleConnection(client: Socket): Promise<void> {
-    console.log('')
+    console.log("CHL7 connected")
     try {
       const cookies = client.handshake.headers.cookie;
       let userID: number;

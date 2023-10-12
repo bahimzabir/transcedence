@@ -1,4 +1,3 @@
-
 FROM node:latest
 
 EXPOSE 5757
@@ -8,7 +7,4 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY . .
-
 CMD ["sh", "./init.sh"]
-

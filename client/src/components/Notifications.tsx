@@ -1,14 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const readNotification = async (id: number) => {
-  const data = {
-    id: [id],
-  };
-  await axios.post("/api/users/readnotification", data, {
-    withCredentials: true,
-  });
-};
+import { infonotify, notifyoferror } from "../Pages/chatInterfaces";
+import MsgNotification from "./MsgNotification";
 
 const NotificationCount = ({ count }: { count: number }) => {
   if (count === 0) return null;
@@ -38,9 +31,33 @@ const Notifications = ({
 }: {
   notifications: NotificationProps[];
 }) => {
+  const navigate = useNavigate();
+  const readNotification = async (notification: NotificationProps) => {
+    if(notification.type === "roomrequest")
+    {    
+      try{
+        const res = await axios.post("api/chat/joinByinvt", {roomid: notification.roomid}, {
+          withCredentials: true,
+        })
+        infonotify("You joined the room")
+        navigate('/chat')
+      }
+      catch(error:any){
+        notifyoferror(error.response.data.message)
+      }
+    }
+    else{
+      const data = {
+        id: [notification.id],
+      };
+      await axios.post("/api/users/readnotification", data, {
+        withCredentials: true,
+      });
+    }
+  };
   const unreadNotifications = notifications.filter(
     (notification) => notification.read === false
-  );
+    );
   return (
     <>
       <NotificationCount count={unreadNotifications.length} />
@@ -49,12 +66,12 @@ const Notifications = ({
           <div className="cont">
             {unreadNotifications.map((notification) => (
               <div
-                key={notification.id}
+              key={notification.id}
                 className="container-1 m-[.6vw] p-[.5vw] flex justify-center items-center"
               >
-                <Link
-                  to={`/view-profile?id=${notification.from}`}
-                  onClick={() => readNotification(notification.id)}
+                <button
+
+                  onClick={() => readNotification(notification)}
                 >
                   <div className="flex justify-between items-center gap-[.6vw] max-sm:gap-[2vw] max-md:gap-[2vw] max-lg:gap-[2vw]">
                     <img
@@ -65,7 +82,7 @@ const Notifications = ({
                       {notification.message}
                     </p>
                   </div>
-                </Link>
+                </button>
               </div>
             ))}
           </div>
