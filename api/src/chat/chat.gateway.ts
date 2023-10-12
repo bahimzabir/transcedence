@@ -4,16 +4,17 @@ import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventsGateway} from 'src/events/events.gateway';
 import { NotificationDto, chatroomRequest, userevents, messageDto } from 'src/dto';
-import { ConsoleLogger, Controller, UseGuards } from '@nestjs/common';
+import {ConsoleLogger, Controller, UseGuards,Injectable } from '@nestjs/common';
 enum freindship {
   BLOCKED
 }
-
+@Injectable()
 @UseGuards(JwtWebSocketGuard)
 @WebSocketGateway({
   cors: {
-    origin: ['http://client',  'http://nginx:80'], 
+    origin: ['http://client/', 'http://localhost:3000', 'http://localhost:8000', 'http://nginx:80'],
   },
+  namespace:"chat",
 })
 export class ChatGateway {
   constructor(private readonly chatService: ChatService, private prisma: PrismaService, private events: EventsGateway) { }
@@ -29,7 +30,6 @@ export class ChatGateway {
       id = +decoded.sub;
       return id;
     }
-    throw "NOT FOUND";
   }
 
 
@@ -41,7 +41,7 @@ export class ChatGateway {
       this.chatService.removechat(userid, roomid[0]);
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }  
   }
 
@@ -56,13 +56,6 @@ export class ChatGateway {
       this.server.to(client.id).emit("error", error);
     }
   }
-  @SubscribeMessage("removeadmin")
-  async removeadmin(@ConnectedSocket() client, @MessageBody() dto: userevents)
-  {
-    const userid: number = client.user.id
-    return this.chatService.removeadmin(userid, dto[0]);
-  }
-
   @SubscribeMessage("muteuser")
   async muteuser(@ConnectedSocket() client, @MessageBody() dto: userevents)
   {
@@ -71,7 +64,7 @@ export class ChatGateway {
         await this.chatService.mute(userid, dto[0]);
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }
   }
   @SubscribeMessage("setadmin")
@@ -96,24 +89,24 @@ export class ChatGateway {
     const userid: number =  client.user.id;
     try{
       await this.chatService.kick(userid, dto[0])
-      if(this.sockets[dto[0].id]){
-        this.server.to(this.sockets[dto[0].id].id).emit("leave");
-        client.emit("info", "the user got kicked");        
+      if(this.sockets.has(dto[0].id)){
+        this.server.to(this.sockets.get(dto[0].id).id).emit("leave");
       }
+      this.server.to(this.sockets.get(userid).id).emit("info", "the user got kicked");        
     }
     catch(error){
-      this.sockets[userid].emit("error", error.message);
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
     }
   }
   async handleConnection(client: any) {
     console.log("CONNECTED")
     const id = this.getclientbysocket(client);
-    this.sockets[id] = client;
+    this.sockets.set(id, client)
   }
   async handleDisconnect(@ConnectedSocket() client) {
     console.log("DISCONNECTED")
     const id = this.getclientbysocket(client);
-    delete this.sockets[id];
+    this.sockets.delete(id)
   }
   async unreadmessage(receiverid: number, dto: messageDto){
     await this.prisma.$transaction(async (tsx)=>{
@@ -138,7 +131,7 @@ export class ChatGateway {
     const id =  client.user.id;
     const room = await this.chatService.getchatroombyid(dto[0].id);
     if(!this.chatService.isexist(room, id)){
-      client.emit("error", "you are not in this room");
+      this.server.to(this.sockets.get(id).id).emit("error", "you are not in this room");
       return false
     }
     if(this.chatService.ismuted(room, id))
@@ -151,8 +144,11 @@ export class ChatGateway {
           if (room.isdm)
             return false;
         }
-        else if(this.sockets[user.id])
-          this.sockets[user.id].emit('newmessage', dto[0])
+        else if(this.sockets.has(user.id))
+        {
+          console.log("OMG")
+         this.server.to(this.sockets.get(user.id).id).emit('newmessage', dto[0])
+        }
         else
           this.unreadmessage(user.id, dto[0]);
     }
@@ -172,7 +168,7 @@ export class ChatGateway {
     });
     if(notifaction.length > 0)
     {
-      client.emit("warning");
+      this.server.to(this.sockets.get(client.user.id).id).emit("warning")
       return ;
     }
     const dto: chatroomRequest = body[0];
@@ -188,10 +184,10 @@ export class ChatGateway {
     }
     try {
       this.events.hanldleSendNotification(dto.userid, clientid, notify)
-      client.emit("success");
+      this.server.to(this.sockets.get(clientid).id).emit("success");
     }
     catch(error){
-      client.emit("error");
+      this.server.to(this.sockets.get(clientid).id).emit("error");
     }
   }
   @SubscribeMessage('removeChat')

@@ -6,7 +6,7 @@ import { promises } from 'dns';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
-@UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller('test')
 export class TestController {
   constructor(private readonly userService: UserService) { }

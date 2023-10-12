@@ -8,44 +8,14 @@ import {
 	MessageBody,
 	ConnectedSocket
 } from '@nestjs/websockets';
-
 import * as jwt from "jsonwebtoken"
-
 import { Server, Socket } from "socket.io"
 import { ConfigService } from '@nestjs/config';
-
-
-interface Ball {
-	x: number;
-	y: number;
-	velocityX: number;
-	velocityY: number;
-	speed: number;
-}
-
-interface GameData {
-	ball: Ball;
-	playerY: number;
-	botY: number;
-	leftScore: number;
-	rightScore: number;
-}
-
-interface Player {
-	socket: Socket;
-	id: number;
-};
-
-interface Room {
-	roomName: string;
-	player: Player;
-	data: GameData;
-	done: boolean;
-}
+import { Room, Player, Ball } from './bot.interface';
 
 const socketConfig = {
 	cors: {
-		origin: ['http://client', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
+		origin: ['http://client', 'http://nginx'],
 		credentials: true
 	},
 	namespace: 'bot'
@@ -122,7 +92,6 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return roomName;
 	}
 
-	// handle disconnection of one of the players
 	handleDisconnect(client: Socket) {
 		
 	}

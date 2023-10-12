@@ -8,59 +8,22 @@ import {
 	MessageBody,
 	ConnectedSocket
 } from '@nestjs/websockets';
-
 import * as jwt from "jsonwebtoken"
-
 import { Server, Socket } from "socket.io"
 import { GameService } from './game.service';
-import { UserService } from 'src/user/user.service';
-import { Console } from 'console';
-import { RouterModule } from '@nestjs/core';
 import { Injectable } from '@nestjs/common';
 import { StreamGateway } from './stream.gateway';
 import { ConfigService } from '@nestjs/config';
-import { join } from 'path';
 import { EventsGateway } from 'src/events/events.gateway';
-
-
-interface Ball {
-	x: number;
-	y: number;
-	velocityX: number;
-	velocityY: number;
-	speed: number;
-}
-
-interface GameData {
-	ball: Ball;
-	leftPlayerY: number;
-	rightPlayerY: number;
-	leftScore: number;
-	rightScore: number;
-}
-
-interface Player {
-	socket: Socket;
-	id: number;
-	side: string;
-};
-
-interface Room {
-	roomName: string;
-	players: Player[];
-	data: GameData;
-	done: boolean;
-}
-
+import { Room, Player, Ball } from './game.interface';
 
 const socketConfig = {
 	cors: {
-		origin: ['http://client', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
+		origin: ['http://client', 'http://nginx:80'],
 		credentials: true
 	},
 	namespace: 'game'
 };
-
 
 @Injectable()
 @WebSocketGateway( socketConfig )
@@ -86,7 +49,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(client: Socket) : Promise<void> {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
-
+		console.log('game socket');
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {

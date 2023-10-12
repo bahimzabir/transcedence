@@ -6,39 +6,12 @@ import {
 } from "@nestjs/websockets";
 import { GameService } from "./game.service";
 import { Injectable } from "@nestjs/common";
-import { Server, Socket } from "socket.io"
-
-interface Ball {
-	x: number;
-	y: number;
-	velocityX: number;
-	velocityY: number;
-	speed: number;
-}
-
-interface GameData {
-	ball: Ball;
-	leftPlayerY: number;
-	rightPlayerY: number;
-	leftScore: number;
-	rightScore: number;
-}
-
-interface Player {
-	socket: Socket;
-	id: number;
-	side: string;
-};
-
-interface Room {
-	roomName: string;
-	players: Player[];
-	data: GameData;
-}
+import { Server, Socket } from "socket.io";
+import { Room } from "./game.interface";
 
 const socketConfig = {
 	cors: {
-		origin: ['http://client', 'http://10.14.8.7:5173', 'http://10.14.8.7:3000'],
+		origin: ['http://client', 'http://nginx'],
 		credentials: true
 	},
 	namespace: 'stream'

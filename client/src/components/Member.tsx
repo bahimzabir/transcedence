@@ -7,7 +7,7 @@ import {
 
 import { Link } from "react-router-dom";
 import { Socket } from "socket.io-client";
-import { userevents } from "../Pages/Chat";
+import { userevents } from "../Pages/chatInterfaces";
   
   interface MemberProps {
     username: string;
@@ -55,7 +55,6 @@ import { userevents } from "../Pages/Chat";
       });
     };
     const muteuser = () => {
-      console.log("HOLLAL")
       const dto: userevents = {
         id: id,
         roomid: roomid,

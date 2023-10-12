@@ -139,7 +139,6 @@ export class  joinroomdto{
     id: number;
     @ApiProperty()
     status: string;
-    // @IsEmpty()
     @ApiProperty()
     password?: string;
 }

@@ -8,12 +8,11 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import { CanActivate, ExecutionContext, Global, Injectable } from '@nestjs/common';
+import {Injectable } from '@nestjs/common';
 import { NotificationDto } from 'src/dto';
-import { AuthService } from 'src/auth/auth.service';
 const socketConfig = {
   cors: {
-    origin: ['http://client/', 'http://localhost:3000', 'http://localhost:8000', 'http://nginx:80'],
+    origin: ['http://client/', 'http://nginx:80'],
   },
   namespace: 'user',
 };
@@ -21,7 +20,7 @@ const socketConfig = {
 const validateUser = async (config: ConfigService, prisma: PrismaService, status: boolean, token?: string, id?: number,) => {
   let userID = id ? id : null
   if (!userID) {
-    const payload: any = await jwt.verify(token, config.get('JWT_SECRET'));
+    const payload: any = jwt.verify(token, config.get('JWT_SECRET'));
     userID = payload.sub;
   }
   try {
@@ -55,9 +54,11 @@ export class EventsGateway {
   constructor(private prisma: PrismaService, private config: ConfigService) { }
 
   async handleConnection(client: Socket): Promise<void> {
+    console.log("CHL7 connected")
     try {
       const cookies = client.handshake.headers.cookie;
       let userID: number;
+      console.log('hello')
       if (cookies) {
         const token = client.handshake.headers.cookie.split("=")[1];
         userID = await this.validateUser(this.config, this.prisma, true, token);
@@ -111,8 +112,6 @@ export class EventsGateway {
     }
   }
 
-  // async notify(data: any, user)
-
   async sendnotify(val: string, userid: number) {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }
@@ -121,10 +120,8 @@ export class EventsGateway {
     this.server.to(this.onlineUsers.get(userId)).emit("challenge", oppId);
   }
 
-
   async hanldleSendNotification(clientId: number, senderId: number, data: NotificationDto) {
     try {
-      console.log('haaa')
       await this.prisma.notification.create({
         data: {
           user: {
@@ -150,12 +147,10 @@ export class EventsGateway {
       });
       const sockets = this.onlineUsers.get(clientId);
       if (sockets) {
-        console.log("sending notification");
         this.server.to(sockets).emit('notification', data);
       }
     } catch (error) {
       console.log(error);
     }
   }
-
 }

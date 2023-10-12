@@ -202,7 +202,7 @@ const Chat = () => {
             {
               message: msgs[i].content,
               isSentByMe: false,
-              img: "/api/" + msgs[i].senderId + ".png",
+              img: "/images/" + msgs[i].senderId + ".png",
               date: msgs[i].createdAt,
             },
           ];
@@ -274,10 +274,7 @@ const Chat = () => {
   }, [socket, channels]);
   useEffect(() => {
     if (socketRef.current === null) {
-      socketRef.current = io({
-        path: "/socket.io",
-      })
-      console.log(socketRef.current)
+      socketRef.current = io("/chat")
       setSocket(socketRef.current);
     }
     socket?.on("error", (val: string) => {
@@ -286,12 +283,13 @@ const Chat = () => {
     socket?.on("info", (val: string) => {
       infonotify(val);
     });
-    socket?.on("leavebyexit", async () => {
+    socket?.on("leavebyexit", async (val: string) => {
       await Getmyrooms();
+      infonotify(val)
       setSelectedChannel(null);
     });
-    socket?.on("leave", () => {
-      Getmyrooms();
+    socket?.on("leave", async () => {
+      await Getmyrooms();
     });
     return ()=> {
       socket?.disconnect();

@@ -59,7 +59,7 @@ function Practice() {
     };
 
     useEffect(() => {
-        setSocket(io("/api/bot", { withCredentials: true }));
+        setSocket(io("/socket.io/bot"));
     }, []);
 
     useEffect(() => {

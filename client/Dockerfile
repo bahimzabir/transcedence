@@ -1,4 +1,3 @@
-
 FROM node:latest
 
 EXPOSE 5757
@@ -8,9 +7,4 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
-
-COPY . .
-
 CMD ["sh", "./init.sh"]
-

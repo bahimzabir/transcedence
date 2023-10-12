@@ -25,11 +25,6 @@ export class AuthService {
     // private readonly userService: UserService,
   ) {}
 
-
-
-
-
-
   async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
     const otpauthUrl = authenticator.keyuri(
