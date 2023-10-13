@@ -4,6 +4,7 @@ import { BsLockFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { PasswordPopup } from "../Pages/index";
 import { ToastContainer, toast } from "react-toastify";
+import { notifyoferror } from "../Pages/chatInterfaces";
 
 interface Room {
     name: string;
@@ -29,30 +30,23 @@ const PublicChannel = ({
     const navigate = useNavigate();
     const [password, setPassword] = useState<string>('');
     const [popupsave, setPopupsave] = useState(false);
-    const alreadyjoined = () => 
-    {
-        toast.error("You have already joined this room", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: true,
-        closeOnClick: false,
-        draggable: false,
-        theme: "dark",
-        })
-    }
     const joinroom = async (data: Joinroominter) => {
-        const res = await axios.post(
-            "/api/chat/joinroom",
-            data,
-            {
-                withCredentials: true,
-            }
-            );
-        if (res.data == 200) {
-            navigate("/chat");
+        
+        try{
+            const res = await axios.post(
+                "/api/chat/joinroom",
+                data,
+                {
+                    withCredentials: true,
+                }
+                );
+                navigate("/chat");
         }
-        else if (res.data.status == 404){
-            alreadyjoined();
+        catch(error: any) {
+            if(error.code === 'ERR_NETWOR')
+                notifyoferror(error.message)
+            else
+                notifyoferror(error.response.data.message);
         }
     }
     const [popup, setPopup] = useState(false);

@@ -1,19 +1,17 @@
 import { Link } from "react-router-dom";
-import Apollo from "../assets/Apollo.jpg";
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { SocketContext } from "../Pages/Chat";
-
 //-------------------PROPS---------------------
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { badnotify, notify } from "../assets/toastNotifys";
 //-------------------PROPS---------------------
 
 interface AddFriendProps {
     toggleAddFriendPopup: () => void;
     socket: Socket | null;
     roomid: number;
+    roomname: string;
 }
 interface Friends {
     id: number;
@@ -25,6 +23,7 @@ const AddFriend = ({
     toggleAddFriendPopup,
     socket,
     roomid,
+    roomname,
 }: AddFriendProps) => {
     const [friend, setFreinds] = useState<Friends[]>([]);
     const getallmyfriends = async () => {
@@ -46,28 +45,6 @@ const AddFriend = ({
         setFreinds(members);
     };
 
-    const notify = (val: string) =>
-        toast.success(`🦄 ${val}`, {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-        });
-    const badnotify = (val: string) =>
-        toast.error(`😫 ${val}!`, {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-        });
     useEffect(() => {
         setallmyfreindsPopup();
     }, []);
@@ -75,6 +52,7 @@ const AddFriend = ({
         const dto = {
             roomid: roomid,
             userid: id,
+            roomname: roomname,
         };
         socket?.emit("invite", dto, {
             withCredentials: true,
@@ -101,7 +79,7 @@ const AddFriend = ({
                                         Invite Friends
                                     </h3>
                                     <div className="flex flex-col items-center justify-start h-[20vw] overflow-y-scroll no-scrollbar overflow-hidden pb-[1vw]">
-                                        {friend.map((user, idx) => (
+                                        {friend.map((user) => (
                                             <div
                                                 key={user.id}
                                                 className="w-full container-1 flex justify-between items-center py-[.6vw] px-[1vw]"

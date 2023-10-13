@@ -32,30 +32,6 @@ export class ChatGateway {
     }
   }
 
-
-  @SubscribeMessage("rmchat")
-  async removeroom(@ConnectedSocket() client, @MessageBody() roomid: number)
-  {
-    const userid: number =  client.user.id;
-    try{
-      this.chatService.removechat(userid, roomid[0]);
-    }
-    catch(error){
-      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
-    }  
-  }
-
-  @SubscribeMessage("leaveroom")
-  async leaveroom(@ConnectedSocket() client, @MessageBody() roomid: number)
-  {
-    const userid:number = client.user.id
-    try {
-      this.chatService.leaveroom(userid, roomid[0]);
-      this.server.to(client.id).emit("leavebyexit",  "👋 you left the room");
-    } catch (error) {
-      this.server.to(client.id).emit("error", error);
-    }
-  }
   @SubscribeMessage("muteuser")
   async muteuser(@ConnectedSocket() client, @MessageBody() dto: userevents)
   {
@@ -104,7 +80,6 @@ export class ChatGateway {
     this.sockets.set(id, client)
   }
   async handleDisconnect(@ConnectedSocket() client) {
-    console.log("DISCONNECTED")
     const id = this.getclientbysocket(client);
     this.sockets.delete(id)
   }
@@ -177,8 +152,8 @@ export class ChatGateway {
       userId: dto.userid,
       from: clientid,
       type: 'roomrequest',
-      message: 'you are invited to join a room',
-      photo: `/images/${dto.roomid}.png`,
+      message: `you are invited to join ${body[0].roomname} room`,
+      photo: `/images/${dto.roomid}room.png`,
       read: false,
       roomid: dto.roomid,
     }

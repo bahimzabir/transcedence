@@ -66,13 +66,7 @@ export class ChatController {
   @Post("joinByinvt")
   async joinroombyinvetation(@Req() req, @Body("roomid") body)
   {
-    console.log(body);
-    try{
       await this.chatService.forcejoining(req.user.id, body);
-    } 
-    catch(error){
-      throw new ConflictException("user already exists")
-    }
   }
   @Get('getroomsmsg')
   getroomMsg(@Req() req, @Query('id') roomid: number) {
@@ -89,5 +83,14 @@ export class ChatController {
   @Get('getdminfos')
   getdmroominfos(@Req() req, @Query('id') roomid: number) {
     return this.chatService.getdmroominfos(roomid, +req.user.id);
+  }
+  @Post("remove")
+  removechatroom(@Req() req, @Body("roomid") roomid: number){
+    this.chatService.removechat(req.user.id, roomid)
+  }
+  @Post("Leave")
+  leavechatroom(@Req() req, @Body("roomid") roomid: number)
+  {
+    this.chatService.leaveroom(req.user.id, roomid)
   }
 }
