@@ -86,11 +86,10 @@ export class ChatService {
                 id: roomid,
               },
             });
-          } else throw new Error('CANT DELTE THIS ROOM ONLY OWNER CAN');
+          } else throw new HttpException('CANT DELTE THIS ROOM ONLY OWNER CAN', 409);
         }
       });
     } catch (error) {
-      console.log('HOLLA');
       throw error;
     }
   }
@@ -156,7 +155,7 @@ export class ChatService {
             });
           }
         } else {
-          throw new Error('You Are Not In This Room');
+          throw new HttpException('You Are Not In This Room', 404);
         }
       });
     } catch (error) {
@@ -251,8 +250,6 @@ export class ChatService {
               },
             },
           });
-          // this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
-          console.log('FINISH FUNCTION HERE');
           this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
         }, 5000); // Unmute after 1 hour
         this.schedulerRegistry.addTimeout(
@@ -270,6 +267,13 @@ export class ChatService {
       await tsx.chatRoom.findFirst({
         where: {
           id: dto.roomid,
+          NOT: {
+            BannedUser: {
+              some: {
+                id: dto.id,
+              }
+            }
+          }
         },
         select: {
           mutedUser: true,
@@ -277,7 +281,6 @@ export class ChatService {
       });
       if (chatroom) {
         if (this.ismuted(chatroom, dto.id)) {
-          console.log(`${dto.id}id${dto.roomid}`)
           clearTimeout(
             this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
           );
@@ -301,6 +304,9 @@ export class ChatService {
             },
           },
         });
+      }
+      else {
+        this.event.sendnotify("user already banned", user)
       }
     });
   }
@@ -645,9 +651,9 @@ export class ChatService {
     if (isMatch) return true;
     else false;
   }
-
   async forcejoining(userId: number, roomid: number)
   {
+    console.log(roomid)
     try{
       await this.prisma.$transaction(async (tsx)=>{
         const chatroom = await tsx.chatRoom.findFirst({
@@ -664,6 +670,7 @@ export class ChatService {
           }
         })
         if(chatroom){
+          console.log(chatroom.members);
           if(chatroom.members.length)
             throw HttpStatus.CONFLICT
           await this.prisma.chatRoom.update({
@@ -692,6 +699,7 @@ export class ChatService {
       })
     }
     catch(error) {
+      // console.log(error)
       throw new ConflictException("user already exists")
     }
   }
@@ -712,17 +720,21 @@ export class ChatService {
           members: true,
           state: true,
           password: true,
+          BannedUser: {
+            where: {
+              id: userId,
+            }
+          }
         },
       });
       if (!chat) {
         throw new HttpException('you are already in this room', 404);
-        return false;
       }
+      if(chat.BannedUser.length)
+        throw new HttpException('you are banned from this room', 404);
       if (chat.state === 'protected') {
-        if (!(await this.isprotected(chat.password, body.password))) {
-          this.event.sendnotify('wrongpassword', userId);
-          return false;
-        }
+          if(!(await this.isprotected(chat.password, body.password)))
+              throw new HttpException('wrongpassword', 404);
       }
       await this.prisma.$transaction([
         this.prisma.roomUser.create({
@@ -747,7 +759,7 @@ export class ChatService {
       ]);
       return HttpStatus.OK;
     } catch (error) {
-      return error;
+      throw error
     }
   }
 

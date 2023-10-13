@@ -167,6 +167,12 @@ export class UserService {
     }
   }
 
+  //find user by id as a paramiter functio
+
+  // async findsUserbyId(_id: number) {
+  //   return 
+  // }
+
   async getUserbyId(req: any, id: number) {
     try {
       const user = await this.prisma.user.findUnique({
@@ -714,4 +720,27 @@ export class UserService {
       );
     }
   }
+
+  async getLeaderBoard() {
+    try {
+      const users = await this.prisma.user.findMany({
+        orderBy: {
+          wins: 'desc',
+        },
+        select: {
+          username: true,
+          photo: true,
+          wins: true,
+        },
+      });
+      return users;
+    } catch (error) {
+      throw new HttpException(
+        "ikhan safi",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+
 }

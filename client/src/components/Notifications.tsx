@@ -43,7 +43,10 @@ const Notifications = ({
         navigate('/chat')
       }
       catch(error:any){
-        notifyoferror(error.response.data.message)
+        if(error.code === 'ERR_BAD_REQUEST')
+          notifyoferror(error.response.data.message)
+        else
+          notifyoferror(error.message)
       }
     }
     else{

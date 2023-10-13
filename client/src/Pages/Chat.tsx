@@ -16,6 +16,7 @@ import {
   messagedto,
   notifyoferror,
 } from "./chatInterfaces";
+import { notify } from "../assets/toastNotifys";
 
 const Chat = () => {
   const [challengebutton, setChallengebutton] = useState(false);
@@ -25,7 +26,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<intermessages[]>([]);
   const [member, setMember] = useState<MemberProps[]>([]);
   const [selectedChannel, setSelectedChannel] =
-  useState<intersetchannel | null>(null);
+    useState<intersetchannel | null>(null);
   const selectedChannelRef = useRef(selectedChannel);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -75,10 +76,12 @@ const Chat = () => {
       formData.append("file", currentChannel.img);
       formData.append("name", currentChannel.name);
       formData.append("status", currentChannel.status);
+      if (currentChannel.password)
+        formData.append("password", currentChannel.password);
       await axios.post("/api/chat/new", formData, {
         withCredentials: true,
       });
-    } catch (error) {}
+    } catch (error) { }
     await Getmyrooms();
   };
   const [popup, setPopup] = useState(false);
@@ -242,13 +245,14 @@ const Chat = () => {
   async function receivemsg(dto: messagedto) {
     if (!selectedChannelRef.current || selectedChannelRef.current.id !== dto.roomid) {
       const index = channels.findIndex((channel) => channel.id === dto.roomid);
-      if (index != -1){
-        channels[index].notification =  true;
-        setChannels([...channels]); 
+      if (index != -1) {
+        channels[index].notification = true;
+        setChannels([...channels]);
       }
-      socket?.emit("messagedontseen", {id: await whoami() , roomid: dto.roomid}, {
-        withCredentials: true}
-        )
+      socket?.emit("messagedontseen", { id: await whoami(), roomid: dto.roomid }, {
+        withCredentials: true
+      }
+      )
     }
     if (selectedChannelRef.current) {
       if (selectedChannelRef.current?.id === dto.roomid) {
@@ -267,8 +271,7 @@ const Chat = () => {
   }
   useEffect(() => {
     socket?.on("newmessage", receivemsg);
-    return () =>
-    {
+    return () => {
       socket?.off("newmessage", receivemsg)
     }
   }, [socket, channels]);
@@ -291,7 +294,7 @@ const Chat = () => {
     socket?.on("leave", async () => {
       await Getmyrooms();
     });
-    return ()=> {
+    return () => {
       socket?.disconnect();
     }
   }, [socket]);
@@ -344,17 +347,30 @@ const Chat = () => {
     }
   };
   const leaveroom = async () => {
-    if (selectedChannel?.id) {
-      socket?.emit("leaveroom", selectedChannel?.id, {
-        withCredentials: true,
-      });
+    try {
+      await axios.post("/api/chat/leave", { roomid: selectedChannel?.id })
+      notify("you leave the room")
+      await Getmyrooms()
+      setSelectedChannel(null)
+    }
+    catch (error: any) {
+      if (error.code === 'ERR_NETWOR')
+        notifyoferror(error.message)
+      else
+        notifyoferror(error.response.data.message)
     }
   };
   const deletechat = async () => {
-    if (selectedChannel?.id) {
-      socket?.emit("rmchat", selectedChannel?.id, {
-        withCredentials: true,
-      });
+    await axios.post("/api/chat/remove", { roomid: selectedChannel?.id })
+    try {
+      notify("chat deleted")
+      await Getmyrooms();
+    } catch (error: any) {
+      if (error.code === 'ERR_NETWOR')
+        notifyoferror(error.message)
+      else
+        notifyoferror(error.response.data.message)
+
     }
   };
   return (
@@ -375,9 +391,8 @@ const Chat = () => {
             {channels.map((channel, idx) => (
               <div
                 key={idx}
-                className={`channel flex relative top-0 items-center px-[1vw] max-sm:px-[3vw] max-md:px-[3vw] scroll-auto h-[8vh] max-sm:h-[5vh] max-md:h-[5vh] hover:cursor-pointer ${
-                  selectedChannel === channel ? "active-channel" : ""
-                }`}
+                className={`channel flex relative top-0 items-center px-[1vw] max-sm:px-[3vw] max-md:px-[3vw] scroll-auto h-[8vh] max-sm:h-[5vh] max-md:h-[5vh] hover:cursor-pointer ${selectedChannel === channel ? "active-channel" : ""
+                  }`}
                 onClick={() => {
                   setSelectedChannel(channel);
                   selectedChannelRef.current = channel;
@@ -478,6 +493,7 @@ const Chat = () => {
                 toggleAddFriendPopup={toggleAddFriendPopup}
                 socket={socket}
                 roomid={selectedChannel.id}
+                roomname={selectedChannel.name}
               />
             )}
             <span className="line absolute top-[8vh] max-sm:top-[5vh] max-md:top-[5vh]"></span>

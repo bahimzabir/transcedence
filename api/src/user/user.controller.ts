@@ -7,13 +7,11 @@ import { diskStorage } from 'multer';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
 @UseGuards(JwtGard)
-@Controller('users')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  //// Get Requests
-
+@Controller('test')
+export class TestController {
+  constructor(private readonly userService: UserService) { }
   @Get('me')
   getUser(@Req() req: any) {
     return req.user;
@@ -23,6 +21,27 @@ export class UserController {
   test() {
     return "test success !";
   }
+  @Get('me/tree')
+  getUserTree(@Req() req: any) {
+    return this.userService.getUserTree(req);
+  }
+}
+
+@UseGuards(JwtTwoFactorGuard)
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get('uss')
+  getUss(@Req() req: any) {
+    return req.user;
+  }
+
+  @Get('me')
+  getUser(@Req() req: any) {
+    return req.user;
+  }
+
   @Get('me/tree')
   getUserTree(@Req() req: any) {
     return this.userService.getUserTree(req);
@@ -156,6 +175,11 @@ export class UserController {
   @Post('deletenotification')
   deleteNotification(@Req() req: any, @Body() body: UpdateNotificationsDto) {
     return this.userService.deleteNotification(req, body.id);
+  }
+
+  @Get('leaderboard')
+  getLeaderBoard() {
+    return this.userService.getLeaderBoard();
   }
 }
 
