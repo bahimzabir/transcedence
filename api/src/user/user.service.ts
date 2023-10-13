@@ -24,31 +24,23 @@ export class UserService {
     private event: EventsGateway,
     private chatServices: ChatService,
   ) {}
+
   async editUser(req: any, body: any) {
-    console.log(body);
     try {
-      if (body.fullname) {
-        const fullname = body.fullname.split(' ');
-        if (!body.firstname) body.firstname = fullname[0];
-        if (!body.lastname) body.lastname = fullname[1];
-        console.log(body.firstname, body.lastname);
-      }
-    } catch (error) {}
-    try {
-      const user = await this.prisma.user.update({
+      await this.prisma.user.update({
         where: {
           id: req.user.id,
         },
         data: {
           username: body.username,
           bio: body.bio,
-          photo: body.photo,
-          firstname: body.firstname,
-          lastname: body.lastname,
-          fullname: body.fullname ?? body.firstname + ' ' + body.lastname,
+          fullname: body.fullname,
+          firstname: body.fullname?.split(" ")[0],
+          lastname: body.fullname?.split(" ")[1],
           github: body.github,
           linkedin: body.linkedin,
           instagram: body.instagram,
+          // photo: '/images/' + req.user.id + '.png'
         },
       });
     } catch (error) {

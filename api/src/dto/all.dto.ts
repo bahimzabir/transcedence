@@ -1,4 +1,4 @@
-import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsOptional, IsString, isArray, IsUrl } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsArray,IsBoolean, IsEmail, IsEmpty, IsNotEmpty, IsNumber, IsOptional, IsString, isArray, IsUrl, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { isInt16Array, isInt32Array } from 'util/types';
@@ -72,13 +72,13 @@ export class UserUpdateDto {
     @IsOptional()
     @ApiProperty()
     bio?: string;
+    @IsNotEmpty()
     @IsString()
     @IsOptional()
     @ApiProperty()
-    photo?: string;
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
+    @Matches(/^[a-zA-Z0-9_]+$/, {
+        message: 'Username must only contain letters, numbers, or underscores',
+    })
     username?: string;
     @IsString()
     @IsOptional()
@@ -88,6 +88,10 @@ export class UserUpdateDto {
     @IsOptional()
     @ApiProperty()
     lastname?: string;
+    @IsString()
+    @IsOptional()
+    @ApiProperty()
+    fullname?: string;
     @IsUrl()
     @IsOptional()
     @ApiProperty()
@@ -100,6 +104,7 @@ export class UserUpdateDto {
     @IsOptional()
     @ApiProperty()
     instagram?: string;
+
 }
 
 

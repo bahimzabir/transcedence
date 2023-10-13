@@ -12,7 +12,7 @@ enum freindship {
 @UseGuards(JwtWebSocketGuard)
 @WebSocketGateway({
   cors: {
-    origin: ['http://client/', 'http://localhost:3000', 'http://localhost:8000', 'http://nginx:80'],
+    origin: ['http://client/', 'http://nginx:80'],
   },
   namespace:"chat",
 })
@@ -99,7 +99,7 @@ export class ChatGateway {
     }
   }
   async handleConnection(client: any) {
-    console.log("CONNECTED")
+    console.log("chat socket CONNECTED")
     const id = this.getclientbysocket(client);
     this.sockets.set(id, client)
   }

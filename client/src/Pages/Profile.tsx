@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { QrCode } from "./index";
 import "../styles/Profile.css";
+import { infonotify, notifyoferror } from "./chatInterfaces";
 
 interface Data {
     photo?: string;
@@ -16,18 +17,20 @@ interface Data {
     instagram?: string;
 }
 
+interface Body {
+    username?: string;
+    fullname?: string;
+    bio?: string;
+    online?: boolean;
+    github?: string;
+    linkedin?: string;
+    instagram?: string;
+}
+
 const Profile = () => {
-    const [data, setData] = useState<Data>({
-        photo: "",
-        username: "",
-        fullname: "",
-        bio: "",
-        online: false,
-        github: "",
-        linkedin: "",
-        instagram: "",
-    });
+    const [data, setData] = useState<Data>({});
     const [photo, setPhoto] = useState<File>();
+    const [body, setBody] = useState<Body>({});
 
     const [isBioEditing, setIsBioEditing] = useState(false);
     // const [isAuthOn, setIsAuthOn] = useState(false);
@@ -38,10 +41,10 @@ const Profile = () => {
         setQrCode(!qrCode);
     };
 
-    useEffect(() => {
-        axios
-            .get("/api/users/me", { withCredentials: true })
+    const getProfileData = async () => {
+        await axios.get("/api/users/me")
             .then((res) => {
+                console.log(res.data)
                 const _data: Data = {
                     photo: res.data.photo,
                     username: res.data.username,
@@ -54,6 +57,10 @@ const Profile = () => {
                 };
                 setData(_data);
             });
+    }
+
+    useEffect(() => {
+        getProfileData();
     }, []);
 
     // const handleAuthOn = () => {
@@ -71,7 +78,7 @@ const Profile = () => {
     };
 
     const handleBioChange = (e: any) => {
-        setData({ ...data, bio: e.target.value });
+        setBody({ ...body, bio: e.target.value });
     };
 
     const handleBioSave = () => {
@@ -90,32 +97,52 @@ const Profile = () => {
     // };
 
     const handleGithubChange = (e: any) => {
-        if (e.target.value !== null) {
-            setData({ ...data, github: e.target.value });
+        if (e.target.value === '') {
+            const {github, ...tmpBody} = body;
+            setBody(tmpBody);
+        }
+        else {
+            setBody({ ...body, github: e.target.value });
         }
     };
 
     const handleLinkedinChange = (e: any) => {
-        if (e.target.value !== null) {
-            setData({ ...data, linkedin: e.target.value });
+        if (e.target.value === '') {
+            const {linkedin, ...tmpBody} = body;
+            setBody(tmpBody);
+        }
+        else {
+            setBody({ ...body, linkedin: e.target.value });
         }
     };
 
     const handleInstagramChange = (e: any) => {
-        if (e.target.value !== null) {
-            setData({ ...data, instagram: e.target.value });
+        if (e.target.value === '') {
+            const {instagram, ...tmpBody} = body;
+            setBody(tmpBody);
+        }
+        else {
+            setBody({ ...body, instagram: e.target.value });
         }
     };
 
     const handleUsernameChange = (e: any) => {
-        if (e.target.value !== null) {
-            setData({ ...data, username: e.target.value });
+        if (e.target.value === '') {
+            const {username, ...tmpBody} = body;
+            setBody(tmpBody);
+        }
+        else {
+            setBody({ ...body, username: e.target.value });
         }
     };
 
     const handleFullNameChange = (e: any) => {
-        if (e.target.value !== null) {
-            setData({ ...data, fullname: e.target.value });
+        if (e.target.value === '') {
+            const {fullname, ...tmpBody} = body;
+            setBody(tmpBody);
+        }
+        else {
+            setBody({ ...body, fullname: e.target.value });
         }
     };
 
@@ -127,26 +154,27 @@ const Profile = () => {
     };
 
     const postData = async () => {
-        const form = new FormData();
-        const body: any = {
-            bio: data.bio,
-            username: data.username,
-            firstname: data.fullname?.split(" ")[0],
-            lastname: data.fullname?.split(" ")[1],
-            github: data.github,
-            linkedin: data.linkedin,
-            instagram: data.instagram,
-        };
-        form.append("body", JSON.stringify(body));
-        if (photo) {
-            form.append("file", photo);
+        try {
+            if (Object.keys(body).length !== 0 || photo) {
+                const form = new FormData();
+                form.append("body", JSON.stringify(body));
+                if (photo) {
+                    form.append("file", photo);
+                }
+                await axios.post("/api/users/me", form, {
+                    withCredentials: true,
+                })
+                await getProfileData();
+                setBody({});
+                infonotify('your profile updated succefully')
+            }
+            else {
+                notifyoferror('nothing to update!!')
+            }
+        } catch(err) {
+            notifyoferror('invalid Data')
+            console.log(err)
         }
-        console.log(data)
-        // form.append("photo", data.photo);
-        await axios.post("/api/users/me", form, {
-            withCredentials: true,
-        });
-        navigate('/home');
     };
 
     const navigate = useNavigate();
@@ -243,6 +271,7 @@ const Profile = () => {
                             <div className="flex mt-[.5vw]">
                                 <input
                                     onChange={handleUsernameChange}
+                                    value={body.username}
                                     type="text"
                                     maxLength={24}
                                     className="w-[24vw] h-[3vw] max-sm:h-[3vh] max-md:h-[3vh] rounded-[.6vw] input-container outline-none indent-[1vw] max-sm:w-full max-sm:text-[2vw] max-md:w-full max-md:text-[2vw]"
@@ -255,6 +284,7 @@ const Profile = () => {
                             </h3>
                             <div className="flex mt-[.5vw]">
                                 <input
+                                    value={body.fullname}
                                     onChange={handleFullNameChange}
                                     type="text"
                                     maxLength={24}
@@ -273,6 +303,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    value={body.github}
                                     onChange={handleGithubChange}
                                     type="link"
                                     className="w-[42vw] max-sm:w-full max-md:w-full h-[3vw] max-sm:h-[3vh] max-md:h-[3vh] rounded-[.6vw] input-container outline-none indent-[1vw] max-sm:text-[2vw] max-md:text-[2vw]"
@@ -285,6 +316,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    value={body.linkedin}
                                     onChange={handleLinkedinChange}
                                     type="link"
                                     className="w-[42vw] max-sm:w-full max-md:w-full h-[3vw] max-sm:h-[3vh] max-md:h-[3vh] rounded-[.6vw] input-container outline-none indent-[1vw] max-sm:text-[2vw] max-md:text-[2vw]"
@@ -297,6 +329,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    value={body.instagram}
                                     onChange={handleInstagramChange}
                                     type="link"
                                     className="w-[42vw] max-sm:w-full max-md:w-full h-[3vw] max-sm:h-[3vh] max-md:h-[3vh] rounded-[.6vw] input-container outline-none indent-[1vw] max-sm:text-[2vw] max-md:text-[2vw]"

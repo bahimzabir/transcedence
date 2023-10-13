@@ -58,9 +58,7 @@ function Game() {
     };
 
     useEffect(() => {
-        setSocket(io({
-            path: "/socket.io/game/"
-        }));
+        setSocket(io("/game"));
     }, []);
 
     useEffect(() => {

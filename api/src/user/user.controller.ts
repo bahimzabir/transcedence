@@ -1,10 +1,11 @@
-import { Controller, Get, Req, Post, UseGuards, Body, Query, Param, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Req, Post, UseGuards, Body, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { UserService } from './user.service';
 import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto } from 'src/dto';
-import { promises } from 'dns';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 
 @UseGuards(JwtGard)
 @Controller('users')
@@ -74,6 +75,11 @@ export class UserController {
   getUserGames(@Query("id") id: number) {
     return this.userService.getUserGames(id);
   }
+
+
+  // Post requests
+  @Post('me')
+  @UseGuards(JwtGard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -86,11 +92,27 @@ export class UserController {
       }),
     }),
   )
-  editUser(@Req() req: any, @Body('body') body: UserUpdateDto, @UploadedFile() file: Express.Multer.File) {
+  async editUser(@Req() req: any, @Body('body') bodyString: string, @UploadedFile() file: Express.Multer.File) {
     try {
-      this.userService.editUser(req, body);
+      console.log('body string', bodyString)
+      const parsedBody = JSON.parse(bodyString);
+      const body = plainToClass(UserUpdateDto, parsedBody);
+      console.log('body: ', body);
+      if (body.fullname) {
+        const words = body.fullname.split(' ')
+        if (words.length !== 2) {
+          throw new BadRequestException('Invalid Fullname')
+        }
+      }
+      const errors = await validate(body);
+      if (errors.length > 0) {
+        console.log(errors)
+        throw new BadRequestException('Validation failed');
+      }
+      await this.userService.editUser(req, body);
       return { message: 'user updated', data: body };
     } catch (error) {
+      console.log(' error ', error)
       throw error;
     }
   }

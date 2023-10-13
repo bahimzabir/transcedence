@@ -59,7 +59,7 @@ function Practice() {
     };
 
     useEffect(() => {
-        setSocket(io("/socket.io/bot"));
+        setSocket(io("/bot"));
     }, []);
 
     useEffect(() => {

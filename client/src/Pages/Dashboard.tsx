@@ -90,9 +90,7 @@ const Dashboard = () => {
     const [rooms, setRooms] = useState<room[]>([]);
 
     useEffect(() => {
-        setSocket(
-            io("/socket.io/stream")
-        );
+        setSocket(io('/stream'));
     }, []);
 
     async function fetchPlayersData(room: any) {

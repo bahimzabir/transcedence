@@ -19,8 +19,7 @@ import { Room, Player, Ball } from './game.interface';
 
 const socketConfig = {
 	cors: {
-		origin: ['http://client', 'http://nginx:80'],
-		credentials: true
+		origin: ['http://client', 'http://nginx:80']
 	},
 	namespace: 'game'
 };
@@ -49,7 +48,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(client: Socket) : Promise<void> {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
-		console.log('game socket');
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {

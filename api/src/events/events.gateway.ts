@@ -54,11 +54,10 @@ export class EventsGateway {
   constructor(private prisma: PrismaService, private config: ConfigService) { }
 
   async handleConnection(client: Socket): Promise<void> {
-    console.log("CHL7 connected")
+    // console.log("CHL7 connected")
     try {
       const cookies = client.handshake.headers.cookie;
       let userID: number;
-      console.log('hello')
       if (cookies) {
         const token = client.handshake.headers.cookie.split("=")[1];
         userID = await this.validateUser(this.config, this.prisma, true, token);
@@ -105,7 +104,7 @@ export class EventsGateway {
         } else {
           this.onlineUsers.set(userID, sockets);
         }
-        console.log("handling disconnection")
+        // console.log("handling disconnection")
       }
     } catch {
       console.log("handleDisconnect error")

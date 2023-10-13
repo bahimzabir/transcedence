@@ -60,7 +60,7 @@ function Challenge() {
     };
 
     useEffect(() => {
-        setSocket(io("/socket.io/game"));
+        setSocket(io("/game"));
     }, []);
 
     useEffect(() => {
