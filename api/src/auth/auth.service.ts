@@ -161,7 +161,7 @@ export class AuthService {
     return {
       msg: 'user already exist',
       user,
-      token: await this.generateToken(user),
+      token: this.generateToken(user),
     };
   }
   
@@ -180,7 +180,7 @@ export class AuthService {
     };
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
+      expiresIn: '1d',
     });
     // if (!isTowFactorAuthEnabled) {
       return token;
