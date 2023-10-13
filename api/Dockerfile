@@ -7,12 +7,12 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# COPY package*.json ./
+COPY package*.json ./
 
-# RUN npm install
-# RUN npm audit fix
+RUN npm install
+RUN npm audit fix
 
-# COPY . .
+COPY . .
 
 # RUN npx prisma migrate dev --name init --preview-feature
 
