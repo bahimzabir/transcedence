@@ -28,6 +28,7 @@ export interface intersetchannel {
     img: string | File;
     id: number;
     status: string;
+    password?: string;
     notification: boolean
 }
 export interface intermessages {

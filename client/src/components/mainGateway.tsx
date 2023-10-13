@@ -164,7 +164,6 @@ const notify = (message: string) => {
 
 const recieveNotification = () => {
     socket.on("notification", (data) => {
-        console.log(data);
         notify(data.message)
     });
     socket?.on("wrongpassword", () => {
