@@ -728,4 +728,27 @@ export class UserService {
       );
     }
   }
+
+  async getLeaderBoard() {
+    try {
+      const users = await this.prisma.user.findMany({
+        orderBy: {
+          wins: 'desc',
+        },
+        select: {
+          username: true,
+          photo: true,
+          wins: true,
+        },
+      });
+      return users;
+    } catch (error) {
+      throw new HttpException(
+        "ikhan safi",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+
 }

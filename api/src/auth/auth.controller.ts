@@ -67,6 +67,9 @@ export class AuthController {
         secure: true, // Set to true for HTTPS
         //sameSite: 'Lax', // Adjust based on your requirements
     });
+    console.log('..................................')
+    console.log(res.cookie);
+    console.log('..................................')
     res.redirect(url);
   }
 }
@@ -198,7 +201,11 @@ export class TwoFactorAuthenticationController {
       true,
     );
     if (setCookies) {
-      request.res.setHeader('Set-Cookie', [accessTokenCookie]);
+      // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
+      await request.res.cookie('jwt', accessTokenCookie, {
+        httpOnly: true,
+        secure: true,
+      });
     }
     return request.user;
   }

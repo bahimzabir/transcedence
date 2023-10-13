@@ -39,7 +39,7 @@ database/db/*
 
 #prisma migrations
 
-prisma/migrations
+# prisma/migrations
 #images
 src/chat/img/*
 app/src/img/*

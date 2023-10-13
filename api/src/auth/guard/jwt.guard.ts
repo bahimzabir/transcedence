@@ -26,6 +26,8 @@ export class WsGuard implements CanActivate {
     const cookies = data.handshake.headers.cookie;
     if (cookies) {
       const token = cookies.split("=")[1];
+    console.log("token\n", token);
+    console.log("token\n");
       return this.validateRequest(token)
     }
     throw new WsException('invalid user credentials');
@@ -33,7 +35,8 @@ export class WsGuard implements CanActivate {
   }
   async validateRequest(token: any): Promise<any> {
     const payload: any = await jwt.verify(token, this.config.get('JWT_SECRET'));
-    console.log("payload", payload);
+    console.log("payload\n", payload);
+    console.log("payload\n");
     const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,

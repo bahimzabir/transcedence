@@ -6,7 +6,7 @@ import { promises } from 'dns';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
-@UseGuards(JwtTwoFactorGuard)
+@UseGuards(JwtGard)
 @Controller('test')
 export class TestController {
   constructor(private readonly userService: UserService) { }
@@ -25,10 +25,25 @@ export class TestController {
   }
 }
 
+@UseGuards(JwtTwoFactorGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('uss')
+  getUss(@Req() req: any) {
+    return req.user;
+  }
+
+  @Get('me')
+  getUser(@Req() req: any) {
+    return req.user;
+  }
+
+  @Get('me/tree')
+  getUserTree(@Req() req: any) {
+    return this.userService.getUserTree(req);
+  }
 
   @Get('me/friends')
   getUserFriends(@Req() req: any) {
@@ -137,6 +152,11 @@ export class UserController {
   @Post('deletenotification')
   deleteNotification(@Req() req: any, @Body() body: UpdateNotificationsDto) {
     return this.userService.deleteNotification(req, body.id);
+  }
+
+  @Get('leaderboard')
+  getLeaderBoard() {
+    return this.userService.getLeaderBoard();
   }
 }
 

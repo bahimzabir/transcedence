@@ -170,17 +170,28 @@ export class AuthService {
   //   });
   // }
   public generateToken(user: any, isTowFactorAuthEnabled = false) {
-    const payload: TokenPayload = { id: user.id, isTowFactorAuthEnabled };
+    const payload: TokenPayload = {
+      id: user.id,
+      email: user.email,
+      isTowFactorAuthEnabled,
+    };
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
-    if (!isTowFactorAuthEnabled) {
+    // if (!isTowFactorAuthEnabled) {
       return token;
-    }
-    return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
-      'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
-    )}`;
+    // }
+    // return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
+    //   'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+    // )}`;
+    // await res.cookie('jwt', token, {
+    //   domain: 'localhost', // Set to your domain
+    //   path: '/',
+    //   httpOnly: true,
+    //   secure: true, // Set to true for HTTPS
+    //   //sameSite: 'Lax', // Adjust based on your requirements
+  // });
   }
 }
 
