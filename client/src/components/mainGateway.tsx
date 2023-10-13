@@ -66,9 +66,7 @@ const CustomNotification: React.FC<NotificationData> = ({
 
     const decline = () => {
         toast.dismiss();
-        const gameSock = io("http://api/game", {
-            withCredentials: true,
-        });
+        const gameSock = io("/socket.io/game");
         gameSock.emit('reject', senderId)
         const disconnectWebSocket = () => {
             gameSock.disconnect();

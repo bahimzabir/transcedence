@@ -1,4 +1,3 @@
-
 FROM node:latest
 
 EXPOSE 5757
@@ -8,5 +7,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-CMD ["sh", "./init.sh"]
 
+RUN npm install
+RUN npm audit fix
+
+COPY . .
+
+
+CMD ["sh", "./init.sh"]

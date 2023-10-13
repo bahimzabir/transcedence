@@ -91,7 +91,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         setSocket(
-            io("/api/stream", { withCredentials: true })
+            io("/socket.io/stream")
         );
     }, []);
 

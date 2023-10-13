@@ -25,11 +25,6 @@ export class AuthService {
     // private readonly userService: UserService,
   ) {}
 
-
-
-
-
-
   async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
     const otpauthUrl = authenticator.keyuri(
@@ -83,6 +78,10 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
+    console.log("isTwoFactorAuthenticationCodeValid");
+    console.log(twoFactorAuthenticationCode);
+    console.log(user.twoFactorAuthSecret);
+    console.log("isTwoFactorAuthenticationCodeValid");
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
@@ -163,25 +162,36 @@ export class AuthService {
     };
   }
   
-  async generateToken(user: any) {
-    const payload = { sub: user.id, email: user.email };
-    return this.jwtService.sign(payload, {
-      expiresIn: '1d',
-      secret: this.config.get('JWT_SECRET'),
-    });
-  }
-  public getCookieWithJwtAccessToken(
-    id: number,
-    isTowFactorAuthEnabled = false,
-  ) {
-    const payload: TokenPayload = { id, isTowFactorAuthEnabled };
+  // async generateToken(user: any) {
+  //   const payload = { sub: user.id, email: user.email };
+  //   return this.jwtService.sign(payload, {
+  //     expiresIn: '1d',
+  //     secret: this.config.get('JWT_SECRET'),
+  //   });
+  // }
+  public generateToken(user: any, isTowFactorAuthEnabled = false) {
+    const payload: TokenPayload = {
+      id: user.id,
+      email: user.email,
+      isTowFactorAuthEnabled,
+    };
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
-    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
-      'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
-    )}`;
+    // if (!isTowFactorAuthEnabled) {
+      return token;
+    // }
+    // return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
+    //   'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+    // )}`;
+    // await res.cookie('jwt', token, {
+    //   domain: 'localhost', // Set to your domain
+    //   path: '/',
+    //   httpOnly: true,
+    //   secure: true, // Set to true for HTTPS
+    //   //sameSite: 'Lax', // Adjust based on your requirements
+  // });
   }
 }
 

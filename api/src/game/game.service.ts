@@ -1,37 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Req } from '@nestjs/common';
 import { GameRecords } from 'src/dto';
-import { Server, Socket } from "socket.io"
-
-interface Ball {
-	x: number;
-	y: number;
-	velocityX: number;
-	velocityY: number;
-	speed: number;
-}
-
-interface GameData {
-	ball: Ball;
-	leftPlayerY: number;
-	rightPlayerY: number;
-	leftScore: number;
-	rightScore: number;
-}
-
-interface Player {
-	socket: Socket;
-	id: number;
-	side: string;
-};
-
-interface Room {
-	roomName: string;
-	players: Player[];
-	data: GameData;
-    done: boolean;
-}
+import { Socket } from "socket.io";
+import { Room } from './game.interface';
 
 @Injectable()
 export class GameService {
