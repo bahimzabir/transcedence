@@ -91,6 +91,6 @@ export class ChatController {
   @Post("Leave")
   leavechatroom(@Req() req, @Body("roomid") roomid: number)
   {
-    this.chatService.leaveroom(req.user.id, roomid)
+    return this.chatService.leaveroom(req.user.id, roomid)
   }
 }

@@ -29,7 +29,7 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
     console.log("payload", payload);
     const user = await this.prisma.user.findUnique({
       where: {
-        id: payload.id,
+        id: payload.sub,
       },
     });
     if (!user.isTowFactorAuthEnabled) {
