@@ -88,6 +88,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                         </h3>
                                         <img
                                             className="w-[15vw]"
+                                            // 7ta qr hnaa
                                             src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Example"
                                         />
                                         <form action="#" id="form">

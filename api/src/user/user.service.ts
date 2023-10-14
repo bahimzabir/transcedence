@@ -727,12 +727,19 @@ export class UserService {
         orderBy: {
           wins: 'desc',
         },
+        where: {
+          wins: {
+            gt: 0,
+          },
+        },
         select: {
           username: true,
           photo: true,
           wins: true,
         },
       });
+      console.log('leaderboard')
+      console.log(users);
       return users;
     } catch (error) {
       throw new HttpException(

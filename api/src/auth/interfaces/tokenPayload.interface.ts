@@ -1,5 +1,5 @@
 interface TokenPayload {
-  id: number;
+  sub: number;
   email: string;
   isTowFactorAuthEnabled?: boolean;
 }

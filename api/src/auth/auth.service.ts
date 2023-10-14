@@ -174,7 +174,7 @@ export class AuthService {
   // }
   public generateToken(user: any, isTowFactorAuthEnabled = false) {
     const payload: TokenPayload = {
-      id: user.id,
+      sub: user.id,
       email: user.email,
       isTowFactorAuthEnabled,
     };

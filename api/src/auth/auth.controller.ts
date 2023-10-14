@@ -106,8 +106,8 @@ export class LogoutController {
   ) {}
   @Get()
   async Logout(@Req() req, @Res() res) {
-    console.log("logout");
     // what if the user saved his token?
+    this.events.closeOnlineUsers(req.user.id);
     await res.clearCookie("jwt");
     // set the user to offline
     //! close all sockets

@@ -37,6 +37,7 @@ const Profile = () => {
     // const [isAuthOff, setIsAuthOff] = useState(false);
     const [qrCode, setQrCode] = useState(false);
     const toggleQrCode = () => {
+        // geting data from server
         console.log("Clicked!");
         setQrCode(!qrCode);
     };

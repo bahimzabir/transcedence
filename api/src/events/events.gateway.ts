@@ -111,6 +111,17 @@ export class EventsGateway {
     }
   }
 
+  // close onlineUsers of a user
+  async closeOnlineUsers(userId: number) {
+    const sockets = this.onlineUsers.get(userId);
+    if (sockets) {
+      this.server.to(sockets).emit('rejected');
+      this.onlineUsers.delete(userId);
+    }
+  }
+
+
+
   async sendnotify(val: string, userid: number) {
     this.server.to(this.onlineUsers.get(userid)).emit(val);
   }
