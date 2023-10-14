@@ -179,7 +179,7 @@ export class AuthService {
       isTowFactorAuthEnabled,
     };
     const token = this.jwtService.sign(payload, {
-      secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
+      secret: this.config.get('JWT_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
     // if (!isTowFactorAuthEnabled) {
