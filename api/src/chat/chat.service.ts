@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
 import { ChatRoomBody } from './entities/chat.entity';
 import {WsException } from '@nestjs/websockets';
-import { joinroomdto, systemclass, userevents } from 'src/dto';
+import { chatroomRequest, joinroomdto, systemclass, userevents } from 'src/dto';
 import * as argon2 from 'argon2';
 import { EventsGateway } from 'src/events/events.gateway';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -154,9 +154,8 @@ export class ChatService {
               },
             });
           }
-        } else {
+        } else 
           throw new HttpException('You Are Not In This Room', 404);
-        }
       });
     } catch (error) {
       throw error;
@@ -216,6 +215,10 @@ export class ChatService {
       const chatroom = await this.prisma.chatRoom.findFirst({
         where: {
           id: dto.roomid,
+          AND: [
+            { members: { some: { id: dto.id } } },
+            { members: { some: { id: user } } },
+          ],
         },
         select: {
           members: true,
@@ -257,23 +260,22 @@ export class ChatService {
           eventloop,
         );
       }
+      else
+        throw new Error("maybe you are not or the user not in this room")
     } 
     catch (error) {
       throw error
     }
   }
   async ban(user: number, dto: userevents) {
-    const chatroom = this.prisma.$transaction(async (tsx) => {
-      await tsx.chatRoom.findFirst({
+     await this.prisma.$transaction(async (tsx) => {
+      const chatroom = await tsx.chatRoom.findFirst({
         where: {
           id: dto.roomid,
-          NOT: {
-            BannedUser: {
-              some: {
-                id: dto.id,
-              }
-            }
-          }
+          AND: [
+            { members: { some: { id: dto.id } } },
+            { members: { some: { id: user } } },
+          ],
         },
         select: {
           mutedUser: true,
@@ -306,7 +308,8 @@ export class ChatService {
         });
       }
       else {
-        this.event.sendnotify("user already banned", user)
+        console.log("OMMGMGMMG")
+        throw new Error("the user not any more in this channel")
       }
     });
   }
@@ -364,8 +367,6 @@ export class ChatService {
             },
           });
           if (this.ismuted(chatroom, dto.id)) {
-            console.log("gothere")
-            console.log(`${dto.id}id${dto.roomid}`)
             clearTimeout(
               this.schedulerRegistry.getTimeout(`${dto.id}id${dto.roomid}`),
             );
@@ -430,6 +431,11 @@ export class ChatService {
     const room = await this.prisma.chatRoom.findFirst({
       where: {
         id: roomID,
+        members: {
+          some: {
+            id: userid,
+          }
+        }
       },
       select: {
         roomUsers: true,
@@ -442,13 +448,9 @@ export class ChatService {
         },
       },
     });
-
-    const r = room.members.find((member) => {
-      if (member.id == userid) {
-        return true;
-      }
-    });
-    return r ? room : [];
+    if(!room)
+      throw new HttpException("this room not availabe any more", 404);
+    return room;
   }
   async getdmroominfos(id: number, sender: number) {
     const room = await this.prisma.chatRoom.findFirst({

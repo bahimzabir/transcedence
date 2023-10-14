@@ -58,7 +58,12 @@ export class ChatGateway {
   async banuser(@ConnectedSocket() client, @MessageBody() dto: userevents)
   {
     const userid: number =  client.user.id;
-    this.chatService.ban(userid, dto[0]);
+    try{
+      await this.chatService.ban(userid, dto[0]);
+    }
+    catch(error){
+      this.server.to(this.sockets.get(userid).id).emit("error", error.message);
+    }
   }
   @SubscribeMessage("kickuser")
   async kickuser(@ConnectedSocket() client, @MessageBody() dto: userevents) {
@@ -105,7 +110,8 @@ export class ChatGateway {
   async create(@MessageBody() dto: messageDto, @ConnectedSocket() client) {
     const id =  client.user.id;
     const room = await this.chatService.getchatroombyid(dto[0].id);
-    if(!this.chatService.isexist(room, id)){
+    if(!room && !this.chatService.isexist(room, id)){
+      console.log("HII")
       this.server.to(this.sockets.get(id).id).emit("error", "you are not in this room");
       return false
     }

@@ -178,6 +178,7 @@ export class AuthService {
       email: user.email,
       isTowFactorAuthEnabled,
     };
+    console.log(`${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`)
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
