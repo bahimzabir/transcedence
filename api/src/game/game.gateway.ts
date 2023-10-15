@@ -49,7 +49,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
-		const userId = jwtPayload.sub;
+		const userId = jwtPayload.id;
 		if (this.ids.includes(userId)) {
 			console.log("user already connected");
 			client.emit('inGame');
