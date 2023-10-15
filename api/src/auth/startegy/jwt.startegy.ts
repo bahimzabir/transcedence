@@ -34,9 +34,9 @@ export class JwtStartegy extends PassportStrategy(Strategy, 'jwt') {
       delete user.email;
       delete user.password;
     }
-    console.log('-------------------')
-    console.log("user", user);
-    console.log('-------------------')
+    // console.log('-------------------')
+    // console.log("user", user);
+    // console.log('-------------------')
     return user;
   }
 }

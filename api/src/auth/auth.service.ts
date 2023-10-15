@@ -1,15 +1,11 @@
 import { Injectable, Body } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import * as argon from 'argon2';
-import { AuthDto } from 'src/dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
 import * as path from 'path'
-import respone from 'express'
-import { buffer } from 'stream/consumers';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
@@ -78,10 +74,10 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    console.log("isTwoFactorAuthenticationCodeValid");
-    console.log(twoFactorAuthenticationCode);
-    console.log(user.twoFactorAuthSecret);
-    console.log("isTwoFactorAuthenticationCodeValid");
+    // console.log("isTwoFactorAuthenticationCodeValid");
+    // console.log(twoFactorAuthenticationCode);
+    // console.log(user.twoFactorAuthSecret);
+    // console.log("isTwoFactorAuthenticationCodeValid");
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
@@ -179,8 +175,8 @@ export class AuthService {
       isTowFactorAuthEnabled,
     };
     const token = this.jwtService.sign(payload, {
-      secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
-      expiresIn: '1d',
+      secret: this.config.get('JWT_SECRET'),
+      expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
     // if (!isTowFactorAuthEnabled) {
       return token;

@@ -11,27 +11,34 @@ interface Data {
     username?: string;
     fullname?: string;
     bio?: string;
-    online?: boolean;
     github?: string;
     linkedin?: string;
     instagram?: string;
 }
 
 interface Body {
-    username?: string;
-    fullname?: string;
-    bio?: string;
-    online?: boolean;
-    github?: string;
-    linkedin?: string;
-    instagram?: string;
+    username: string;
+    fullname: string;
+    bio: string;
+    github: string;
+    linkedin: string;
+    instagram: string;
 }
 
 const Profile = () => {
+    const emptyBody = {
+        username: '',
+        fullname: '',
+        bio: '',
+        github: '',
+        linkedin: '',
+        instagram: ''
+    }
+
     const [data, setData] = useState<Data>({});
     const [photo, setPhoto] = useState<File>();
-    const [body, setBody] = useState<Body>({});
-
+    const [body, setBody] = useState<Body>(emptyBody);
+    const [save, setSave] = useState<boolean>(false)
     const [isBioEditing, setIsBioEditing] = useState(false);
     // const [isAuthOn, setIsAuthOn] = useState(false);
     // const [isAuthOff, setIsAuthOff] = useState(false);
@@ -44,24 +51,24 @@ const Profile = () => {
     const getProfileData = async () => {
         await axios.get("/api/users/me")
             .then((res) => {
-                console.log(res.data)
                 const _data: Data = {
                     photo: res.data.photo,
                     username: res.data.username,
                     fullname: `${res.data.firstname} ${res.data.lastname}`,
                     bio: res.data.bio,
-                    online: res.data.online,
                     github: res.data.github,
                     linkedin: res.data.linkedin,
                     instagram: res.data.instagram,
                 };
                 setData(_data);
+                setBody({...body, bio: res.data.bio});
             });
     }
 
     useEffect(() => {
+        console.log('save')
         getProfileData();
-    }, []);
+    }, [save]);
 
     // const handleAuthOn = () => {
     //     console.log("it on now!");
@@ -92,58 +99,24 @@ const Profile = () => {
     //     }));
     // };
 
-    // const handleOnline = () => {
-    //     setOnline(!online);
-    // };
-
     const handleGithubChange = (e: any) => {
-        if (e.target.value === '') {
-            const {github, ...tmpBody} = body;
-            setBody(tmpBody);
-        }
-        else {
             setBody({ ...body, github: e.target.value });
-        }
     };
 
     const handleLinkedinChange = (e: any) => {
-        if (e.target.value === '') {
-            const {linkedin, ...tmpBody} = body;
-            setBody(tmpBody);
-        }
-        else {
             setBody({ ...body, linkedin: e.target.value });
-        }
     };
 
     const handleInstagramChange = (e: any) => {
-        if (e.target.value === '') {
-            const {instagram, ...tmpBody} = body;
-            setBody(tmpBody);
-        }
-        else {
             setBody({ ...body, instagram: e.target.value });
-        }
     };
 
     const handleUsernameChange = (e: any) => {
-        if (e.target.value === '') {
-            const {username, ...tmpBody} = body;
-            setBody(tmpBody);
-        }
-        else {
             setBody({ ...body, username: e.target.value });
-        }
     };
 
     const handleFullNameChange = (e: any) => {
-        if (e.target.value === '') {
-            const {fullname, ...tmpBody} = body;
-            setBody(tmpBody);
-        }
-        else {
             setBody({ ...body, fullname: e.target.value });
-        }
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,15 +130,22 @@ const Profile = () => {
         try {
             if (Object.keys(body).length !== 0 || photo) {
                 const form = new FormData();
-                form.append("body", JSON.stringify(body));
+                const updatedBody: Partial<Body> = Object.entries(body)
+                    .filter(([, value]) => value !== '')
+                    .reduce((result, [key, value]) => {
+                        result[key as keyof Body] = value;
+                        return result;
+                    }, {} as Partial<Body>);
+                console.log('updated body ==> ', updatedBody);
+                form.append("body", JSON.stringify(updatedBody));
                 if (photo) {
                     form.append("file", photo);
                 }
                 await axios.post("/api/users/me", form, {
                     withCredentials: true,
                 })
-                await getProfileData();
-                setBody({});
+                setBody(emptyBody);
+                setSave(!save)
                 infonotify('your profile updated succefully')
             }
             else {
@@ -198,12 +178,6 @@ const Profile = () => {
                             className="hidden"
                             id="imageInput"
                         />
-                        <span
-                            // onClick={handleOnline}
-                            className={`status rounded-full w-[1.4vw] h-[1.4vw] max-sm:w-[4vw] max-sm:h-[4vw] max-md:w-[4vw] max-md:h-[4vw] absolute top-0 right-[.5vw] ${
-                                data?.online ? "bg-green-400" : "bg-gray-400"
-                            }`}
-                        ></span>
                     </div>
                     <h4 className="font-light absolute top-[13vw] opacity-80 text-[.8vw] max-sm:top-[22vw] max-md:top-[18vw] max-sm:text-[1.8vw] max-md:text-[1.8vw]">
                         @{data?.username}
@@ -216,7 +190,7 @@ const Profile = () => {
                             <>
                                 <textarea
                                     className="flex font-normal w-full text-start custom-textarea text-[.9vw] max-sm:text-[2vw] max-sm:w-[72vw] max-sm:h-[12vw] max-md:text-[2vw] max-md:w-[72vw] max-md:h-[12vw]"
-                                    value={data?.bio}
+                                    value={body?.bio}
                                     maxLength={200}
                                     onChange={handleBioChange}
                                 />
@@ -230,7 +204,7 @@ const Profile = () => {
                         ) : (
                             <>
                                 <p className="font-normal w-full text-start text-[.9vw] max-sm:text-[2vw] max-md:text-[2vw]">
-                                    {data?.bio}
+                                    {body.bio}
                                 </p>
                                 <button
                                     className="float-right mt-[1vw] max-sm:mt-[1.5vw] max-md:mt-[1.5vw] font-medium underline"

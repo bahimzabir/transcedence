@@ -21,7 +21,8 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
   let userID = id ? id : null
   if (!userID) {
     const payload: any = jwt.verify(token, config.get('JWT_SECRET'));
-    userID = payload.sub;
+    userID = payload.id;
+    console.log('userId: ', userID)
   }
   try {
     const user = await prisma.user.update({
@@ -54,7 +55,6 @@ export class EventsGateway {
   constructor(private prisma: PrismaService, private config: ConfigService) { }
 
   async handleConnection(client: Socket): Promise<void> {
-    // console.log("CHL7 connected")
     try {
       const cookies = client.handshake.headers.cookie;
       let userID: number;

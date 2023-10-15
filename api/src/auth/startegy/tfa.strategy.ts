@@ -22,7 +22,7 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
         console.log("request\n");
           return request?.cookies?.jwt;
       }]),
-      secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
+      secretOrKey: configService.get('JWT_SECRET'),
     });
   }
   async validate(payload: TokenPayload) {
