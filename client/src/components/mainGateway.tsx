@@ -61,7 +61,7 @@ const CustomNotification: React.FC<NotificationData> = ({
 
     const accept = () => {
         toast.dismiss();
-        navigate(`/challenge?opp=${senderId}&num=2`);
+        navigate(`/challenge?opp=${senderId}&role=2`);
     }
 
     const decline = () => {
@@ -139,7 +139,7 @@ const Reject = () => {
 const gameRejectNotify = () =>
     toast(<Reject />, {
         position: "top-left",
-        autoClose: 20000,
+        autoClose: 50000,
         hideProgressBar: true,
         draggable: true,
         theme: "dark",
@@ -172,7 +172,7 @@ const recieveNotification = () => {
     socket?.on("challenge", (data: number) => {
         console.log("Challenge user: ", data);
         axios.get(
-            `http://api/users/userinfos?id=${data}`,
+            `/api/users/userinfos?id=${data}`,
             { withCredentials: true }
         ).then((res) => {
             const data = res.data;

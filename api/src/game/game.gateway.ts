@@ -49,7 +49,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
-		const userId = jwtPayload.id;
+		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {
 			console.log("user already connected");
 			client.emit('inGame');
@@ -136,7 +136,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("challenge")
 	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-		// console.log('challenge');
+		console.log('challenge');
 		await this.event.sendGameRequest(this.map.get(client), data);
 		this.challengers.set(this.map.get(client), client)
 		
@@ -144,6 +144,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("acceptChallenge")
 	async acceptChallenge(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+		console.log('accept challenge')
 		if (this.challengers.has(data)) {
 			const players = [
 				{
@@ -159,7 +160,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			]
 
 			const roomName: string = this.createNewRoom();
-
+			console.log('new challenge start roomName = ', roomName);
 			let room: Room = {
 				roomName: roomName,
 				players: players,

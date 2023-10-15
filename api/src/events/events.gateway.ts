@@ -21,8 +21,8 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
   let userID = id ? id : null
   if (!userID) {
     const payload: any = jwt.verify(token, config.get('JWT_SECRET'));
-    userID = payload.id;
-    console.log('userId: ', userID)
+    userID = payload.sub;
+    // console.log('userId: ', userID)
   }
   try {
     const user = await prisma.user.update({

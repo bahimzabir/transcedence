@@ -6,6 +6,8 @@ import {
     ViewProfile,
     GameMode,
     Dashboard,
+    Challenge,
+    Practice,
 } from "./Pages/index";
 import AddChannel from "./components/AddChannel";
 import "./App.css";
@@ -24,6 +26,8 @@ const App = () => {
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/gamemode" element={<GameMode />} />
                 <Route path="/game" element={<Game />} />
+                <Route path="/challenge" element={<Challenge />} />
+                <Route path="/practice" element={<Practice />}/>
                 <Route path="/home" element={<Dashboard />} />
                 <Route
                     path="/add-channel"

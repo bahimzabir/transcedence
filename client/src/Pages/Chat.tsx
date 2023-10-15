@@ -17,6 +17,7 @@ import {
   notifyoferror,
 } from "./chatInterfaces";
 import { notify } from "../assets/toastNotifys";
+import { useNavigate } from "react-router-dom";
 
 const Chat = () => {
   const [challengebutton, setChallengebutton] = useState(false);
@@ -373,6 +374,16 @@ const Chat = () => {
 
     }
   };
+  const navigate = useNavigate();
+  const sendGameRequest = async () => {
+        const me: number = await whoami();
+        console.log('me = ', me)
+        member.forEach((mem) => {
+            if (me !== mem.id) {
+                return navigate(`/challenge?opp=${mem.id}&role=1`);
+            }
+        });
+    };
   return (
     <div className="parent flex flex-row justify-center items-center gap-[1vw] h-screen max-sm:flex-col max-md:flex-col">
       <div className="child-container-1">
@@ -484,7 +495,7 @@ const Chat = () => {
                 </div>
               </>
             ) : (
-              <button className="container-1 absolute top-[2.2vh] right-[2vw] px-[1.5vw] py-[.4vw] uppercase font-bold hover:scale-105 text-[.7vw]">
+              <button onClick={sendGameRequest} className="container-1 absolute top-[2.2vh] right-[2vw] px-[1.5vw] py-[.4vw] uppercase font-bold hover:scale-105 text-[.7vw]">
                 challenge
               </button>
             )}
