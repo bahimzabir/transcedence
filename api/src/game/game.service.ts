@@ -7,6 +7,7 @@ import { Room } from './game.interface';
 @Injectable()
 export class GameService {
 
+
     constructor(private prisma: PrismaService) { }
 
     private rooms: Room[] = [];
@@ -74,6 +75,15 @@ export class GameService {
         } catch (error) {
             console.log(error);
         }
+    }
+
+    async findRoom(userId: number) {
+        const room  = this.rooms.find(r => {
+            if (r.players[0].id === userId || r.players[1].id === userId)
+                return r
+            return null
+        })
+        return room
     }
 
 

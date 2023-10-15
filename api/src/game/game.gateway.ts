@@ -217,17 +217,36 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		return roomName;
 	}
-
-	// handle disconnection of one of the players
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		console.log("DISCONNECTION");
+		
+			// handle disconnection of one of the players
+		const room  = await this.gameService.findRoom(this.map.get(client));
+		if (room) {
+			room.done = true;
+			console.log("MAAAMAAA SALIIIT 2");
+			const body = {
+				player1Id: room.players[0].id,
+				player2Id: room.players[1].id,
+				player1Score: (room.players[0].id === this.map.get(client)) ? -1 : room.data.leftScore,
+				player2Score: (room.players[1].id === this.map.get(client)) ? -1 : room.data.rightScore,
+				type: "classic",
+				winnerId: (room.players[0].id !== this.map.get(client)) ? room.players[0].id : room.players[1].id,
+				loserId: this.map.get(client)
+			};
+			await this.gameService.createGameRecord(body);
+			this.server.to(room.roomName).emit("endMatch");
+			await this.gameService.removeRoom(room.roomName);
+			await this.streamGateway.removeRoom(room.roomName);
+		}
+
 		this.queue = this.queue.filter(player => (player.socket !== client))
 		this.ids = this.ids.filter(id => (id !== this.map.get(client)));
 		this.challengers.delete(this.map.get(client));
 		this.map.delete(client);
 	}
 
-	@Interval(10)
+	@Interval(8)
 	async moveBall() {
 		for (let room of this.gameService.getRooms()) {
 			room.data.ball.x += room.data.ball.velocityX;
@@ -236,7 +255,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
 				room.data.ball.velocityY *= -1;
 			}
-			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
+			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
 				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
 				this.resetBall(room);
 
@@ -248,12 +267,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 
 			if (room.data.ball.x <= 10 && (room.data.ball.y > room.data.leftPlayerY && room.data.ball.y < room.data.leftPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
 				this.handlePaddleCollision(room.data.ball, room.data.leftPlayerY);
 				room.data.ball.velocityX *= -1;
 			}
 			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.rightPlayerY && room.data.ball.y < room.data.rightPlayerY+80)) {
-				// room.data.speedX += (room.data.speedX > 0) ? 1 : (-1);
 				this.handlePaddleCollision(room.data.ball, room.data.rightPlayerY);
 				room.data.ball.velocityX *= -1;
 			}
@@ -278,26 +295,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				await this.gameService.removeRoom(room.roomName);
 				await this.streamGateway.removeRoom(room.roomName);
 			}
-			// if ((room.players[0].socket.disconnected || room.players[1].socket.disconnected) && 
-			// 	room.done === false)
-			// {
-			// 	room.done = true;
-			// 	console.log("MAAAMAAA SALIIIT 2");
-			// 	const body = {
-			// 		player1Id: room.players[0].id,
-			// 		player2Id: room.players[1].id,
-			// 		player1Score: room.data.leftScore,
-			// 		player2Score: room.data.rightScore,
-			// 		type: "classic",
-			// 		winnerId: (room.players[1].socket.disconnected) ? room.players[0].id : room.players[1].id,
-			// 		loserId: (room.players[0].socket.disconnected) ? room.players[1].id : room.players[0].id
-			// 	};
-			// 	await this.gameService.createGameRecord(body);
-			// 	this.server.to(room.roomName).emit("endMatch");
-			// 	await this.gameService.removeRoom(room.roomName);
-			// 	await this.streamGateway.removeRoom(room.roomName);
-			// }
-
 		}
 	}
 
@@ -307,14 +304,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	const paddleCenterY = paddleY + 40;
     	const deltaY = ball.y - paddleCenterY;
 
-    	// Calculate the normalized bounce angle
     	const normalizedDeltaY = deltaY / 40;
     	const maxBounceAngle = Math.PI / 4;
 
-    	// Calculate the bounce angle based on the normalized delta
     	const bounceAngle = normalizedDeltaY * maxBounceAngle;
 
-    	// Update the ball's velocity based on the new angle
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
