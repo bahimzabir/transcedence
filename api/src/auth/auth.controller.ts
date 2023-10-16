@@ -49,6 +49,12 @@ const redirectUrl = async (prisma: PrismaService, req: any) => {
 export class AuthController {
   constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
 
+
+  @Get('verify')
+  @UseGuards(JwtGard)
+  async verify() {
+    return "TRUE";
+  }
   @Get('signin')
   @UseGuards(AuthGuard('42'))
   SignIn() {
