@@ -47,8 +47,22 @@ const App = () => {
                         </RouteProtector>
                     }
                 />
-                <Route path="/challenge" element={<Challenge />} />
-                <Route path="/practice" element={<Practice />}/>
+                <Route 
+                    path="/challenge"
+                    element={
+                        <RouteProtector>
+                            <Challenge />
+                        </RouteProtector>
+                    } 
+                />
+                <Route 
+                    path="/practice"
+                    element={
+                        <RouteProtector>
+                            <Practice />
+                        </RouteProtector>
+                    } 
+                />
                 <Route
                     path="/home"
                     element={
