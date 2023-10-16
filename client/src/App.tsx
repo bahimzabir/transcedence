@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
     Profile,
     Landing,
@@ -9,45 +9,72 @@ import {
     Challenge,
     Practice,
 } from "./Pages/index";
-import AddChannel from "./components/AddChannel";
 import "./App.css";
 import Game from "./Game/Game";
 import { setOnline, recieveNotification } from "./components/mainGateway";
 import { ToastContainer } from "react-toastify";
+import RouteProtector from "./auth";
 
 const App = () => {
     setOnline();
     recieveNotification();
+
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/gamemode" element={<GameMode />} />
-                <Route path="/game" element={<Game />} />
-                <Route path="/challenge" element={<Challenge />} />
-                <Route path="/practice" element={<Practice />}/>
-                <Route path="/home" element={<Dashboard />} />
                 <Route
-                    path="/add-channel"
+                    path="/profile"
                     element={
-                        <AddChannel
-                            togglePopup={function (): void {
-                                throw new Error("Function not implemented.");
-                            }}
-                            addChannel={function (_channelProps: {
-                                name: string;
-                                img: File | null;
-                            }): void {
-                                throw new Error("Function not implemented.");
-                            }}
-                        />
+                        <RouteProtector>
+                            <Profile />
+                        </RouteProtector>
                     }
                 />
-                <Route path="/view-profile" element={<ViewProfile />} />
+                <Route
+                    path="/gamemode"
+                    element={
+                        <RouteProtector>
+                            <GameMode />
+                        </RouteProtector>
+                    }
+                />
+                <Route
+                    path="/game"
+                    element={
+                        <RouteProtector>
+                            <Game />
+                        </RouteProtector>
+                    }
+                />
+                <Route path="/challenge" element={<Challenge />} />
+                <Route path="/practice" element={<Practice />}/>
+                <Route
+                    path="/home"
+                    element={
+                        <RouteProtector>
+                            <Dashboard />
+                        </RouteProtector>
+                    }
+                />
+                <Route
+                    path="/view-profile"
+                    element={
+                        <RouteProtector>
+                            <ViewProfile />
+                        </RouteProtector>
+                    }
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        <RouteProtector>
+                            <Chat />
+                        </RouteProtector>
+                    }
+                />
             </Routes>
-            <ToastContainer/>
+            <ToastContainer />
         </BrowserRouter>
     );
 };

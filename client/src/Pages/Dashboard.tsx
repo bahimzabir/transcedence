@@ -12,7 +12,6 @@ import {
     PublicChannel,
     Leaderboard,
     Notifications,
-    MsgNotification,
     FriendComponent,
 } from "./index";
 import { io, Socket } from "socket.io-client";
@@ -58,6 +57,16 @@ interface room {
     name: string;
     state: string;
 }
+
+interface Leaderboard {
+    id: number;
+    username: string;
+    photo: string;
+    game_won: number;
+    game_lost: number;
+    game_played: number;
+}
+
 const Dashboard = () => {
     const [isHovered, setIsHovered] = useState(null);
     const [isActiveUser, setIsActiveUser] = useState(null);
@@ -88,22 +97,21 @@ const Dashboard = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [gamesMap, setGamesMap] = useState(new Map<string, Score>());
     const [rooms, setRooms] = useState<room[]>([]);
+    const [leaderboard, setLeaderboard] = useState<Leaderboard[]>([]);
 
     useEffect(() => {
-        setSocket(io('/stream'));
+        setSocket(io("/stream"));
     }, []);
 
     async function fetchPlayersData(room: any) {
         try {
             const [res1, res2] = await Promise.all([
-                axios.get(
-                    `/api/users/userinfos?id=${room.playerOneId}`,
-                    { withCredentials: true }
-                ),
-                axios.get(
-                    `/api/users/userinfos?id=${room.playerTwoId}`,
-                    { withCredentials: true }
-                ),
+                axios.get(`/api/users/userinfos?id=${room.playerOneId}`, {
+                    withCredentials: true,
+                }),
+                axios.get(`/api/users/userinfos?id=${room.playerTwoId}`, {
+                    withCredentials: true,
+                }),
             ]);
 
             const game: Game = {
@@ -147,7 +155,6 @@ const Dashboard = () => {
 
     useEffect(() => {
         socket?.on("removeRoom", (data) => {
-
             setGamesMap(new Map<string, any>(data.map));
             const newGames: Game[] = games.filter(
                 (game) => game.roomName !== data.roomName
@@ -224,15 +231,13 @@ const Dashboard = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [searchContainerRef]);
+
     useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const res = await axios.get(
-                    "/api/chat/getallrooms",
-                    {
-                        withCredentials: true,
-                    }
-                );
+                const res = await axios.get("/api/chat/getallrooms", {
+                    withCredentials: true,
+                });
                 const rooms = res.data;
                 let setrooms: room[] = [];
                 rooms.forEach((element: room) => {
@@ -251,6 +256,19 @@ const Dashboard = () => {
             } catch (error) {}
         };
         fetchRooms();
+    }, []);
+
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                const res = await axios.get("/api/users/leaderboard", {
+                    withCredentials: true,
+                });
+                const leaderboard = res.data;
+                setLeaderboard(leaderboard);
+            } catch (error) {}
+        };
+        fetchLeaderboard();
     }, []);
 
     return (
@@ -309,11 +327,10 @@ const Dashboard = () => {
                         <Link to="/chat">
                             <BsFillChatLeftTextFill className="hover:scale-110 text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]" />
                         </Link>
-                        <MsgNotification />
                     </div>
                     <div className="iconBtn">
                         <BsFillBellFill className="hover:scale-110 text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]" />
-                        <Notifications notifications={notifications}/>
+                        <Notifications notifications={notifications} />
                     </div>
                     <div className="iconBtn user-btn">
                         <BsFillPersonFill className="hover:scale-110 text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]" />
@@ -458,7 +475,17 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 leaderboard
                             </h2>
-                            <Leaderboard />
+                            {leaderboard.map((leaderboard) => (
+                                <Leaderboard
+                                    id={leaderboard.id}
+                                    username={leaderboard.username}
+                                    photo={leaderboard.photo}
+                                    game_won={leaderboard.game_won}
+                                    game_lost={leaderboard.game_lost}
+                                    game_played={leaderboard.game_played}
+                                    key={leaderboard.id}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
