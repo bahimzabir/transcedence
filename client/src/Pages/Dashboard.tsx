@@ -12,7 +12,6 @@ import {
     PublicChannel,
     Leaderboard,
     Notifications,
-    MsgNotification,
     FriendComponent,
 } from "./index";
 import { io, Socket } from "socket.io-client";

@@ -5,7 +5,6 @@ export { default as GameMode } from "./GameMode";
 export { default as ViewProfile } from "./ViewProfile";
 export { default as Dashboard } from "./Dashboard";
 export { default as Notifications } from "../components/Notifications";
-export { default as MsgNotification } from "../components/MsgNotification";
 export { default as QrCode } from "../components/QrCode";
 export { default as MessageContainer } from "../components/MessageContainer";
 export { default as Leaderboard } from "../components/Leaderboard";
