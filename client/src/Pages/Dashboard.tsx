@@ -475,7 +475,7 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 leaderboard
                             </h2>
-                            {leaderboard.map((leaderboard) => {
+                            {leaderboard.map((leaderboard) => (
                                 <Leaderboard
                                     id={leaderboard.id}
                                     username={leaderboard.username}
@@ -484,8 +484,8 @@ const Dashboard = () => {
                                     game_lost={leaderboard.game_lost}
                                     game_played={leaderboard.game_played}
                                     key={leaderboard.id}
-                                />;
-                            })}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

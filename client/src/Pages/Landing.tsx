@@ -20,8 +20,8 @@ const Landing = () => {
                         <p className="font-black text-[8vw] max-sm:text-[12vw] font-satoshi">
                             SpinFrenzy
                         </p>
-                        <p className="font-light text-center text-[1.2vw] max-sm:text-[3vw] font-satoshi uppercae -mt-[2vw] mb-[1.5vw] max-sm:-mt-[3.5vw] max-sm:mb-[5vw]">
-                            aka, ft_transcendence
+                        <p className="font-black text-center text-[1.2vw] max-sm:text-[3vw] font-satoshi uppercae -mt-[2vw] mb-[1.5vw] max-sm:-mt-[3.5vw] max-sm:mb-[5vw]">
+                            #FREE_PALESTINE 🇵🇸
                         </p>
                     </div>
                 </div>
