@@ -460,14 +460,14 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 popular public channels
                             </h2>
-                            {rooms.map((room) => (
+                            {rooms.map((room, index) => (
                                 <PublicChannel
                                     name={room.name}
                                     img={room.photo}
                                     member_size={room.members_size}
                                     id={room.id}
                                     status={room.state}
-                                    key={room.id}
+                                    key={index}
                                 />
                             ))}
                         </div>
@@ -475,7 +475,7 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 leaderboard
                             </h2>
-                            {leaderboard.map((leaderboard) => (
+                            {leaderboard.map((leaderboard, index) => (
                                 <Leaderboard
                                     id={leaderboard.id}
                                     username={leaderboard.username}
@@ -483,7 +483,7 @@ const Dashboard = () => {
                                     game_won={leaderboard.game_won}
                                     game_lost={leaderboard.game_lost}
                                     game_played={leaderboard.game_played}
-                                    key={leaderboard.id}
+                                    key={index}
                                 />
                             ))}
                         </div>

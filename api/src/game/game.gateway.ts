@@ -51,7 +51,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {
-			console.log("user already connected");
+			console.log(`user already connected ===> ${userId}`);
 			client.emit('inGame');
 			client.disconnect();
 		}
