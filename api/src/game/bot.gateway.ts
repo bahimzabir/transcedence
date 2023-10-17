@@ -107,9 +107,9 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ball.y >= 595 || room.data.ball.y <= 5) {
 				room.data.ball.velocityY *= -1;
 			}
-			if (room.data.ball.x > 1000 || room.data.ball.x < 0) {
-				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				await this.resetBall(room);
+			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
+				(room.data.ball.x > 1010) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				await this.resetBall(room, (room.data.ball.x > 1010) ? 'left' : 'right');
 			}
 
 			if (room.data.ball.x <= 10 && (room.data.ball.y >= room.data.playerY && room.data.ball.y <= room.data.playerY+80)) {
@@ -163,11 +163,11 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private async resetBall(room: Room) {
+	private async resetBall(room: Room, side: string) {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
-			velocityX: 5,
+			velocityX: (side === 'right') ? 5 : -5,
 			velocityY: 0,
 			speed: 5,
 		};

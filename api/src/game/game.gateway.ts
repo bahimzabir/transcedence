@@ -256,8 +256,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				room.data.ball.velocityY *= -1;
 			}
 			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
-				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				this.resetBall(room);
+				(room.data.ball.x > 1010) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				this.resetBall(room, (room.data.ball.x > 1010) ? 'left' : 'right');
 
 				this.streamGateway.updateScore(
 					room.roomName,
@@ -312,11 +312,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private resetBall(room: Room) : void  {
+	private resetBall(room: Room, side: string) : void  {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
-			velocityX: 5,
+			velocityX: (side === 'right') ? 5 : -5,
 			velocityY: 0,
 			speed: 5,
 		};
