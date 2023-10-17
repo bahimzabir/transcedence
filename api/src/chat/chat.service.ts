@@ -669,7 +669,7 @@ export class ChatService {
           }
         })
         if(chatroom){
-=          if(chatroom.members.length)
+          if(chatroom.members.length)
             throw HttpStatus.CONFLICT
           await this.prisma.chatRoom.update({
             where:{
@@ -697,6 +697,7 @@ export class ChatService {
       })
     }
     catch(error) {
+      // console.log(error)
       throw new ConflictException("user already exists")
     }
   }
