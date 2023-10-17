@@ -50,14 +50,12 @@ export class ChatService {
             unreadMessage: false,
           }
         })
-        console.log(r)
         const roomuser = await tsx.roomUser.findFirst({
           where:{
             userId: id,
             roomId: roomid,
           }
         })
-        console.log(roomuser.id)
       })
     } catch (error) {
       this.consoleLogger.error(error)
@@ -163,7 +161,7 @@ export class ChatService {
   }
   async setadmin(user: number, dto: userevents) {
     try {
-      this.prisma.$transaction(async (tsx) => {
+      await this.prisma.$transaction(async (tsx) => {
         const chat = await tsx.chatRoom.findFirst({
           where: {
             id: dto.roomid,
@@ -204,10 +202,11 @@ export class ChatService {
             });
           }
         }
+        else
+          throw new Error("maybe you are not or the user not in this room")
       });
-      return "done"
     } catch (error) {
-      return error;
+      throw error;
     }
   }
   async mute(user: number, dto: userevents) {
@@ -308,7 +307,6 @@ export class ChatService {
         });
       }
       else {
-        console.log("OMMGMGMMG")
         throw new Error("the user not any more in this channel")
       }
     });
@@ -655,7 +653,6 @@ export class ChatService {
   }
   async forcejoining(userId: number, roomid: number)
   {
-    console.log(roomid)
     try{
       await this.prisma.$transaction(async (tsx)=>{
         const chatroom = await tsx.chatRoom.findFirst({
@@ -672,8 +669,7 @@ export class ChatService {
           }
         })
         if(chatroom){
-          console.log(chatroom.members);
-          if(chatroom.members.length)
+=          if(chatroom.members.length)
             throw HttpStatus.CONFLICT
           await this.prisma.chatRoom.update({
             where:{
@@ -701,7 +697,6 @@ export class ChatService {
       })
     }
     catch(error) {
-      // console.log(error)
       throw new ConflictException("user already exists")
     }
   }
@@ -867,7 +862,7 @@ export class ChatService {
     return false;
   }
   isexist(room: any, id: number) {
-    if (room.members.find((user) => user.id === id)) return true;
+    if (room && room.members.find((user) => user.id === id)) return true;
     return false;
   }
 }

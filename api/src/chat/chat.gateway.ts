@@ -48,7 +48,7 @@ export class ChatGateway {
   {
     const userid: number = client.user.id;
     try {
-      this.chatService.setadmin(userid, dto[0]);
+      await this.chatService.setadmin(userid, dto[0]);
       this.server.to(client.id).emit("info", "the user is now admin");
     } catch (error) {
       this.server.to(client.id).emit("error", error.message);
@@ -71,7 +71,7 @@ export class ChatGateway {
     try{
       await this.chatService.kick(userid, dto[0])
       if(this.sockets.has(dto[0].id)){
-        this.server.to(this.sockets.get(dto[0].id).id).emit("leave");
+        this.server.to(this.sockets.get(dto[0].id).id).emit("leave", dto[0].roomid);
       }
       this.server.to(this.sockets.get(userid).id).emit("info", "the user got kicked");        
     }
@@ -80,7 +80,6 @@ export class ChatGateway {
     }
   }
   async handleConnection(client: any) {
-    console.log("chat socket CONNECTED")
     const id = this.getclientbysocket(client);
     this.sockets.set(id, client)
   }
@@ -111,7 +110,6 @@ export class ChatGateway {
     const id =  client.user.id;
     const room = await this.chatService.getchatroombyid(dto[0].id);
     if(!room && !this.chatService.isexist(room, id)){
-      console.log("HII")
       this.server.to(this.sockets.get(id).id).emit("error", "you are not in this room");
       return false
     }
@@ -127,7 +125,6 @@ export class ChatGateway {
         }
         else if(this.sockets.has(user.id))
         {
-          console.log("OMG")
          this.server.to(this.sockets.get(user.id).id).emit('newmessage', dto[0])
         }
         else
