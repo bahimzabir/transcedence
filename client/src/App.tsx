@@ -23,54 +23,14 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route
-          path="/profile"
-          element={
-            <RouteProtector>
-              <Profile />
-            </RouteProtector>
-          }
-        />
-        <Route
-          path="/gamemode"
-          element={
-            <RouteProtector>
-              <GameMode />
-            </RouteProtector>
-          }
-        />
-        <Route
-          path="/game"
-          element={
-            <RouteProtector>
-              <Game />
-            </RouteProtector>
-          }
-        />
-        <Route
-          path="/home"
-          element={
-            <RouteProtector>
-              <Dashboard />
-            </RouteProtector>
-          }
-        />
-        <Route
-          path="/view-profile"
-          element={
-            <RouteProtector>
-              <ViewProfile />
-            </RouteProtector>
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            <RouteProtector>
-              <Chat />
-            </RouteProtector>
-          }
-        />
+        <Route element={<RouteProtector />} >
+            <Route path="/profile" element= {<Profile />}/>
+            <Route path="/gamemode" element= {<GameMode /> }/>
+            <Route path="/game" element= {<Game />}/>
+            <Route path="/home" element= { <Dashboard /> }/>
+            <Route path="/view-profile" element={<ViewProfile />} />
+            <Route path="/chat" element= {<Chat />} />
+        </Route>
       </Routes>
       <ToastContainer />
     </BrowserRouter>

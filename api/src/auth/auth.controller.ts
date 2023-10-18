@@ -51,7 +51,7 @@ export class AuthController {
 
 
   @Get('verify')
-  @UseGuards(JwtGard)
+  @UseGuards(JwtTwoFactorGuard)
   async verify() {
     return "TRUE";
   }

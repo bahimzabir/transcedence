@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
-function RouteProtector({ children }:any) {
+function RouteProtector() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -23,7 +23,7 @@ function RouteProtector({ children }:any) {
     return null; // Don't render children if not authenticated
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
+  return <Outlet />;
 }
 
 export default RouteProtector;
