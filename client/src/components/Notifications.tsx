@@ -56,6 +56,7 @@ const Notifications = ({
       await axios.post("/api/users/readnotification", data, {
         withCredentials: true,
       });
+      navigate("/view-profile?id=" + notification.from)
     }
   };
   const unreadNotifications = notifications.filter(

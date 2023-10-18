@@ -1,6 +1,5 @@
-    import "../styles/Landing.css";
+import "../styles/Landing.css";
 import backgroundImg from "../assets/ping.gif";
-import { Link } from "react-router-dom";
 
 const Landing = () => {
     return (
@@ -21,24 +20,24 @@ const Landing = () => {
                         <p className="font-black text-[8vw] max-sm:text-[12vw] font-satoshi">
                             SpinFrenzy
                         </p>
-                        <p className="font-light text-center text-[1.2vw] max-sm:text-[3vw] font-satoshi uppercae -mt-[2vw] mb-[1.5vw] max-sm:-mt-[3.5vw] max-sm:mb-[5vw]">
-                            aka, ft_transcendence
+                        <p className="font-black text-center text-[1.2vw] max-sm:text-[3vw] font-satoshi uppercae -mt-[2vw] mb-[1.5vw] max-sm:-mt-[3.5vw] max-sm:mb-[5vw]">
+                            #FREE_PALESTINE 🇵🇸
                         </p>
                     </div>
                 </div>
                 <div className="w-[20vw] max-sm:w-[50vw] font-semibold text-[1vw] max-sm:text-[2.5vw] flex flex-col justify-between gap-[1vw]">
-                    <Link
+                    <a
                         className="container h-[2.5vw] max-sm:h-[5vw] rounded-[.6vw] flex justify-center items-center font-bold hover:scale-105"
-                        to="/api/auth/signin"
+                        href="/api/auth/signin"
                     >
                         42 Intra
-                    </Link>
-                    <Link
+                    </a>
+                    <a
                         className="container h-[2.5vw] max-sm:h-[5vw] rounded-[.6vw] flex justify-center items-center font-bold hover:scale-105"
-                        to="/api/auth/google/signin"
+                        href="/api/auth/google/signin"
                     >
                         Google
-                    </Link>
+                    </a>
                 </div>
             </div>
         </>

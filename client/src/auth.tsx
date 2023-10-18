@@ -26,4 +26,5 @@ function RouteProtector() {
   return <Outlet />;
 }
 
-export default RouteProtector;
+
+export default  RouteProtector;

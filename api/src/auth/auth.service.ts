@@ -54,7 +54,7 @@ export class AuthService {
         id: userId,
       },
       data: {
-        isTowFactorAuthEnabled: true,
+        isTwoFactorAuthEnabled: true,
       },
     });
   }
@@ -65,7 +65,7 @@ export class AuthService {
         id: userId,
       },
       data: {
-        isTowFactorAuthEnabled: false,
+        isTwoFactorAuthEnabled: false,
       },
     });
   }
@@ -160,7 +160,7 @@ export class AuthService {
       token: this.generateToken(user),
     };
   }
-  
+
   // async generateToken(user: any) {
   //   const payload = { sub: user.id, email: user.email };
   //   return this.jwtService.sign(payload, {
@@ -168,18 +168,18 @@ export class AuthService {
   //     secret: this.config.get('JWT_SECRET'),
   //   });
   // }
-  public generateToken(user: any, isTowFactorAuthEnabled = false) {
+  public generateToken(user: any, isTwoFactorAuthEnabled = false) {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email,
-      isTowFactorAuthEnabled,
+      isTwoFactorAuthEnabled,
     };
     console.log(`${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`)
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
-    // if (!isTowFactorAuthEnabled) {
+    // if (!isTwoFactorAuthEnabled) {
       return token;
     // }
     // return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(

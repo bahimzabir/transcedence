@@ -1,12 +1,8 @@
-import { BsXLg } from "react-icons/bs";
 import { useEffect } from "react";
 import "../styles/QrCode.css";
+import axios from "axios";
 
-interface QrCodeProps {
-    toggleQrCode: () => void;
-}
-
-const QrCode = ({ toggleQrCode }: QrCodeProps) => {
+const VerifyLogin = () => {
     useEffect(() => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
@@ -69,49 +65,51 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         });
     }, []);
 
-    const getCodeFromInput = () => {
+    const getCodeandVerify = async () => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
-        let code = "";
-        inputs?.forEach((input) => {
-            code += input.value;
-        });
-        return code;
-    };
-
-    useEffect(() => {
         try {
-            const code = getCodeFromInput();
-            axios.post("/api/2fa/turn-on", code, {
-                withCredentials: true,
+            let code = "";
+            inputs?.forEach((input) => {
+                code += input.value;
             });
+            console.log(code);
+            const res = await axios.post("/api/2fa/authenticate", {
+                twoFactorAuthenticationCode: code,
+            });
+            console.log(res);
+            if (res.status === 401) {
+                inputs?.forEach((input) => {
+                    input.value = "";
+                });
+            } else {
+                window.location.href = "/home";
+            }
         } catch (error) {
-            console.log(error);
+            console.log("hahahahaha");
+            inputs?.forEach((input) => {
+                input.value = "";
+            });
         }
-    }, []);
+    };
 
     return (
         <div className="pop-up">
             <div className="overlay">
                 <div className="pop-up-container">
                     <div className="flex justify-center items-center relative">
-                        <div className="add-channel w-[50em] h-[65vh] max-sm:w-[40vw] max-md:w-[40vw] max-lg:w-[40vw] max-xl:w-[40vw] max-2xl:w-[40vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vw] max-sm:py-[4vw] max-md:py-[4vw]">
+                        <div className="add-channel w-[40em] h-[40vh] max-sm:w-[40vw] max-md:w-[40vw] max-lg:w-[40vw] max-xl:w-[40vw] max-2xl:w-[40vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vw] max-sm:py-[4vw] max-md:py-[4vw]">
                             <div className="qr-code-container mt-[2vw]">
                                 <div className="qr-code">
                                     <div className="flex flex-col justify-between items-center gap-[1.4vw]">
-                                        <BsXLg
-                                            className="absolute top-[1vw] right-[1vw] text-[1.5vw] hover:cursor-pointer"
-                                            onClick={toggleQrCode}
-                                        />
                                         <h3 className="font-medium font-satoshi text-[1.2vw]">
-                                            scan to activate 2 factor
-                                            authentication
+                                            Please enter the 6-digit code from
+                                            the QR to Login
                                         </h3>
-                                        <img
-                                            className="w-[15vw]"
-                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Example"
-                                        />
-                                        <form action="#" id="form">
+                                        <form
+                                            id="form"
+                                            action="javascript:void(0)"
+                                        >
                                             <div className="flex justify-center items-center">
                                                 <input
                                                     type="tel"
@@ -153,9 +151,9 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={getCodeFromInput}
+                                                onClick={getCodeandVerify}
                                             >
-                                                Verify account
+                                                Login
                                             </button>
                                         </form>
                                     </div>
@@ -169,4 +167,4 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
     );
 };
 
-export default QrCode;
+export default VerifyLogin;

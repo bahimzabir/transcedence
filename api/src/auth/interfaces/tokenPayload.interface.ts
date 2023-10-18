@@ -1,6 +1,6 @@
 interface TokenPayload {
   sub: number;
   email: string;
-  isTowFactorAuthEnabled?: boolean;
+  isTwoFactorAuthEnabled?: boolean;
 }
 export default TokenPayload;

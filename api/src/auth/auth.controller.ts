@@ -36,12 +36,12 @@ const redirectUrl = async (prisma: PrismaService, req: any) => {
       },
     });
     if (user) {
-      return "http://localhost:8000/home";
+      return 'http://localhost:8000/home';
     } else {
-      return "http://localhost:8000/profile";
+      return 'http://localhost:8000/profile';
     }
   } catch (error) {
-    return "http://localhost:8000/profile";
+    return 'http://localhost:8000/profile';
   }
 }
 
@@ -53,8 +53,14 @@ export class AuthController {
   @Get('verify')
   @UseGuards(JwtTwoFactorGuard)
   async verify() {
-    return "TRUE";
+    return 'TRUE';
   }
+  @Get('Jwtverify')
+  @UseGuards(JwtGard)
+  async Jwtverify() {
+    return 'TRUE';
+  }
+
   @Get('signin')
   @UseGuards(AuthGuard('42'))
   SignIn() {
@@ -73,13 +79,15 @@ export class AuthController {
         secure: true, // Set to true for HTTPS
         //sameSite: 'Lax', // Adjust based on your requirements
     });
-    console.log('..................................')
-    console.log(res.cookie);
-    console.log('..................................')
-    res.redirect(url);
+    // if two factor is enabled
+    if (r.user.isTwoFactorAuthEnabled) {
+      res.redirect('http://localhost:8000/verify');
+    } else {
+      res.redirect(url);
+    }
   }
 }
-@Controller("/auth/google")
+@Controller('/auth/google')
 export class GoogleAuthController {
   constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
 
@@ -92,7 +100,7 @@ export class GoogleAuthController {
   async Google_redirect(@Req() req, @Res() res) {
     const url = await redirectUrl(this.prisma, req);
     const r = await this.authService.SignIn(req);
-    await res.cookie("jwt", r.token , {
+    await res.cookie('jwt', r.token , {
       httpOnly: true,
       secure: true,
     });
@@ -104,7 +112,7 @@ export class GoogleAuthController {
 
 // @UseGuards(JwtGard)
 @UseGuards(JwtTwoFactorGuard)
-@Controller("logout")
+@Controller('logout')
 export class LogoutController {
   constructor(
     private readonly authService: AuthService,
@@ -112,14 +120,11 @@ export class LogoutController {
   ) {}
   @Get()
   async Logout(@Req() req, @Res() res) {
-    // what if the user saved his token?
     this.events.closeOnlineUsers(req.user.id);
-    await res.clearCookie("jwt");
-    // set the user to offline
-    //! close all sockets
+    await res.clearCookie('jwt');
     await this.events.handleDisconnect(req.user.id);
 
-    res.redirect("http://localhost:8000/");
+    res.redirect('http://localhost:8000/');
   }
 }
 
@@ -134,7 +139,7 @@ export class TwoFactorAuthenticationController {
   @Get()
   a(@Req() request: RequestWithUser) {
     // console.log({ request });
-    console.log("helldo");
+    console.log('helldo');
     return request.user;
   }
   @UseGuards(JwtGard)
@@ -155,12 +160,12 @@ export class TwoFactorAuthenticationController {
   //! use jwt guard here
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
-    // @Body() twoFactorAuthenticationCode: string,
+    @Body() twoFactorAuthenticationCode: string,
   ) {
-    console.log('turnOnTwoFactorAuthentication')
+    console.log('turnOnTwoFactorAuthentication');
     console.log(request.body);
-    console.log(request.body.twoFactorAuthenticationCode);
-    console.log('turnOnTwoFactorAuthentication')
+    console.log(twoFactorAuthenticationCode);
+    console.log('turnOnTwoFactorAuthentication');
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       request.body.twoFactorAuthenticationCode,
       request.user,
@@ -181,7 +186,7 @@ export class TwoFactorAuthenticationController {
   ) {
     console.log(request.user);
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    res.redirect("http://localhost:8000/");
+    res.redirect('http://localhost:8000/');
     // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
 
   }

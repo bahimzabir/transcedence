@@ -76,19 +76,19 @@ function Challenge() {
         const queryParams = new URLSearchParams(window.location.search);
         let opp = queryParams.get("opp");
         if (opp === null) opp = "0";
-        let n = queryParams.get("num");
+        let n = queryParams.get("role");
         if (n === null) n = "0";
 
-        const num: number = +n
+        const role: number = +n
         const oppId: number = +opp;
-        console.log('num === ', num);
+        console.log('num === ', role);
         socket?.on("inGame", () => {
             console.log("User already in a game");
             navigate(-1);
         });
-        if (num === 1)
+        if (role === 1)
             socket?.emit("challenge", oppId);
-        else if (num === 2)
+        else if (role === 2)
             socket?.emit("acceptChallenge", oppId);
 
         socket?.on("join_room", (obj: any) => {

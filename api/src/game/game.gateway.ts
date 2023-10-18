@@ -49,9 +49,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('=')[1];
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
-		const userId = jwtPayload.id;
+		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {
-			console.log("user already connected");
+			console.log(`user already connected ===> ${userId}`);
 			client.emit('inGame');
 			client.disconnect();
 		}
@@ -136,7 +136,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("challenge")
 	async challengeUser(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-		// console.log('challenge');
+		console.log('challenge');
 		await this.event.sendGameRequest(this.map.get(client), data);
 		this.challengers.set(this.map.get(client), client)
 		
@@ -144,6 +144,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("acceptChallenge")
 	async acceptChallenge(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+		console.log('accept challenge')
 		if (this.challengers.has(data)) {
 			const players = [
 				{
@@ -159,7 +160,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			]
 
 			const roomName: string = this.createNewRoom();
-
+			console.log('new challenge start roomName = ', roomName);
 			let room: Room = {
 				roomName: roomName,
 				players: players,
@@ -255,8 +256,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				room.data.ball.velocityY *= -1;
 			}
 			if (room.data.ball.x > 1010 || room.data.ball.x < -10) {
-				(room.data.ball.x > 1000) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
-				this.resetBall(room);
+				(room.data.ball.x > 1010) ? (room.data.leftScore += 1) : (room.data.rightScore += 1);
+				this.resetBall(room, (room.data.ball.x > 1010) ? 'left' : 'right');
 
 				this.streamGateway.updateScore(
 					room.roomName,
@@ -311,11 +312,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     	ball.velocityY = Math.sin(bounceAngle) * ball.speed;
 	}
 
-	private resetBall(room: Room) : void  {
+	private resetBall(room: Room, side: string) : void  {
 		room.data.ball = {
 			x: 500, 
 			y: 300,
-			velocityX: 5,
+			velocityX: (side === 'right') ? 5 : -5,
 			velocityY: 0,
 			speed: 5,
 		};

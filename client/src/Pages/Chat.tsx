@@ -17,6 +17,7 @@ import {
   notifyoferror,
 } from "./chatInterfaces";
 import { notify } from "../assets/toastNotifys";
+import { useNavigate } from "react-router-dom";
 
 const Chat = () => {
   const [challengebutton, setChallengebutton] = useState(false);
@@ -105,7 +106,7 @@ const Chat = () => {
       );
       return response.data;
     } catch (error) {
-      console.error(error);
+      notifyoferror("error in getting channels");
     }
   }
   async function getChannelmsg(id: any) {
@@ -118,7 +119,7 @@ const Chat = () => {
       );
       return res.data;
     } catch (error) {
-      alert("error in getting channels rooms");
+      notifyoferror("error in getting channels messages");
     }
   }
   async function getdminfos(id: number) {
@@ -143,8 +144,8 @@ const Chat = () => {
         status: "dm",
         notification: res.data.roomUsers[0].unreadMessage,
       };
-    } catch {
-      alert("error in getting dm infos");
+    }catch (error) {
+      notifyoferror("error in getting dm");
     }
     return room;
   }
@@ -152,7 +153,6 @@ const Chat = () => {
     let newchannel: intersetchannel[] = [];
     const rooms = await getRoomChannels();
     for (const element of rooms) {
-      console.log(element)
       if (element.isdm !== true) {
         const room: intersetchannel = {
           name: element.name,
@@ -286,13 +286,10 @@ const Chat = () => {
     socket?.on("info", (val: string) => {
       infonotify(val);
     });
-    socket?.on("leavebyexit", async (val: string) => {
+    socket?.on("leave", async (roomid: number) => {
       await Getmyrooms();
-      infonotify(val)
-      setSelectedChannel(null);
-    });
-    socket?.on("leave", async () => {
-      await Getmyrooms();
+      if(selectedChannelRef.current?.id === roomid)
+        setSelectedChannel(null)
     });
     return () => {
       socket?.disconnect();
@@ -321,7 +318,6 @@ const Chat = () => {
         }
       });
       getmember.members.forEach((element: any) => {
-        console.log(element)
         const newmember: MemberProps = {
           id: element.id,
           username: element.username,
@@ -373,6 +369,15 @@ const Chat = () => {
 
     }
   };
+  const navigate = useNavigate();
+  const sendGameRequest = async () => {
+        const me: number = await whoami();
+        member.forEach((mem) => {
+            if (me !== mem.id) {
+                return navigate(`/challenge?opp=${mem.id}&role=1`);
+            }
+        });
+    };
   return (
     <div className="parent flex flex-row justify-center items-center gap-[1vw] h-screen max-sm:flex-col max-md:flex-col">
       <div className="child-container-1">
@@ -484,7 +489,7 @@ const Chat = () => {
                 </div>
               </>
             ) : (
-              <button className="container-1 absolute top-[2.2vh] right-[2vw] px-[1.5vw] py-[.4vw] uppercase font-bold hover:scale-105 text-[.7vw]">
+              <button onClick={sendGameRequest} className="container-1 absolute top-[2.2vh] right-[2vw] px-[1.5vw] py-[.4vw] uppercase font-bold hover:scale-105 text-[.7vw]">
                 challenge
               </button>
             )}

@@ -32,10 +32,10 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
         id: payload.sub,
       },
     });
-    if (!user.isTowFactorAuthEnabled) {
+    if (!user.isTwoFactorAuthEnabled) {
       return user;
     }
-    if (payload.isTowFactorAuthEnabled) {
+    if (payload.isTwoFactorAuthEnabled) {
       return user;
     }
   }
