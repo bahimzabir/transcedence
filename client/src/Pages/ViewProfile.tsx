@@ -60,19 +60,15 @@ const ViewProfile = () => {
     const getFriendStatus = async (friendShip: any) => {
         if (!friendShip.sent && !friendShip.recieved) {
             setFriendStatus(FriendStatus.NONE);
-            console.log("no friendship relation");
         } else if (friendShip.sent && friendShip.sent.status === "PENDING") {
             setFriendStatus(FriendStatus.PENDING_SENT);
-            console.log("sent pending");
         } else if (
             friendShip.recieved &&
             friendShip.recieved.status === "PENDING"
         ) {
             setFriendStatus(FriendStatus.PENDING_RECIEVED);
-            console.log("recived pending");
         } else {
             setFriendStatus(FriendStatus.FRIENDS);
-            console.log("friends");
         }
 
         if (friendShip.sent) {
@@ -113,7 +109,6 @@ const ViewProfile = () => {
                     username: data.user.username,
                 });
                 setMap(newMAp);
-                console.log(friendShipId);
                 getFriendStatus(data.friendShip);
             });
     };
@@ -129,7 +124,7 @@ const ViewProfile = () => {
             })
             .then((res) => {
                 if (res.data) {
-                    setGames(res.data.games);
+                    setGames(res.data.games.reverse());
                 }
             });
     };

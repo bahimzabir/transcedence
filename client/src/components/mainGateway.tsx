@@ -12,11 +12,11 @@ const setOnline = async () => {
     });
 };
 
-const setOffline = () => {
-    socket.on("disconnect", () => {
-        console.log("disconnected");
-    });
-};
+// const setOffline = () => {
+//     socket.on("disconnect", () => {
+//         console.log("disconnected");
+//     });
+// };
 
 const missingPlayerNotify = () =>
     toast(`😫 Opps, Your opponent is missing!`, {
@@ -73,10 +73,6 @@ const CustomNotification: React.FC<NotificationData> = ({
         };
         return disconnectWebSocket;
     }
-    const handleDecline = () => {
-        const disconnect = decline();
-        disconnect();
-    }
 
     return (
         <div className="container-1 px-[1.5vw] py-[1vw] flex flex-col gap-[1.2vw] w-full">
@@ -115,8 +111,6 @@ const gameRequestNotify = (username: string, photo: string, id: number) =>
         senderName={username}
         senderPhoto={photo} 
         senderId={id}
-        // onAccept={() => accept(id)}
-
     />, {
         position: "top-left",
         autoClose: 3000,
@@ -145,12 +139,6 @@ const gameRejectNotify = () =>
         theme: "dark",
         className:"w-[28vw] flex items-center justify-center"
     });
-
-const setInGame = () => {
-    socket.on("inGame", () => {
-        console.log("inGame");
-    });
-};
 
 const notify = (message: string) => {
     toast(message , {
@@ -186,8 +174,7 @@ const recieveNotification = () => {
         gameRejectNotify();
     })
     socket.on('inGame', () => {
-        console.log('ach tema')
-        notify('You are already in a game');
+        notify('You are inside another game Room :)');
     })
 };
 

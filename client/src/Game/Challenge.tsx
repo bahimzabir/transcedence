@@ -81,7 +81,7 @@ function Challenge() {
 
         const role: number = +n
         const oppId: number = +opp;
-        console.log('num === ', role);
+        
         socket?.on("inGame", () => {
             console.log("User already in a game");
             navigate(-1);

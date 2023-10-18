@@ -1,12 +1,15 @@
 import { BsXLg } from "react-icons/bs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../styles/QrCode.css";
+import axios from "axios";
 
 interface QrCodeProps {
     toggleQrCode: () => void;
 }
 
 const QrCode = ({ toggleQrCode }: QrCodeProps) => {
+    const [qrCode, setQrCode] = useState<string | null>(null);
+
     useEffect(() => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
@@ -48,7 +51,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         inputs?.forEach((input) => {
             input.addEventListener("focus", (e) => {
                 setTimeout(() => {
-                    e.target?.select();
+                    // e.target?.select();
                 }, 0);
             });
 
@@ -67,28 +70,38 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                 }
             });
         });
+        
+        // generate the QrCode
+        axios.post("/api/2fa/generate", {}, {
+            responseType: 'arraybuffer'
+        }).then( (res) => {
+            const blob = new Blob([res.data], { type: 'image/png' });
+            const blobUrl = URL.createObjectURL(blob);
+            setQrCode(blobUrl);
+        }).catch((err) => {
+            console.error(err);
+        })
+    
     }, []);
 
-    const getCodeFromInput = () => {
+    const getCodeFromInput = async () => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
         let code = "";
         inputs?.forEach((input) => {
             code += input.value;
         });
+        console.log('code: ', code);
         return code;
     };
 
-    useEffect(() => {
-        try {
-            const code = getCodeFromInput();
-            axios.post("/api/2fa/turn-on", code, {
-                withCredentials: true,
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }, []);
+    const verifyCode = async () => {
+        const code = await getCodeFromInput();
+        axios.post("/api/2fa/turn-on", {code: code})
+        .then((res) => {
+            console.log(res.data);
+        })
+    }
 
     return (
         <div className="pop-up">
@@ -107,10 +120,13 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             scan to activate 2 factor
                                             authentication
                                         </h3>
+                                        { qrCode &&
                                         <img
                                             className="w-[15vw]"
-                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Example"
+                                            src={qrCode}
+                                            alt="QR Code"
                                         />
+                                        }
                                         <form action="#" id="form">
                                             <div className="flex justify-center items-center">
                                                 <input
@@ -153,7 +169,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={getCodeFromInput}
+                                                onClick={verifyCode}
                                             >
                                                 Verify account
                                             </button>

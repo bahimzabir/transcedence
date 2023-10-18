@@ -48,7 +48,6 @@ export class AuthService {
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
-    console.log("turnOnTwoFactorAuthentication");
     return this.prisma.user.update({
       where: {
         id: userId,

@@ -101,23 +101,23 @@ const Profile = () => {
     // };
 
     const handleGithubChange = (e: any) => {
-            setBody({ ...body, github: e.target.value });
+        setBody({ ...body, github: e.target.value });
     };
 
     const handleLinkedinChange = (e: any) => {
-            setBody({ ...body, linkedin: e.target.value });
+        setBody({ ...body, linkedin: e.target.value });
     };
 
     const handleInstagramChange = (e: any) => {
-            setBody({ ...body, instagram: e.target.value });
+        setBody({ ...body, instagram: e.target.value });
     };
 
     const handleUsernameChange = (e: any) => {
-            setBody({ ...body, username: e.target.value });
+        setBody({ ...body, username: e.target.value });
     };
 
     const handleFullNameChange = (e: any) => {
-            setBody({ ...body, fullname: e.target.value });
+        setBody({ ...body, fullname: e.target.value });
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,19 +129,22 @@ const Profile = () => {
 
     const postData = async () => {
         try {
-            if (Object.keys(body).length !== 0 || photo) {
+            let updatedBody: Partial<Body> = Object.entries(body)
+                .filter(([, value]) => value !== '')
+                .reduce((result, [key, value]) => {
+                    result[key as keyof Body] = value;
+                    return result;
+                }, {} as Partial<Body>);
+            if (body.bio === data.bio) {
+                const { bio, ...tmpBody } = updatedBody;
+                updatedBody = tmpBody;
+            }
+            if (Object.keys(updatedBody).length !== 0 || photo) {
                 const form = new FormData();
-                const updatedBody: Partial<Body> = Object.entries(body)
-                    .filter(([, value]) => value !== '')
-                    .reduce((result, [key, value]) => {
-                        result[key as keyof Body] = value;
-                        return result;
-                    }, {} as Partial<Body>);
                 console.log('updated body ==> ', updatedBody);
                 form.append("body", JSON.stringify(updatedBody));
-                if (photo) {
+                if (photo)
                     form.append("file", photo);
-                }
                 await axios.post("/api/users/me", form, {
                     withCredentials: true,
                 })
@@ -320,7 +323,7 @@ const Profile = () => {
                             <div className="switches-container">
                                 <input
                                     type="radio"
-                                    id="switchff"
+                                    id="switchOff"
                                     name="switchPlan"
                                     value="Off"
                                 />
@@ -329,7 +332,7 @@ const Profile = () => {
                                     id="switchOn"
                                     name="switchPlan"
                                     value="On"
-                                    checked={qrCode ? true : false}
+                                    // checked={qrCode ? true : false}
                                 />
                                 <label
                                     htmlFor="switchOff"
