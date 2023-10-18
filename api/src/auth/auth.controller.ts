@@ -155,19 +155,17 @@ export class TwoFactorAuthenticationController {
   //! use jwt guard here
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
-    // @Body() twoFactorAuthenticationCode: string,
+    @Body() body: any,
   ) {
-    console.log('turnOnTwoFactorAuthentication')
-    console.log(request.body);
-    console.log(request.body.twoFactorAuthenticationCode);
-    console.log('turnOnTwoFactorAuthentication')
+    console.log(body.code)
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      request.body.twoFactorAuthenticationCode,
+      body.code,
       request.user,
     );
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
+    console.log('true');
     await this.authService.turnOnTwoFactorAuthentication(request.user.id);
   }
 

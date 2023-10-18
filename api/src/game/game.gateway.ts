@@ -53,6 +53,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (this.ids.includes(userId)) {
 			console.log(`user already connected ===> ${userId}`);
 			client.emit('inGame');
+			this.event.sendnotify('inGame', userId);
 			client.disconnect();
 		}
 		else {
