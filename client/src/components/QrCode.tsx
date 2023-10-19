@@ -73,11 +73,12 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         
         // generate the QrCode
         axios.post("/api/2fa/generate", {}, {
-            responseType: 'arraybuffer'
+            // responseType: 'arraybuffer'
         }).then( (res) => {
-            const blob = new Blob([res.data], { type: 'image/png' });
-            const blobUrl = URL.createObjectURL(blob);
-            setQrCode(blobUrl);
+            // const blob = new Blob([res.data], { type: 'image/png' });
+            // const blobUrl = URL.createObjectURL(blob);
+            console.log(res.data);
+            setQrCode(res.data);
         }).catch((err) => {
             console.error(err);
         })

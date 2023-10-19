@@ -39,6 +39,7 @@ export class UserController {
 
   @Get('me')
   getUser(@Req() req: any) {
+    console.log('req.user', req.user);
     return req.user;
   }
 

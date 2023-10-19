@@ -49,7 +49,7 @@ model User {
   blockedBy    User[] @relation("BlockedUsers")
   outgoingFriendRequests FriendRequest[] @relation("OutgoingFriendRequests")
   incomingFriendRequests FriendRequest[] @relation("IncomingFriendRequests")
-  isTwoFactorAuthEnabled Boolean @default(true)
+  isTwoFactorAuthEnabled Boolean @default(false)
   twoFactorAuthSecret    String?
 
 }

@@ -25,9 +25,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto, TwoFactorAuthenticationCodeDto,  } from 'src/dto';
 import { use } from 'passport';
 import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
+import * as qrcode from 'qrcode';
 
-// get redirect url 
-
+// get redirect url
 const redirectUrl = async (prisma: PrismaService, req: any) => {
   try {
     const user = await prisma.user.findUnique({
@@ -145,13 +145,25 @@ export class TwoFactorAuthenticationController {
   @UseGuards(JwtGard)
   @Post('generate') //! generatin qr code and puthing teh secret key in db
   //! use jwt guard here
-  async register(@Res() response: Response, @Req() request: RequestWithUser) {
-    // console.log({ request });
-    const { otpauthUrl } =
+  async register(@Req() request: RequestWithUser) {
+    console.log('user.eamil');
+    console.log(request.user.email);
+    const otpauthUrl =
       await this.authService.generateTwoFactorAuthenticationSecret(
         request.user,
       );
-    return this.authService.pipeQrCodeStream(response, otpauthUrl);
+      try {
+        const qrCodeDataURL = await qrcode.toDataURL(otpauthUrl);
+        return qrCodeDataURL;
+      } catch (error) {
+        throw new Error('Failed to generate QR code.');
+      }
+      // console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[')
+    // console.log(Qrcode);
+    // return Qrcode;
+    // console.log(qrCodeDataURL);
+    // return `<img src="${qrCodeDataURL}" alt="QR Code" />`;
+    // return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
   @UseGuards(JwtGard)
@@ -167,10 +179,11 @@ export class TwoFactorAuthenticationController {
       body.code,
       request.user,
     );
+    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
-    console.log('true');
+    console.log('true000000000000000000000000000000000000000000000000000000000');
     await this.authService.turnOnTwoFactorAuthentication(request.user.id);
   }
 

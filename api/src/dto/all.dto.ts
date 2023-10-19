@@ -22,6 +22,8 @@ export class UserTfaDto {
     id: number;
     @ApiProperty()
     twoFactorAuthSecret: string;
+    @ApiProperty()
+    email: string;
 }
 
 export class NotificationDto{

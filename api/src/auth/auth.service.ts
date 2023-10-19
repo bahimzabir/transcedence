@@ -23,6 +23,7 @@ export class AuthService {
 
   async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
+    console.log("secret", secret);
     const otpauthUrl = authenticator.keyuri(
       user.username,
       this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
@@ -37,17 +38,17 @@ export class AuthService {
         twoFactorAuthSecret: secret,
       },
     });
-    return {
-      secret,
-      otpauthUrl,
-    };
+    console.log("updated secret", user.twoFactorAuthSecret);
+    console.log("user.twoFactorAuthSecret", user.twoFactorAuthSecret);
+    return otpauthUrl;
   }
 
-  async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+  public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
     return toFileStream(stream, otpauthUrl);
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
+    console.log("--------------------------------- turnOnTwoFactorAuthentication --------------------------------------==============");
     return this.prisma.user.update({
       where: {
         id: userId,
@@ -73,13 +74,11 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    // console.log("isTwoFactorAuthenticationCodeValid");
-    // console.log(twoFactorAuthenticationCode);
-    // console.log(user.twoFactorAuthSecret);
-    // console.log("isTwoFactorAuthenticationCodeValid");
+    console.log('user.twoFactorAuthSecret: ' + user.twoFactorAuthSecret);
+    console.log('twoFactorAuthenticationCode: ' + twoFactorAuthenticationCode);
     return authenticator.verify({
-      token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
+      token: twoFactorAuthenticationCode,
     });
   }
 

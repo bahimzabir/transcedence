@@ -1,6 +1,9 @@
-interface TokenPayload {
+import { Type } from 'class-transformer';
+class TokenPayload {
   sub: number;
   email: string;
-  isTwoFactorAuthEnabled?: boolean;
+  @Type(() => Boolean)
+  isTwoFactorAuthEnabled: boolean;
 }
+
 export default TokenPayload;
