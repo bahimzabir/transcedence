@@ -16,13 +16,17 @@ import { ToastContainer } from "react-toastify";
 import RouteProtector from "./auth";
 import VerifyLogin from "./components/VerifyLogin";
 import JwtRouteProtector from "./authjwt";
+import LandinRouteProtector from "./authhome";
+
 const App = () => {
     setOnline();
     recieveNotification();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route element={<LandinRouteProtector />} >
+        <Route path="/" element= {<VerifyLogin />} />
+        </Route>
         <Route element={<JwtRouteProtector />} >
         <Route path="/verify" element= {<VerifyLogin />} />
         </Route>
