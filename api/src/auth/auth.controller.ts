@@ -169,7 +169,7 @@ export class TwoFactorAuthenticationController {
   @UseGuards(JwtGard)
   @Post('turn-on') //! hadi bayna kat turniha 
   @HttpCode(200)
-  //! use jwt guard here
+  //! use jwt guard hereJwtTwoFactorGuard
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
     @Body() body: any,
@@ -183,12 +183,12 @@ export class TwoFactorAuthenticationController {
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
-    console.log('true000000000000000000000000000000000000000000000000000000000');
     await this.authService.turnOnTwoFactorAuthentication(request.user.id);
+    return this.authService.createCookie(request);
   }
 
-  @Post('turn-off') //! hadi bayna kat turniha of
-  // @UseGuards(JwtTwoFactorGuard)
+  @Get('turn-off') //! hadi bayna kat turniha of
+  @UseGuards(JwtTwoFactorGuard)
   @HttpCode(200)
   //! use jwt guard here
   async turnOffTwoFactorAuthentication(
@@ -197,9 +197,13 @@ export class TwoFactorAuthenticationController {
   ) {
     console.log(request.user);
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    res.redirect('http://localhost:8000/');
+    const token = this.authService.generateToken(request.user);
+    await res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: true,
+    });
     // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
-
+    return res.redirect('http://localhost:8000/home');
   }
 
   @UseGuards(JwtGard)
@@ -209,7 +213,6 @@ export class TwoFactorAuthenticationController {
   async authenticate(
     @Req() request: RequestWithUser,
     @Body() twoFactorAuthenticationCode: string,
-    setCookies = true,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       twoFactorAuthenticationCode,
@@ -218,17 +221,6 @@ export class TwoFactorAuthenticationController {
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-    const accessTokenCookie = this.authService.generateToken(
-      request.user,
-      true,
-    );
-    if (setCookies) {
-      // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
-      await request.res.cookie('jwt', accessTokenCookie, {
-        httpOnly: true,
-        secure: true,
-      });
-    }
-    return request.user;
+    return await this.authService.createCookie(request);
   }
 }

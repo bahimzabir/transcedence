@@ -11,6 +11,7 @@ import { toFileStream } from 'qrcode';
 import { Response } from 'express';
 import { UserTfaDto } from 'src/dto/all.dto';
 import TokenPayload from './interfaces/tokenPayload.interface';
+import RequestWithUser from './interfaces/requestWithUser.interface';
 
 @Injectable({})
 export class AuthService {
@@ -59,6 +60,17 @@ export class AuthService {
     });
   }
 
+  // createCookie
+  async createCookie(request: RequestWithUser) {
+    const accessTokenCookie = this.generateToken(request.user, true);
+    // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
+    await request.res.cookie('jwt', accessTokenCookie, {
+      httpOnly: true,
+      secure: true,
+    });
+    return request.user;
+  }
+
   async turnOffTwoFactorAuthentication(userId: number) {
     return this.prisma.user.update({
       where: {
@@ -77,8 +89,8 @@ export class AuthService {
     console.log('user.twoFactorAuthSecret: ' + user.twoFactorAuthSecret);
     console.log('twoFactorAuthenticationCode: ' + twoFactorAuthenticationCode);
     return authenticator.verify({
-      secret: user.twoFactorAuthSecret,
       token: twoFactorAuthenticationCode,
+      secret: user.twoFactorAuthSecret,
     });
   }
 
