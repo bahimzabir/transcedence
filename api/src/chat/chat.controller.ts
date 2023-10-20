@@ -85,8 +85,8 @@ export class ChatController {
     return this.chatService.getdmroominfos(roomid, +req.user.id);
   }
   @Post("remove")
-  removechatroom(@Req() req, @Body("roomid") roomid: number){
-    this.chatService.removechat(req.user.id, roomid)
+  async removechatroom(@Req() req, @Body("roomid") roomid: number){
+    return await this.chatService.removechat(req.user.id, roomid)
   }
   @Post("Leave")
   leavechatroom(@Req() req, @Body("roomid") roomid: number)

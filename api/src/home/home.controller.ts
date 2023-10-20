@@ -20,6 +20,7 @@ export class HomeController {
   }
   @Post()
   postHome(@Req() req: any, @Body() body: any) {
+    console.log("HIII")
     console.log({body: body});
     console.log({req: req.body});
     console.log("Post Home");

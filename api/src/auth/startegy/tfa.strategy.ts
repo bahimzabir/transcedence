@@ -17,16 +17,12 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => {
-        console.log("request\n");
-        console.log(request.cookies.jwt);
-        console.log("request\n");
           return request?.cookies?.jwt;
       }]),
       secretOrKey: configService.get('JWT_SECRET'),
     });
   }
   async validate(payload: TokenPayload) {
-    console.log("payload", payload);
     const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,

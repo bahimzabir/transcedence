@@ -22,6 +22,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        
         <Route path="/" element={<Landing />} />
         <Route element={<JwtRouteProtector />} >
         <Route path="/verify" element= {<VerifyLogin />} />

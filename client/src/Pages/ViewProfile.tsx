@@ -181,7 +181,6 @@ const ViewProfile = () => {
     }, [games]);
 
     const addFriend = async () => {
-        console.log("friend request sent");
         await axios.post(
             "/api/users/sendfriendrequest",
             { receiver: user?.id },
