@@ -37,4 +37,4 @@ purne:
 	 docker system prune
 
 purne-a:
-	 docker system prune -a
+	 docker system prune -af --volumes

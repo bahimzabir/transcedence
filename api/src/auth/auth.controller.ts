@@ -144,7 +144,6 @@ export class TwoFactorAuthenticationController {
   }
   @UseGuards(JwtGard)
   @Post('generate') //! generatin qr code and puthing teh secret key in db
-  //! use jwt guard here
   async register(@Req() request: RequestWithUser) {
     console.log('user.eamil');
     console.log(request.user.email);
@@ -158,17 +157,11 @@ export class TwoFactorAuthenticationController {
       } catch (error) {
         throw new Error('Failed to generate QR code.');
       }
-      // console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[')
-    // console.log(Qrcode);
-    // return Qrcode;
-    // console.log(qrCodeDataURL);
-    // return `<img src="${qrCodeDataURL}" alt="QR Code" />`;
-    // return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
   @UseGuards(JwtGard)
   @Post('turn-on') //! hadi bayna kat turniha 
-  @HttpCode(200)
+  @HttpCode(201)
   //! use jwt guard hereJwtTwoFactorGuard
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
@@ -187,37 +180,45 @@ export class TwoFactorAuthenticationController {
     return this.authService.createCookie(request);
   }
 
-  @Get('turn-off') //! hadi bayna kat turniha of
+  @Post('turn-off') //! hadi bayna kat turniha off
   @UseGuards(JwtTwoFactorGuard)
-  @HttpCode(200)
-  //! use jwt guard here
+
+  @HttpCode(201)
   async turnOffTwoFactorAuthentication(
-    @Res() res: Response,
+    // @Res() res: Response,
     @Req() request: RequestWithUser,
+    @Body() body: any,
   ) {
-    console.log(request.user);
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      body.code,
+      request.user,
+    );
+    if (!isCodeValid) {
+      throw new BadRequestException('Wrong authentication code');
+    }
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    const token = this.authService.generateToken(request.user);
-    await res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: true,
-    });
+    return this.authService.createCookie(request);
+    // const token = this.authService.generateToken(request.user);
+    // res.cookie('jwt', token, {
+    //   httpOnly: true,
+    //   secure: true,
+    // });
     // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
-    return res.redirect('http://localhost:8000/home');
+    // return res.redirect('http://localhost:8000/home');
   }
 
   @UseGuards(JwtGard)
   @Post('authenticate') //
   @HttpCode(200)
-  //! use jwt guard here
   async authenticate(
     @Req() request: RequestWithUser,
-    @Body() twoFactorAuthenticationCode: string,
+    @Body() body: any,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
+      body.code,
       request.user,
     );
+    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }

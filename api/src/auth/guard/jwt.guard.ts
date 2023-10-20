@@ -34,7 +34,7 @@ export class WsGuard implements CanActivate {
     return false;
   }
   async validateRequest(token: any): Promise<any> {
-    const payload: any = await jwt.verify(token, this.config.get('JWT_SECRET'));
+    const payload: any = jwt.verify(token, this.config.get('JWT_SECRET'));
     // console.log("payload\n", payload);
     // console.log("payload\n");
     const user = await this.prisma.user.findUnique({

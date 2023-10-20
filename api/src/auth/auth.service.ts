@@ -49,7 +49,6 @@ export class AuthService {
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
-    console.log("--------------------------------- turnOnTwoFactorAuthentication --------------------------------------==============");
     return this.prisma.user.update({
       where: {
         id: userId,
@@ -64,7 +63,7 @@ export class AuthService {
   async createCookie(request: RequestWithUser) {
     const accessTokenCookie = this.generateToken(request.user, true);
     // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
-    await request.res.cookie('jwt', accessTokenCookie, {
+    request.res.cookie('jwt', accessTokenCookie, {
       httpOnly: true,
       secure: true,
     });
@@ -86,8 +85,6 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    console.log('user.twoFactorAuthSecret: ' + user.twoFactorAuthSecret);
-    console.log('twoFactorAuthenticationCode: ' + twoFactorAuthenticationCode);
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,

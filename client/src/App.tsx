@@ -30,6 +30,8 @@ const App = () => {
             <Route path="/profile" element= {<Profile />}/>
             <Route path="/gamemode" element= {<GameMode /> }/>
             <Route path="/game" element= {<Game />}/>
+            <Route path="/challenge" element= {<Challenge />}/>
+            <Route path="/practice" element= {<Practice />}/>
             <Route path="/home" element= { <Dashboard /> }/>
             <Route path="/view-profile" element={<ViewProfile />} />
             <Route path="/chat" element= {<Chat />} />

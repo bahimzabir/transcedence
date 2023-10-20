@@ -49,7 +49,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         form?.addEventListener("input", handleInput);
 
         inputs?.forEach((input) => {
-            input.addEventListener("focus", (e) => {
+            input.addEventListener("focus", () => {
                 setTimeout(() => {
                     // e.target?.select();
                 }, 0);
@@ -72,11 +72,8 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         });
         
         // generate the QrCode
-        axios.post("/api/2fa/generate", {}, {
-            // responseType: 'arraybuffer'
-        }).then( (res) => {
-            // const blob = new Blob([res.data], { type: 'image/png' });
-            // const blobUrl = URL.createObjectURL(blob);
+        axios.post("/api/2fa/generate", {})
+        .then( (res) => {
             console.log(res.data);
             setQrCode(res.data);
         }).catch((err) => {
@@ -97,11 +94,15 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
     };
 
     const verifyCode = async () => {
-        const code = await getCodeFromInput();
-        axios.post("/api/2fa/turn-on", {code: code})
-        .then((res) => {
-            console.log(res.data);
-        })
+        try {
+            const code = await getCodeFromInput();
+            const res = await axios.post("/api/2fa/turn-on", {code: code});
+            if (res.status !== 201)
+                throw new Error("Invalid 2FA Code");
+            toggleQrCode();
+        } catch(err) {
+            console.log(err);
+        }
     }
 
     return (

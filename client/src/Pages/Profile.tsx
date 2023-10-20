@@ -5,6 +5,7 @@ import axios from "axios";
 import { QrCode } from "./index";
 import "../styles/Profile.css";
 import { infonotify, notifyoferror } from "./chatInterfaces";
+import TurnOffVerify from "../components/TurnOffVerify";
 
 interface Data {
     photo?: string;
@@ -40,14 +41,19 @@ const Profile = () => {
     const [body, setBody] = useState<Body>(emptyBody);
     const [save, setSave] = useState<boolean>(false)
     const [isBioEditing, setIsBioEditing] = useState(false);
-    // const [isAuthOn, setIsAuthOn] = useState(false);
-    // const [isAuthOff, setIsAuthOff] = useState(false);
     const [qrCode, setQrCode] = useState(false);
+    const [tfaOn, setTfaOn] = useState<boolean>(false);
+    const [off, setOff] = useState(false);
+
     const toggleQrCode = () => {
-        // geting data from server
-        console.log("Clicked!");
         setQrCode(!qrCode);
+        getTfaStatus();
     };
+
+    const turnTfOff = () => {
+        setOff(!off)
+        getTfaStatus();
+    }
 
     const getProfileData = async () => {
         await axios.get("/api/users/me")
@@ -66,20 +72,18 @@ const Profile = () => {
             });
     }
 
+    const getTfaStatus = async () => {
+        await axios.get('/api/users/tfastatus')
+        .then((res) => {
+            setTfaOn(res.data);
+        })
+    }
+
     useEffect(() => {
         console.log('save')
         getProfileData();
+        getTfaStatus();
     }, [save]);
-
-    // const handleAuthOn = () => {
-    //     console.log("it on now!");
-    //     setIsAuthOn(!isAuthOn);
-    // };
-
-    // const handleAuthOff = () => {
-    //     console.log("it off now!");
-    //     setIsAuthOff(!isAuthOff);
-    // };
 
     const handleBioEdit = () => {
         setIsBioEditing(!isBioEditing);
@@ -92,13 +96,6 @@ const Profile = () => {
     const handleBioSave = () => {
         setIsBioEditing(false);
     };
-
-    // const handleCheck = (field: string) => {
-    //     setIsChecked((prevState) => ({
-    //         ...prevState,
-    //         [field]: !prevState[field],
-    //     }));
-    // };
 
     const handleGithubChange = (e: any) => {
         setBody({ ...body, github: e.target.value });
@@ -317,7 +314,7 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center justify-between mt-[2.5vw] w-[49vw] max-sm:mt-[6vw] max-sm:w-full max-sm:px-[2.8vw] max-md:mt-[6vw] max-md:w-full max-md:px-[2.8vw]">
                         <span className="text-[1vw] max-sm:text-[2.2vw] max-md:text-[2.2vw] font-medium font-satoshi uppercase">
-                            enable 2 factor authentication
+                            {tfaOn ? 'disable' : 'enable'}  2 factor authentication
                         </span>
                         <div className="containerr">
                             <div className="switches-container">
@@ -326,17 +323,21 @@ const Profile = () => {
                                     id="switchOff"
                                     name="switchPlan"
                                     value="Off"
+                                    checked={!tfaOn}
+                                    onChange={getTfaStatus}
+
                                 />
                                 <input
                                     type="radio"
                                     id="switchOn"
                                     name="switchPlan"
                                     value="On"
-                                    // checked={qrCode ? true : false}
+                                    checked={tfaOn}
+                                    onChange={getTfaStatus}
                                 />
                                 <label
                                     htmlFor="switchOff"
-                                    onClick={toggleQrCode}
+                                    onClick={turnTfOff}
                                 >
                                     OFF
                                 </label>
@@ -352,7 +353,8 @@ const Profile = () => {
                             </div>
                         </div>
                     </div>
-                    {qrCode && <QrCode toggleQrCode={toggleQrCode} />}
+                    { qrCode && <QrCode toggleQrCode={toggleQrCode} /> }
+                    { off &&  <TurnOffVerify turnTfOff={turnTfOff}/> }
                     <div className="mt-[3vw] w-[49vw] max-sm:mt-[8vw] max-sm:w-full max-sm:pr-[2.8vw] max-md:mt-[8vw] max-md:w-full max-md:pr-[2.8vw]">
                         <div className="child flex gap-[4vw] justify-end items-center">
                             <h3 className="font-light text-[1vw] max-sm:text-[2vw] max-md:text-[2vw]">

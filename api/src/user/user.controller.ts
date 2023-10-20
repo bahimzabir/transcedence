@@ -43,6 +43,13 @@ export class UserController {
     return req.user;
   }
 
+
+  // get 2fa status
+  @Get('tfastatus')
+  getTfaStatus(@Req() req: any) {
+    return req.user.isTwoFactorAuthEnabled
+  }
+
   @Get('me/tree')
   getUserTree(@Req() req: any) {
     return this.userService.getUserTree(req);
