@@ -34,7 +34,6 @@ const AddFriend = ({
     };
     const setallmyfreindsPopup = async () => {
         const allmyfreinds = await getallmyfriends();
-        console.log(allmyfreinds);
         let members: Friends[] = [];
         allmyfreinds.friends.forEach((user: Friends) => {
             members = [

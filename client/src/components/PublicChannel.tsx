@@ -60,7 +60,6 @@ const PublicChannel = ({
     };
     useEffect(() => {
         if (popupsave) {
-            console.log(data);
             joinroom(data);
             setPopupsave(false);
         }
