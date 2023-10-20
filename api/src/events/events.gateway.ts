@@ -22,7 +22,6 @@ const validateUser = async (config: ConfigService, prisma: PrismaService, status
   if (!userID) {
     const payload: any = jwt.verify(token, config.get('JWT_SECRET'));
     userID = payload.sub;
-    // console.log('userId: ', userID)
   }
   try {
     const user = await prisma.user.update({
@@ -73,7 +72,6 @@ export class EventsGateway {
       // }
       // )
     } catch {
-      console.log("handleConnection error")
     }
   }
 
@@ -81,7 +79,6 @@ export class EventsGateway {
   // async reject(@MessageBody() userId: number) {
   //   const sockets = this.onlineUsers.get(userId);
   //   if (sockets) {
-  //     console.log("reject");
   //     this.server.to(sockets).emit('rejected');
   //     this.onlineUsers.delete(userId)
   //   }
@@ -104,10 +101,8 @@ export class EventsGateway {
         } else {
           this.onlineUsers.set(userID, sockets);
         }
-        // console.log("handling disconnection")
       }
     } catch {
-      console.log("handleDisconnect error")
     }
   }
 
@@ -160,7 +155,6 @@ export class EventsGateway {
         this.server.to(sockets).emit('notification', data);
       }
     } catch (error) {
-      console.log(error);
     }
   }
 }

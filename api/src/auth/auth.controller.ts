@@ -70,7 +70,6 @@ export class AuthController {
   @UseGuards(AuthGuard('42'))
   async callback(@Req() req, @Res() res) {
     const url = await redirectUrl(this.prisma, req);
-    console.log(url);
     const r = await this.authService.SignIn(req);
     await res.cookie('jwt', r.token, {
         domain: 'localhost', // Set to your domain
@@ -104,8 +103,11 @@ export class GoogleAuthController {
       httpOnly: true,
       secure: true,
     });
-    res.redirect(url);
-    // console.log({redirected: r});
+    if (r.user.isTwoFactorAuthEnabled) {
+      res.redirect('http://localhost:8000/verify');
+    } else {
+      res.redirect(url);
+    }
   }
 }
 
@@ -138,16 +140,12 @@ export class TwoFactorAuthenticationController {
   //! this function is for debugging purposes but the whole controller is not working
   @Get()
   a(@Req() request: RequestWithUser) {
-    // console.log({ request });
-    console.log('helldo');
     return request.user;
   }
   @UseGuards(JwtGard)
   @Post('generate') //! generatin qr code and puthing teh secret key in db
   //! use jwt guard here
   async register(@Req() request: RequestWithUser) {
-    console.log('user.eamil');
-    console.log(request.user.email);
     const otpauthUrl =
       await this.authService.generateTwoFactorAuthenticationSecret(
         request.user,
@@ -158,10 +156,7 @@ export class TwoFactorAuthenticationController {
       } catch (error) {
         throw new Error('Failed to generate QR code.');
       }
-      // console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[')
-    // console.log(Qrcode);
     // return Qrcode;
-    // console.log(qrCodeDataURL);
     // return `<img src="${qrCodeDataURL}" alt="QR Code" />`;
     // return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
@@ -174,12 +169,10 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
-    console.log(body.code);
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       body.code,
       request.user,
     );
-    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
@@ -195,7 +188,6 @@ export class TwoFactorAuthenticationController {
     @Res() res: Response,
     @Req() request: RequestWithUser,
   ) {
-    console.log(request.user);
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
     const token = this.authService.generateToken(request.user);
     await res.cookie('jwt', token, {

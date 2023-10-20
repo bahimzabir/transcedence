@@ -24,7 +24,6 @@ export class AuthService {
 
   async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
-    console.log("secret", secret);
     const otpauthUrl = authenticator.keyuri(
       user.username,
       this.config.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
@@ -39,8 +38,6 @@ export class AuthService {
         twoFactorAuthSecret: secret,
       },
     });
-    console.log("updated secret", user.twoFactorAuthSecret);
-    console.log("user.twoFactorAuthSecret", user.twoFactorAuthSecret);
     return otpauthUrl;
   }
 
@@ -49,7 +46,6 @@ export class AuthService {
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
-    console.log("--------------------------------- turnOnTwoFactorAuthentication --------------------------------------==============");
     return this.prisma.user.update({
       where: {
         id: userId,
@@ -86,8 +82,6 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    console.log('user.twoFactorAuthSecret: ' + user.twoFactorAuthSecret);
-    console.log('twoFactorAuthenticationCode: ' + twoFactorAuthenticationCode);
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
@@ -184,7 +178,6 @@ export class AuthService {
       email: user.email,
       isTwoFactorAuthEnabled,
     };
-    console.log(`${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`)
     const token = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
