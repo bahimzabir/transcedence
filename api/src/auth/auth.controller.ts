@@ -26,9 +26,11 @@ import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto
 import { use } from 'passport';
 import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
 import * as qrcode from 'qrcode';
+import { ConfigService } from '@nestjs/config';
 
 // get redirect url
 const redirectUrl = async (prisma: PrismaService, req: any) => {
+  const config = new ConfigService;
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -36,18 +38,18 @@ const redirectUrl = async (prisma: PrismaService, req: any) => {
       },
     });
     if (user) {
-      return 'http://localhost:8000/home';
+      return `${config.get("HOST")}/home`;
     } else {
-      return 'http://localhost:8000/profile';
+      return `${config.get("HOST")}/profile`;
     }
   } catch (error) {
-    return 'http://localhost:8000/profile';
+    return `${config.get("HOST")}/profile`;
   }
 }
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
+  constructor(private config: ConfigService, private readonly authService: AuthService, private prisma: PrismaService) { }
 
 
   @Get('verify')
@@ -80,7 +82,7 @@ export class AuthController {
     });
     // if two factor is enabled
     if (r.user.isTwoFactorAuthEnabled) {
-      res.redirect('http://localhost:8000/verify');
+      res.redirect(`${this.config.get("HOST")}/verify`);
     } else {
       res.redirect(url);
     }
@@ -88,7 +90,7 @@ export class AuthController {
 }
 @Controller('/auth/google')
 export class GoogleAuthController {
-  constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
+  constructor(private config: ConfigService, private readonly authService: AuthService, private prisma: PrismaService) { }
 
   @Get('signin')
   @UseGuards(GoogleOAuthGuard)
@@ -104,7 +106,7 @@ export class GoogleAuthController {
       secure: true,
     });
     if (r.user.isTwoFactorAuthEnabled) {
-      res.redirect('http://localhost:8000/verify');
+      res.redirect(`${this.config.get("HOST")}/verify`);
     } else {
       res.redirect(url);
     }
@@ -117,6 +119,7 @@ export class GoogleAuthController {
 @Controller('logout')
 export class LogoutController {
   constructor(
+    private config: ConfigService,
     private readonly authService: AuthService,
     private readonly events: EventsGateway,
   ) {}
@@ -126,7 +129,7 @@ export class LogoutController {
     await res.clearCookie('jwt');
     await this.events.handleDisconnect(req.user.id);
 
-    res.redirect('http://localhost:8000/');
+    res.redirect(`${this.config.get("HOST")}`);
   }
 }
 
