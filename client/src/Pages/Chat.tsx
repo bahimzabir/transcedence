@@ -79,9 +79,18 @@ const Chat = () => {
       formData.append("status", currentChannel.status);
       if (currentChannel.password)
         formData.append("password", currentChannel.password);
-      await axios.post("/api/chat/new", formData, {
-        withCredentials: true,
-      });
+      try
+      {
+        await axios.post("/api/chat/new", formData, {
+          withCredentials: true,
+        });
+      }
+      catch (error: any) { 
+      if (error.code === 'ERR_NETWOR')
+        notifyoferror(error.message)
+      else
+        notifyoferror("error in creating channel check channel requirements!");
+      }
     } catch (error) { }
     await Getmyrooms();
   };

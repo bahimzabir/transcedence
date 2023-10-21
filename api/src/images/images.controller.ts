@@ -2,7 +2,8 @@ import {Logger, Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import * as fs from 'fs';
 import { JwtGard } from 'src/auth/guard';
-@UseGuards(JwtGard)
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
+@UseGuards(JwtTwoFactorGuard)
 @Controller('images')
 export class ImagesController {
   @Get(':filename')

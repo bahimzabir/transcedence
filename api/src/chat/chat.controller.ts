@@ -18,8 +18,10 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
+import { ChatRoomBody } from './entities/chat.entity';
 
-@UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
@@ -38,13 +40,18 @@ export class ChatController {
   )
   async createChatRoom(
     @Req() req: any,
-    @Body() body,
+    @Body() body: ChatRoomBody,
     @UploadedFile() file: Express.Multer.File,
 ) {
+  try{
     const creatroom = await this.chatService.createChatRoom(req, body);
     const filename = +creatroom.id + 'room.png';
     await fs.rename(file.path, path.join('/app/src/img/', filename), () => {});
     return creatroom;
+  }
+  catch(error) {
+    return new HttpException(error.message, 409);
+  }
   }
   @Post('newdm')
   async creatDmroom(@Req() req: any, @Body() body) {

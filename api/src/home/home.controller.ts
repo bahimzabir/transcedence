@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post, Req, UseGuards, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtGard } from 'src/auth/guard';
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller()
 export class HomeController {
   @Get(['/', '/home'])
