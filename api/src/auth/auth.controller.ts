@@ -74,11 +74,8 @@ export class AuthController {
     const url = await redirectUrl(this.prisma, req);
     const r = await this.authService.SignIn(req);
     await res.cookie('jwt', r.token, {
-        domain: 'localhost', // Set to your domain
         path: '/',
         httpOnly: true,
-        secure: true, // Set to true for HTTPS
-        //sameSite: 'Lax', // Adjust based on your requirements
     });
     // if two factor is enabled
     if (r.user.isTwoFactorAuthEnabled) {
