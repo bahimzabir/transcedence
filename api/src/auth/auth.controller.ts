@@ -26,9 +26,11 @@ import { FillRequestDto, FriendRequestDto, UpdateNotificationsDto, UserUpdateDto
 import { use } from 'passport';
 import JwtTwoFactorGuard from './guard/jwt-two-factor.guard';
 import * as qrcode from 'qrcode';
+import { ConfigService } from '@nestjs/config';
 
 // get redirect url
 const redirectUrl = async (prisma: PrismaService, req: any) => {
+  const config = new ConfigService;
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -36,18 +38,18 @@ const redirectUrl = async (prisma: PrismaService, req: any) => {
       },
     });
     if (user) {
-      return 'http://localhost:8000/home';
+      return `${config.get("HOST")}/home`;
     } else {
-      return 'http://localhost:8000/profile';
+      return `${config.get("HOST")}/profile`;
     }
   } catch (error) {
-    return 'http://localhost:8000/profile';
+    return `${config.get("HOST")}/profile`;
   }
 }
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
+  constructor(private config: ConfigService, private readonly authService: AuthService, private prisma: PrismaService) { }
 
 
   @Get('verify')
@@ -72,15 +74,12 @@ export class AuthController {
     const url = await redirectUrl(this.prisma, req);
     const r = await this.authService.SignIn(req);
     await res.cookie('jwt', r.token, {
-        domain: 'localhost', // Set to your domain
         path: '/',
         httpOnly: true,
-        secure: true, // Set to true for HTTPS
-        //sameSite: 'Lax', // Adjust based on your requirements
     });
     // if two factor is enabled
     if (r.user.isTwoFactorAuthEnabled) {
-      res.redirect('http://localhost:8000/verify');
+      res.redirect(`${this.config.get("HOST")}/verify`);
     } else {
       res.redirect(url);
     }
@@ -88,7 +87,7 @@ export class AuthController {
 }
 @Controller('/auth/google')
 export class GoogleAuthController {
-  constructor(private readonly authService: AuthService, private prisma: PrismaService) { }
+  constructor(private config: ConfigService, private readonly authService: AuthService, private prisma: PrismaService) { }
 
   @Get('signin')
   @UseGuards(GoogleOAuthGuard)
@@ -104,7 +103,7 @@ export class GoogleAuthController {
       secure: true,
     });
     if (r.user.isTwoFactorAuthEnabled) {
-      res.redirect('http://localhost:8000/verify');
+      res.redirect(`${this.config.get("HOST")}/verify`);
     } else {
       res.redirect(url);
     }
@@ -117,6 +116,7 @@ export class GoogleAuthController {
 @Controller('logout')
 export class LogoutController {
   constructor(
+    private config: ConfigService,
     private readonly authService: AuthService,
     private readonly events: EventsGateway,
   ) {}
@@ -126,7 +126,7 @@ export class LogoutController {
     await res.clearCookie('jwt');
     await this.events.handleDisconnect(req.user.id);
 
-    res.redirect('http://localhost:8000/');
+    res.redirect(`${this.config.get("HOST")}`);
   }
 }
 
@@ -144,7 +144,6 @@ export class TwoFactorAuthenticationController {
   }
   @UseGuards(JwtGard)
   @Post('generate') //! generatin qr code and puthing teh secret key in db
-  //! use jwt guard here
   async register(@Req() request: RequestWithUser) {
     const otpauthUrl =
       await this.authService.generateTwoFactorAuthenticationSecret(
@@ -156,14 +155,11 @@ export class TwoFactorAuthenticationController {
       } catch (error) {
         throw new Error('Failed to generate QR code.');
       }
-    // return Qrcode;
-    // return `<img src="${qrCodeDataURL}" alt="QR Code" />`;
-    // return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
   @UseGuards(JwtGard)
   @Post('turn-on') //! hadi bayna kat turniha 
-  @HttpCode(200)
+  @HttpCode(201)
   //! use jwt guard hereJwtTwoFactorGuard
   async turnOnTwoFactorAuthentication(
     @Req() request: RequestWithUser,
@@ -180,36 +176,37 @@ export class TwoFactorAuthenticationController {
     return this.authService.createCookie(request);
   }
 
-  @Get('turn-off') //! hadi bayna kat turniha of
+  @Post('turn-off') //! hadi bayna kat turniha off
   @UseGuards(JwtTwoFactorGuard)
-  @HttpCode(200)
-  //! use jwt guard here
+  @HttpCode(201)
   async turnOffTwoFactorAuthentication(
-    @Res() res: Response,
+    // @Res() res: Response,
     @Req() request: RequestWithUser,
+    @Body() body: any,
   ) {
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      body.code,
+      request.user,
+    );
+    if (!isCodeValid) {
+      throw new BadRequestException('Wrong authentication code');
+    }
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    const token = this.authService.generateToken(request.user);
-    await res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: true,
-    });
-    // response.setHeader('Set-Cookie', this.authService.getCookieForLogOut());
-    return res.redirect('http://localhost:8000/home');
+    return this.authService.createCookie(request);
   }
 
   @UseGuards(JwtGard)
   @Post('authenticate') //
   @HttpCode(200)
-  //! use jwt guard here
   async authenticate(
     @Req() request: RequestWithUser,
-    @Body() twoFactorAuthenticationCode: string,
+    @Body() body: any,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
+      body.code,
       request.user,
     );
+    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }

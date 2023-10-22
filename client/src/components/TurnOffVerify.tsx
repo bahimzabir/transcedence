@@ -1,8 +1,13 @@
 import { useEffect } from "react";
 import "../styles/QrCode.css";
 import axios from "axios";
+import { BsXLg } from "react-icons/bs";
 
-const VerifyLogin = () => {
+interface TurnOffProps {
+    turnTfOff: () => void;
+}
+
+const TurnOffVerify = ({ turnTfOff }: TurnOffProps) => {
     useEffect(() => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
@@ -65,32 +70,28 @@ const VerifyLogin = () => {
         });
     }, []);
 
-    const getCodeandVerify = async () => {
+    const getCodeFromInput = async () => {
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
-        try {
-            let code = "";
-            inputs?.forEach((input) => {
-                code += input.value;
-            });
-            console.log(code);
-            const res = await axios.post("/api/2fa/authenticate", {
-                code: code,
-            });
-            console.log(res);
-            if (res.status === 401) {
-                inputs?.forEach((input) => {
-                    input.value = "";
-                });
-            } else {
-                window.location.href = "/home";
-            }
-        } catch (error) {
-            inputs?.forEach((input) => {
-                input.value = "";
-            });
-        }
+        let code = "";
+        inputs?.forEach((input) => {
+            code += input.value;
+        });
+        console.log('code: ', code);
+        return code;
     };
+
+    const verifyCode = async () => {
+        try {
+            const code = await getCodeFromInput();
+            const res = await axios.post("/api/2fa/turn-off", {code: code})
+            if (res.status !== 201)
+                throw new Error("Invalid 2FA Code");
+            turnTfOff();
+        } catch(err) {
+            console.log(err);
+        }
+    }
 
     return (
         <div className="pop-up">
@@ -101,9 +102,13 @@ const VerifyLogin = () => {
                             <div className="qr-code-container mt-[2vw]">
                                 <div className="qr-code">
                                     <div className="flex flex-col justify-between items-center gap-[1.4vw]">
+                                        <BsXLg
+                                            className="absolute top-[1vw] right-[1vw] text-[1.5vw] hover:cursor-pointer"
+                                            onClick={turnTfOff}
+                                        />
                                         <h3 className="font-medium font-satoshi text-[1.2vw]">
-                                            Please enter the 6-digit code from
-                                            the QR to Login
+                                            Please enter the 6-digit code
+                                            to Turn Off 2FA
                                         </h3>
                                         <form
                                             id="form"
@@ -150,9 +155,9 @@ const VerifyLogin = () => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={getCodeandVerify}
+                                                onClick={verifyCode}
                                             >
-                                                Login
+                                                Turn 2FA Off
                                             </button>
                                         </form>
                                     </div>
@@ -166,4 +171,4 @@ const VerifyLogin = () => {
     );
 };
 
-export default VerifyLogin;
+export default TurnOffVerify;

@@ -60,7 +60,7 @@ export class AuthService {
   async createCookie(request: RequestWithUser) {
     const accessTokenCookie = this.generateToken(request.user, true);
     // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
-    await request.res.cookie('jwt', accessTokenCookie, {
+    request.res.cookie('jwt', accessTokenCookie, {
       httpOnly: true,
       secure: true,
     });

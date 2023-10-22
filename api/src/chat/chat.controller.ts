@@ -19,6 +19,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
+<<<<<<< HEAD
+=======
+import { ChatRoomBody } from './entities/chat.entity';
+>>>>>>> b6e2b17b836c2f7364a1610451846e001192bce9
 
 @UseGuards(JwtTwoFactorGuard)
 @Controller('chat')
@@ -39,13 +43,18 @@ export class ChatController {
   )
   async createChatRoom(
     @Req() req: any,
-    @Body() body,
+    @Body() body: ChatRoomBody,
     @UploadedFile() file: Express.Multer.File,
 ) {
+  try{
     const creatroom = await this.chatService.createChatRoom(req, body);
     const filename = +creatroom.id + 'room.png';
     await fs.rename(file.path, path.join('/app/src/img/', filename), () => {});
     return creatroom;
+  }
+  catch(error) {
+    return new HttpException(error.message, 409);
+  }
   }
   @Post('newdm')
   async creatDmroom(@Req() req: any, @Body() body) {
@@ -86,8 +95,8 @@ export class ChatController {
     return this.chatService.getdmroominfos(roomid, +req.user.id);
   }
   @Post("remove")
-  removechatroom(@Req() req, @Body("roomid") roomid: number){
-    this.chatService.removechat(req.user.id, roomid)
+  async removechatroom(@Req() req, @Body("roomid") roomid: number){
+    return await this.chatService.removechat(req.user.id, roomid)
   }
   @Post("Leave")
   leavechatroom(@Req() req, @Body("roomid") roomid: number)

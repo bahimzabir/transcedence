@@ -137,14 +137,16 @@ export class ChatGateway {
 
   @SubscribeMessage("invite")
   async invitToRoom(@MessageBody() body: chatroomRequest, @ConnectedSocket() client) {
-    const notifaction = await this.prisma.notification.findMany({
+    console.log(body);
+    const notifaction = await this.prisma.notification.findFirst({
       where: {
+        from: client.user.id,
         type: 'roomrequest',
-        from: body.userid,
-        roomid: body.roomid,
+        roomid: body[0].roomid,
       },
     });
-    if(notifaction.length > 0)
+    console.log(notifaction);
+    if(notifaction)
     {
       this.server.to(this.sockets.get(client.user.id).id).emit("warning")
       return ;

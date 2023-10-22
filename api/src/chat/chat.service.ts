@@ -697,7 +697,6 @@ export class ChatService {
       })
     }
     catch(error) {
-      // console.log(error)
       throw new ConflictException("user already exists")
     }
   }
