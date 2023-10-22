@@ -9,6 +9,7 @@ import {
     Challenge,
     Practice,
     Error404,
+    Spectate,
 } from "./Pages/index";
 import "./App.css";
 import Game from "./Game/Game";
@@ -32,6 +33,7 @@ const App = () => {
             <Route path="/profile" element= {<Profile />}/>
             <Route path="/challenge" element= {<Challenge /> }/>
             <Route path="/practice" element= {<Practice /> }/>
+            <Route path="/spectate" element={<Spectate/>}/>
             <Route path="/gamemode" element= {<GameMode /> }/>
             <Route path="/game" element= {<Game />}/>
             <Route path="/home" element= { <Dashboard /> }/>
