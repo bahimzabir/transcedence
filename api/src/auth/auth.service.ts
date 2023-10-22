@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
-import * as path from 'path'
+import * as path from 'path';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { Response } from 'express';
@@ -19,8 +19,8 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
-    // private readonly userService: UserService,
-  ) {}
+  ) // private readonly userService: UserService,
+  {}
 
   async generateTwoFactorAuthenticationSecret(user: any) {
     const secret = authenticator.generateSecret();
@@ -64,7 +64,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
     });
-    return request.res;
+    return request.user;
   }
 
   async turnOffTwoFactorAuthentication(userId: number) {
@@ -82,10 +82,14 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    return await authenticator.verify({
-      token: twoFactorAuthenticationCode,
-      secret: user.twoFactorAuthSecret,
-    });
+    try {
+      return await authenticator.verify({
+        token: twoFactorAuthenticationCode,
+        secret: user.twoFactorAuthSecret,
+      });
+    } catch (error) {
+      return false;
+    }
   }
 
   public getCookieForLogOut() {
@@ -109,41 +113,40 @@ export class AuthService {
     }
     return user;
   }
-  
-  downloadimg(url: string, id: number)
-  {
+
+  downloadimg(url: string, id: number) {
     fetch(url)
-    .then((response) => response.buffer())
-    .then((buffer) => {
-      fs.writeFile(path.join("/app/src/img/", id + ".png"), buffer)}
-    );
+      .then((response) => response.buffer())
+      .then((buffer) => {
+        fs.writeFile(path.join('/app/src/img/', id + '.png'), buffer);
+      });
   }
   async Signup(req) {
     try {
-      const userInput : Prisma.UserCreateInput = {
-          email: req.user.email,
-          token: req.user.accessToken,
-          photo: req.user.picture,
-          firstname: req.user.firstName,
-          lastname: req.user.lastName,
-          username: req.user.email.split('@')[0],
-          bio: "Hello there, I am Playing Pong",
-          instagram: "https://www.instagram.com/",
-          linkedin: "https://www.linkedin.com/",
-          github: "https://github.com/",
+      const userInput: Prisma.UserCreateInput = {
+        email: req.user.email,
+        token: req.user.accessToken,
+        photo: req.user.picture,
+        firstname: req.user.firstName,
+        lastname: req.user.lastName,
+        username: req.user.email.split('@')[0],
+        bio: 'Hello there, I am Playing Pong',
+        instagram: 'https://www.instagram.com/',
+        linkedin: 'https://www.linkedin.com/',
+        github: 'https://github.com/',
       };
       const user = await this.prisma.user.create({
         data: userInput,
       });
       this.downloadimg(user.photo, user.id);
       await this.prisma.user.update({
-        where:{
+        where: {
           id: user.id,
         },
-        data:{
-          photo: "/images/" + user.id + ".png",
-        }
-      })
+        data: {
+          photo: '/images/' + user.id + '.png',
+        },
+      });
       return user;
     } catch (error) {
       throw new Error('error occured while creating user');
@@ -194,7 +197,7 @@ export class AuthService {
     //   httpOnly: true,
     //   secure: true, // Set to true for HTTPS
     //   //sameSite: 'Lax', // Adjust based on your requirements
-  // });
+    // });
   }
 }
 
