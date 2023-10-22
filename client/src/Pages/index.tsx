@@ -17,7 +17,6 @@ export { default as MatchCard } from "../components/MatchCard";
 export { default as PasswordPopup } from "../components/PasswordPopup";
 export { default as AddFriend } from "../components/AddFriend";
 export { default as Error404 } from "./Error404";
-export { default as Error500 } from "./Error500";
 export { default as Game } from "../Game/Game";
 export { default as Practice } from "../Game/Practice";
 export { default as Spectate } from "../Game/Spectate";
