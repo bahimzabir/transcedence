@@ -548,6 +548,24 @@ export class UserService {
         },
       });
       if (friendreq) {
+        const idToremove = friendreq.senderId === req.user.id ? friendreq.receiverId : friendreq.senderId;
+        const user = await this.prisma.user.update({
+          where: {
+            id: req.user.id,
+          },
+          data: {
+            friends: {
+              disconnect: {
+                id: idToremove,
+              },
+            },
+            friendOf: {
+              disconnect: {
+                id: idToremove,
+              },
+            },
+          },
+        });
         return friendreq;
       } else {
         return new HttpException('friendship not found', HttpStatus.NOT_FOUND);
