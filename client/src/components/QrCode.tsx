@@ -97,9 +97,9 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
     const verifyCode = async () => {
         try {
             const code = await getCodeFromInput();
-            const res = await axios.post("/api/2fa/turn-on", { code: code });
-            // if (res.status !== 201)
-            //     throw new Error("Invalid 2FA Code");
+            const res = await axios.post("/api/2fa/turn-on", {code: code});
+            if (res.status !== 201)
+                throw new Error("Invalid 2FA Code");
             toggleQrCode();
         } catch (err) {
             console.log(err);

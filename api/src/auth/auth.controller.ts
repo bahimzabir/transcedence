@@ -165,15 +165,20 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      body.code,
-      request.user,
+    console.log('Turn on two factor authentication');
+    console.log(body.code);
+    const isCodeValid =
+    await this.authService.isTwoFactorAuthenticationCodeValid(
+        body.code,
+        request.user,
     );
+    console.log("isCodeValid");
+    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
     await this.authService.turnOnTwoFactorAuthentication(request.user.id);
-    return this.authService.createCookie(request);
+    return await this.authService.createCookie(request, true);
   }
 
   @Post('turn-off') //! hadi bayna kat turniha off
@@ -184,15 +189,16 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      body.code,
-      request.user,
+    const isCodeValid =
+    await this.authService.isTwoFactorAuthenticationCodeValid(
+        body.code,
+        request.user,
     );
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code');
     }
     await this.authService.turnOffTwoFactorAuthentication(request.user.id);
-    return this.authService.createCookie(request);
+    return await this.authService.createCookie(request);
   }
 
   @UseGuards(JwtGard)
@@ -202,14 +208,15 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      body.code,
-      request.user,
+    const isCodeValid =
+    await this.authService.isTwoFactorAuthenticationCodeValid(
+        body.code,
+        request.user,
     );
     console.log(isCodeValid);
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-    return await this.authService.createCookie(request);
+    return await this.authService.createCookie(request, true);
   }
 }
