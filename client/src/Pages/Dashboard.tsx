@@ -347,7 +347,7 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                     </Link>
-                                    <Link to="/api/logout">
+                                    <a  href="/api/logout">
                                         <div className="container-1 m-[.6vw] p-[.5vw] flex justify-center items-center">
                                             <div className="flex justify-between items-center gap-[.6vw]">
                                                 <FiLogOut className="text-[.8vw] max-sm:text-[1vh] max-md:text-[1.1vh] max-lg:text-[1.1vh]" />
@@ -356,7 +356,7 @@ const Dashboard = () => {
                                                 </h2>
                                             </div>
                                         </div>
-                                    </Link>
+                                    </a>
                                 </div>
                             </div>
                         </div>

@@ -738,7 +738,6 @@ export class UserService {
           losses: true,
         },
       });
-      console.log('leaderboard');
       console.log(users);
       return users;
     } catch (error) {

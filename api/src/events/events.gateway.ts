@@ -110,7 +110,7 @@ export class EventsGateway {
   async closeOnlineUsers(userId: number) {
     const sockets = this.onlineUsers.get(userId);
     if (sockets) {
-      this.server.to(sockets).emit('rejected');
+      // this.server.to(sockets).emit('rejected');
       this.onlineUsers.delete(userId);
     }
   }

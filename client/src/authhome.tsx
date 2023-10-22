@@ -9,7 +9,7 @@ function LandinRouteProtector() {
     fetch('/api/auth/verify')
       .then((response) => {
         if (response.status === 200) {
-          navigate('/home'); // Redirect to login page if not authenticated
+          navigate('/home');
         } else if (response.status === 401) {
           setIsAuthenticated(true);
         }
