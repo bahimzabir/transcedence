@@ -81,7 +81,8 @@ const TurnOffVerify = ({ turnTfOff }: TurnOffProps) => {
         return code;
     };
 
-    const verifyCode = async () => {
+    const verifyCode = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         try {
             const code = await getCodeFromInput();
             const res = await axios.post("/api/2fa/turn-off", {code: code})
@@ -112,7 +113,7 @@ const TurnOffVerify = ({ turnTfOff }: TurnOffProps) => {
                                         </h3>
                                         <form
                                             id="form"
-                                            action="javascript:void(0)"
+                                            onSubmit={verifyCode}
                                         >
                                             <div className="flex justify-center items-center">
                                                 <input
@@ -155,7 +156,6 @@ const TurnOffVerify = ({ turnTfOff }: TurnOffProps) => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={verifyCode}
                                             >
                                                 Turn 2FA Off
                                             </button>

@@ -65,7 +65,8 @@ const VerifyLogin = () => {
         });
     }, []);
 
-    const getCodeandVerify = async () => {
+    const getCodeandVerify = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         const form: HTMLElement | null = document.getElementById("form");
         const inputs = form?.querySelectorAll("input");
         try {
@@ -108,7 +109,7 @@ const VerifyLogin = () => {
                                         </h3>
                                         <form
                                             id="form"
-                                            action="javascript:void(0)"
+                                            onSubmit={getCodeandVerify}
                                         >
                                             <div className="flex justify-center items-center">
                                                 <input
@@ -151,7 +152,6 @@ const VerifyLogin = () => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={getCodeandVerify}
                                             >
                                                 Login
                                             </button>

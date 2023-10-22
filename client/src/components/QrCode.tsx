@@ -94,7 +94,8 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         return code;
     };
 
-    const verifyCode = async () => {
+    const verifyCode = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         try {
             const code = await getCodeFromInput();
             const res = await axios.post("/api/2fa/turn-on", {code: code});
@@ -130,7 +131,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                                 alt="QR Code"
                                             />
                                         )}
-                                        <form id="form" action="javascript:void(0)">
+                                        <form id="form" onSubmit={verifyCode}>
                                             <div className="flex justify-center items-center">
                                                 <input
                                                     type="tel"
@@ -172,7 +173,6 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             <button
                                                 type="submit"
                                                 className="verify-btn font-medium font-satoshi text-[1vw]"
-                                                onClick={verifyCode}
                                             >
                                                 Verify account
                                             </button>
