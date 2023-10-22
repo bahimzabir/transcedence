@@ -30,6 +30,8 @@ const App = () => {
         </Route>
         <Route element={<RouteProtector />} >
             <Route path="/profile" element= {<Profile />}/>
+            <Route path="/challenge" element= {<Challenge /> }/>
+            <Route path="/practice" element= {<Practice /> }/>
             <Route path="/gamemode" element= {<GameMode /> }/>
             <Route path="/game" element= {<Game />}/>
             <Route path="/home" element= { <Dashboard /> }/>

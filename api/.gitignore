@@ -47,4 +47,5 @@ database/db/*
 prisma/migrations
 #images
 *.png
+*.jpg
 .env

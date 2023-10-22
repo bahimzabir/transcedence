@@ -88,7 +88,8 @@ const ViewProfile = () => {
         let id = queryParams.get("id");
         if (id == null) id = "0";
         let userid: number = +id;
-        await axios
+        try {
+            await axios
             .get(`/api/users/byid?id=${id}`, {
                 withCredentials: true,
             })
@@ -117,6 +118,10 @@ const ViewProfile = () => {
                 setMap(newMAp);
                 getFriendStatus(data.friendShip);
             });
+        } catch (err :any) {
+            if (err.response.status === 404)
+                navigate('/*');
+        }
     };
 
     const getUserGames = async () => {
