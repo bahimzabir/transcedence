@@ -4,7 +4,7 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService, PrismaTypes } from '../prisma/prisma.service';
-import { ChatRoomBody } from './entities/chat.entity';
+import { ChatRoomBody, newchatdto } from './entities/chat.entity';
 import {WsException } from '@nestjs/websockets';
 import { chatroomRequest, joinroomdto, systemclass, userevents } from 'src/dto';
 import * as argon2 from 'argon2';
@@ -532,7 +532,7 @@ export class ChatService {
     }
   }
 
-  async createChatRoom(req, body: ChatRoomBody) {
+  async createChatRoom(req, body: newchatdto) {
     try {
       let chatRoom;
       await this.prisma.$transaction(async (tsx) => {

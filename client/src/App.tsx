@@ -37,8 +37,9 @@ const App = () => {
             <Route path="/home" element= { <Dashboard /> }/>
             <Route path="/view-profile" element={<ViewProfile />} />
             <Route path="/chat" element= {<Chat />} />
-        </Route>
-        <Route path="/*" element={<Error404 />} />      </Routes>
+            <Route path="/*" element={<Error404 />} />
+        </Route>   
+      </Routes>
       <ToastContainer />
     </BrowserRouter>
   );

@@ -77,20 +77,22 @@ const Chat = () => {
         try {
             const formData = new FormData();
             formData.append("file", currentChannel.img);
-            formData.append("name", currentChannel.name);
-            formData.append("status", currentChannel.status);
-            if (currentChannel.password)
-                formData.append("password", currentChannel.password);
+            // formData.append("name", currentChannel.name);
+            // formData.append("status", currentChannel.status);
+            // if (currentChannel.password)
+            //     formData.append("password", currentChannel.password);
             try {
-                await axios.post("/api/chat/new", formData, {
-                    withCredentials: true,
-                });
+                const data = {
+                    name: currentChannel.name,
+                    status: currentChannel.status,
+                };
+                formData.append("body", JSON.stringify(data));
+                await axios.post("/api/chat/new", formData);
             } catch (error: any) {
+                console.log(error.response.data)
                 if (error.code === "ERR_NETWOR") notifyoferror(error.message);
                 else
-                    notifyoferror(
-                        "error in creating channel check channel requirements!"
-                    );
+                    notifyoferror(error.response.data.message);
             }
         } catch (error) {}
         await Getmyrooms();

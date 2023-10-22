@@ -1,7 +1,6 @@
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { infonotify, notifyoferror } from "../Pages/chatInterfaces";
-import MsgNotification from "./MsgNotification";
 
 const NotificationCount = ({ count }: { count: number }) => {
   if (count === 0) return null;

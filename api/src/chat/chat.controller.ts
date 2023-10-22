@@ -10,6 +10,7 @@ import {
   Query,
   HttpException,
   ConflictException,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtGard } from 'src/auth/guard';
 import { ChatService } from './chat.service';
@@ -19,13 +20,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
-import { ChatRoomBody } from './entities/chat.entity';
+import { ChatRoomBody, newchatdto } from './entities/chat.entity';
+import { classToPlain, plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
+import { STATUS_CODES } from 'http';
 
 @UseGuards(JwtTwoFactorGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
-
   @Post('new')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -36,21 +39,35 @@ export class ChatController {
           callback(null, newFilename);
         },
       }),
+      fileFilter: (req, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+          return callback(new HttpException('Only image files are allowed!', HttpStatus.CONFLICT), false);
+        }
+        callback(null, true);
+      },
     }),
-  )
+  )  
   async createChatRoom(
     @Req() req: any,
-    @Body() body: ChatRoomBody,
+    @Body('body') body,
     @UploadedFile() file: Express.Multer.File,
 ) {
   try{
-    const creatroom = await this.chatService.createChatRoom(req, body);
+
+    const chatroombody: newchatdto = JSON.parse(body);
+    const valid = await validate(plainToClass(newchatdto, chatroombody));
+    if(valid.length > 0)
+    {
+      console.log("ERROR")
+      throw new HttpException("PASSWORD AND NAME SHOULD NOT BE EMPTY, PASSWORD: ONYL NUMBERS", HttpStatus.CONFLICT);
+    }
+    const creatroom = await this.chatService.createChatRoom(req, chatroombody);
     const filename = +creatroom.id + 'room.png';
     await fs.rename(file.path, path.join('/app/src/img/', filename), () => {});
-    return creatroom;
   }
   catch(error) {
-    return new HttpException(error.message, 409);
+    console.log("error", error)
+    throw error;
   }
   }
   @Post('newdm')

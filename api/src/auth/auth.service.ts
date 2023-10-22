@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   async turnOnTwoFactorAuthentication(userId: number) {
-    return this.prisma.user.update({
+    await this.prisma.user.update({
       where: {
         id: userId,
       },
@@ -57,18 +57,18 @@ export class AuthService {
   }
 
   // createCookie
-  async createCookie(request: RequestWithUser) {
-    const accessTokenCookie = this.generateToken(request.user, true);
+  async createCookie(request: RequestWithUser, tfa = false) {
+    const accessTokenCookie = this.generateToken(request.user, tfa);
     // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
     request.res.cookie('jwt', accessTokenCookie, {
       httpOnly: true,
       secure: true,
     });
-    return request.user;
+    return request.res;
   }
 
   async turnOffTwoFactorAuthentication(userId: number) {
-    return this.prisma.user.update({
+    return await this.prisma.user.update({
       where: {
         id: userId,
       },
@@ -78,11 +78,11 @@ export class AuthService {
     });
   }
 
-  public isTwoFactorAuthenticationCodeValid(
+  async isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    return authenticator.verify({
+    return await authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
     });
@@ -183,7 +183,7 @@ export class AuthService {
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
     // if (!isTwoFactorAuthEnabled) {
-      return token;
+    return token;
     // }
     // return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
     //   'JWT_ACCESS_TOKEN_EXPIRATION_TIME',

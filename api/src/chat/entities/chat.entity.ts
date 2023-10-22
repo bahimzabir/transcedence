@@ -1,4 +1,4 @@
-import { IS_NOT_EMPTY, IsAlphanumeric, IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IS_NOT_EMPTY, IsAlphanumeric, IsEmail, IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
 
 export class ChatRoomBody {
     id: number;
@@ -8,10 +8,21 @@ export class ChatRoomBody {
     name?: string;
     isPrivate?: boolean;
     isDm?: boolean;
+    @ValidateIf((o) => o.status === 'protected')
     @IsNumber()
     @IsNotEmpty()
     password?: string;
     status?: string;
     receiver: number;
     sender: number;
+}
+export class newchatdto {
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+    status: string;
+    @ValidateIf((o) => o.status === 'protected')
+    @IsNumber()
+    @IsNotEmpty()
+    password: string;
 }
