@@ -3,8 +3,9 @@ import { GameService } from './game.service';
 import { GameRecords } from 'src/dto';
 import { JwtGard } from 'src/auth/guard';
 import { game } from '@prisma/client';
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller('game')
 export class GameController {
     constructor(private readonly gameservice: GameService) {}

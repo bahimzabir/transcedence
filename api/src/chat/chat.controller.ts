@@ -18,8 +18,9 @@ import { diskStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
 
-@UseGuards(JwtGard)
+@UseGuards(JwtTwoFactorGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
