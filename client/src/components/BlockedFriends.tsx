@@ -7,13 +7,14 @@ interface BlockedFriendsProps {
   toggleBlockedFriendsPopup: () => void;
 }
 
-interface Friends {
+interface USER {
   id: number;
   username: string;
+  photo: string;
 }
 
 const BlockedFriends = ({ toggleBlockedFriendsPopup }: BlockedFriendsProps) => {
-  const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
+  const [blockedUsers, setBlockedUsers] = useState<USER[]>([]);
 
   const getallBlokedUsers = async () => {
     try {
