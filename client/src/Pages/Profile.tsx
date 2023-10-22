@@ -1,4 +1,9 @@
-import { BsGithub, BsInstagram, BsLinkedin } from "react-icons/bs";
+import {
+    BsFillPersonLinesFill,
+    BsGithub,
+    BsInstagram,
+    BsLinkedin,
+} from "react-icons/bs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,6 +11,7 @@ import { QrCode } from "./index";
 import "../styles/Profile.css";
 import { infonotify, notifyoferror } from "./chatInterfaces";
 import TurnOffVerify from "../components/TurnOffVerify";
+import BlockedFriends from "../components/BlockedFriends";
 
 interface Data {
     photo?: string;
@@ -28,18 +34,18 @@ interface Body {
 
 const Profile = () => {
     const emptyBody = {
-        username: '',
-        fullname: '',
-        bio: '',
-        github: '',
-        linkedin: '',
-        instagram: ''
-    }
+        username: "",
+        fullname: "",
+        bio: "",
+        github: "",
+        linkedin: "",
+        instagram: "",
+    };
 
     const [data, setData] = useState<Data>({});
     const [photo, setPhoto] = useState<File>();
     const [body, setBody] = useState<Body>(emptyBody);
-    const [save, setSave] = useState<boolean>(false)
+    const [save, setSave] = useState<boolean>(false);
     const [isBioEditing, setIsBioEditing] = useState(false);
     const [qrCode, setQrCode] = useState(false);
     const [tfaOn, setTfaOn] = useState<boolean>(false);
@@ -51,36 +57,34 @@ const Profile = () => {
     };
 
     const turnTfOff = () => {
-        setOff(!off)
+        setOff(!off);
         getTfaStatus();
-    }
+    };
 
     const getProfileData = async () => {
-        await axios.get("/api/users/me")
-            .then((res) => {
-                const _data: Data = {
-                    photo: res.data.photo,
-                    username: res.data.username,
-                    fullname: `${res.data.firstname} ${res.data.lastname}`,
-                    bio: res.data.bio,
-                    github: res.data.github,
-                    linkedin: res.data.linkedin,
-                    instagram: res.data.instagram,
-                };
-                setData(_data);
-                setBody({...body, bio: res.data.bio});
-            });
-    }
+        await axios.get("/api/users/me").then((res) => {
+            const _data: Data = {
+                photo: res.data.photo,
+                username: res.data.username,
+                fullname: `${res.data.firstname} ${res.data.lastname}`,
+                bio: res.data.bio,
+                github: res.data.github,
+                linkedin: res.data.linkedin,
+                instagram: res.data.instagram,
+            };
+            setData(_data);
+            setBody({ ...body, bio: res.data.bio });
+        });
+    };
 
     const getTfaStatus = async () => {
-        await axios.get('/api/users/tfastatus')
-        .then((res) => {
+        await axios.get("/api/users/tfastatus").then((res) => {
             setTfaOn(res.data);
-        })
-    }
+        });
+    };
 
     useEffect(() => {
-        console.log('save')
+        console.log("save");
         getProfileData();
         getTfaStatus();
     }, [save]);
@@ -127,7 +131,7 @@ const Profile = () => {
     const postData = async () => {
         try {
             let updatedBody: Partial<Body> = Object.entries(body)
-                .filter(([, value]) => value !== '')
+                .filter(([, value]) => value !== "")
                 .reduce((result, [key, value]) => {
                     result[key as keyof Body] = value;
                     return result;
@@ -138,27 +142,30 @@ const Profile = () => {
             }
             if (Object.keys(updatedBody).length !== 0 || photo) {
                 const form = new FormData();
-                console.log('updated body ==> ', updatedBody);
+                console.log("updated body ==> ", updatedBody);
                 form.append("body", JSON.stringify(updatedBody));
-                if (photo)
-                    form.append("file", photo);
+                if (photo) form.append("file", photo);
                 await axios.post("/api/users/me", form, {
                     withCredentials: true,
-                })
+                });
                 setBody(emptyBody);
-                setSave(!save)
-                infonotify('your profile updated succefully')
+                setSave(!save);
+                infonotify("your profile updated succefully");
+            } else {
+                notifyoferror("nothing to update!!");
             }
-            else {
-                notifyoferror('nothing to update!!')
-            }
-        } catch(err) {
-            notifyoferror('invalid Data')
-            console.log(err)
+        } catch (err) {
+            notifyoferror("invalid Data");
+            console.log(err);
         }
     };
 
     const navigate = useNavigate();
+
+    const [blockedFriendPopup, setblockedFriendPopup] = useState(false);
+    const toggleBlockedFriendsPopup = () => {
+        setblockedFriendPopup(!blockedFriendPopup);
+    };
 
     return (
         <div className="parent flex justify-center items-center gap-[1.2vw] h-screen max-sm:flex-col max-md:flex-col max-sm:my-[2vh] max-md:my-[2vh]">
@@ -233,7 +240,19 @@ const Profile = () => {
                                 <BsInstagram className="text-[1vw] max-sm:text-[2.5vw] max-md:text-[2.5vw]" />
                             </a>
                         </li>
+                        <li>
+                            <a onClick={toggleBlockedFriendsPopup}>
+                                <BsFillPersonLinesFill className="text-[1vw] max-sm:text-[2.5vw] max-md:text-[2.5vw] hover:cursor-pointer" />
+                            </a>
+                        </li>
                     </ul>
+                    {blockedFriendPopup && (
+                        <BlockedFriends
+                            toggleBlockedFriendsPopup={
+                                toggleBlockedFriendsPopup
+                            }
+                        />
+                    )}
                 </div>
             </div>
             <div className="child-container-2">
@@ -245,6 +264,7 @@ const Profile = () => {
                             </h3>
                             <div className="flex mt-[.5vw]">
                                 <input
+                                    placeholder="username"
                                     onChange={handleUsernameChange}
                                     value={body.username}
                                     type="text"
@@ -259,6 +279,7 @@ const Profile = () => {
                             </h3>
                             <div className="flex mt-[.5vw]">
                                 <input
+                                    placeholder="full name"
                                     value={body.fullname}
                                     onChange={handleFullNameChange}
                                     type="text"
@@ -278,6 +299,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    placeholder="github link"
                                     value={body.github}
                                     onChange={handleGithubChange}
                                     type="link"
@@ -291,6 +313,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    placeholder="linkedin link"
                                     value={body.linkedin}
                                     onChange={handleLinkedinChange}
                                     type="link"
@@ -304,6 +327,7 @@ const Profile = () => {
                             </span>
                             <div className="flex max-sm:w-full max-md:w-full">
                                 <input
+                                    placeholder="instagram link"
                                     value={body.instagram}
                                     onChange={handleInstagramChange}
                                     type="link"
@@ -314,7 +338,8 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center justify-between mt-[2.5vw] w-[49vw] max-sm:mt-[6vw] max-sm:w-full max-sm:px-[2.8vw] max-md:mt-[6vw] max-md:w-full max-md:px-[2.8vw]">
                         <span className="text-[1vw] max-sm:text-[2.2vw] max-md:text-[2.2vw] font-medium font-satoshi uppercase">
-                            {tfaOn ? 'disable' : 'enable'}  2 factor authentication
+                            {tfaOn ? "disable" : "enable"} 2 factor
+                            authentication
                         </span>
                         <div className="containerr">
                             <div className="switches-container">
@@ -325,7 +350,6 @@ const Profile = () => {
                                     value="Off"
                                     checked={!tfaOn}
                                     onChange={getTfaStatus}
-
                                 />
                                 <input
                                     type="radio"
@@ -335,10 +359,7 @@ const Profile = () => {
                                     checked={tfaOn}
                                     onChange={getTfaStatus}
                                 />
-                                <label
-                                    htmlFor="switchOff"
-                                    onClick={turnTfOff}
-                                >
+                                <label htmlFor="switchOff" onClick={turnTfOff}>
                                     OFF
                                 </label>
                                 <label
@@ -353,14 +374,14 @@ const Profile = () => {
                             </div>
                         </div>
                     </div>
-                    { qrCode && <QrCode toggleQrCode={toggleQrCode} /> }
-                    { off &&  <TurnOffVerify turnTfOff={turnTfOff}/> }
+                    {qrCode && <QrCode toggleQrCode={toggleQrCode} />}
+                    {off && <TurnOffVerify turnTfOff={turnTfOff} />}
                     <div className="mt-[3vw] w-[49vw] max-sm:mt-[8vw] max-sm:w-full max-sm:pr-[2.8vw] max-md:mt-[8vw] max-md:w-full max-md:pr-[2.8vw]">
                         <div className="child flex gap-[4vw] justify-end items-center">
                             <h3 className="font-light text-[1vw] max-sm:text-[2vw] max-md:text-[2vw]">
                                 <a
                                     className=" hover:cursor-pointer"
-                                    onClick={() => navigate('/home')}
+                                    onClick={() => navigate("/home")}
                                 >
                                     CANCEL
                                 </a>

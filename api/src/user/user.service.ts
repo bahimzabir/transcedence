@@ -16,7 +16,6 @@ import { Http2ServerResponse } from 'http2';
 import { use } from 'passport';
 import { ChatService } from 'src/chat/chat.service';
 
-
 @Injectable()
 export class UserService {
   constructor(
@@ -35,8 +34,8 @@ export class UserService {
           username: body.username,
           bio: body.bio,
           fullname: body.fullname,
-          firstname: body.fullname?.split(" ")[0],
-          lastname: body.fullname?.split(" ")[1],
+          firstname: body.fullname?.split(' ')[0],
+          lastname: body.fullname?.split(' ')[1],
           github: body.github,
           linkedin: body.linkedin,
           instagram: body.instagram,
@@ -170,7 +169,7 @@ export class UserService {
   //find user by id as a paramiter functio
 
   // async findsUserbyId(_id: number) {
-  //   return 
+  //   return
   // }
 
   async getUserbyId(req: any, id: number) {
@@ -655,7 +654,7 @@ export class UserService {
             orderBy: {
               updatedAt: 'desc',
             },
-            select:{
+            select: {
               id: true,
               name: true,
               photo: true,
@@ -665,7 +664,7 @@ export class UserService {
                 where: {
                   userId: id,
                 },
-                select:{
+                select: {
                   unreadMessage: true,
                 },
                 take: 1,
@@ -673,11 +672,11 @@ export class UserService {
             },
           },
         },
-      });      
+      });
 
       return chatrooms.chats;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new HttpException(
         "database engine can't find the entities requested",
         HttpStatus.NOT_FOUND,
@@ -736,18 +735,14 @@ export class UserService {
           username: true,
           photo: true,
           wins: true,
+          losses: true,
         },
       });
-      console.log('leaderboard')
+      console.log('leaderboard');
       console.log(users);
       return users;
     } catch (error) {
-      throw new HttpException(
-        "ikhan safi",
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('ikhan safi', HttpStatus.NOT_FOUND);
     }
   }
-
-
 }

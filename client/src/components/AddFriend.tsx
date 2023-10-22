@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import axios from "axios";
-import {useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 //-------------------PROPS---------------------
 import "react-toastify/dist/ReactToastify.css";
@@ -66,6 +66,7 @@ const AddFriend = ({
             badnotify("request already sent");
         });
     }, []);
+
     return (
         <div className="pop-up">
             {isadmin && (
