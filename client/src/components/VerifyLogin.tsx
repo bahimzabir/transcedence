@@ -86,6 +86,7 @@ const VerifyLogin = () => {
                 window.location.href = "/home";
             }
         } catch (error) {
+            console.log(error);
             inputs?.forEach((input) => {
                 input.value = "";
             });

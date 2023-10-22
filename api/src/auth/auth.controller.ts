@@ -185,7 +185,6 @@ export class TwoFactorAuthenticationController {
   @UseGuards(JwtTwoFactorGuard)
   @HttpCode(201)
   async turnOffTwoFactorAuthentication(
-    // @Res() res: Response,
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
@@ -208,12 +207,10 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
-    const isCodeValid =
-    await this.authService.isTwoFactorAuthenticationCodeValid(
+    const isCodeValid = await this.authService.isTwoFactorAuthenticationCodeValid(
         body.code,
         request.user,
     );
-    console.log(isCodeValid);
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }

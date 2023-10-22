@@ -64,7 +64,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
     });
-    return request.res;
+    return request.user;
   }
 
   async turnOffTwoFactorAuthentication(userId: number) {
@@ -82,7 +82,7 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserTfaDto,
   ) {
-    return await authenticator.verify({
+    return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthSecret,
     });

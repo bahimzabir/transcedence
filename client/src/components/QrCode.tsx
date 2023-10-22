@@ -130,7 +130,7 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                                 alt="QR Code"
                                             />
                                         )}
-                                        <form action="#" id="form">
+                                        <form id="form" action="javascript:void(0)">
                                             <div className="flex justify-center items-center">
                                                 <input
                                                     type="tel"
