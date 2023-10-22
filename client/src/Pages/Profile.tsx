@@ -114,7 +114,7 @@ const Profile = () => {
     };
 
     const handleUsernameChange = (e: any) => {
-        setBody({ ...body, username: e.target.value });
+        setBody({ ...body, username: e.target.value.trim() });
     };
 
     const handleFullNameChange = (e: any) => {

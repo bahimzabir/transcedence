@@ -118,7 +118,6 @@ export class UserService {
   async readNotification(req: any, ids: number[]) {
     const count = ids.length;
     const intIds = ids.map((id) => +id);
-    console.log('iread: ', ids);
     try {
       const notifications = await this.prisma.notification.updateMany({
         where: {
@@ -497,7 +496,6 @@ export class UserService {
           },
         });
       }
-      //console.log(friendRequest);
       return friendRequest;
     } catch (error) {
       throw new HttpException(
