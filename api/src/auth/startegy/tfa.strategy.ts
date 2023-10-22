@@ -1,7 +1,7 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import TokenPayload from '../interfaces/tokenPayload.interface';
@@ -23,16 +23,20 @@ export class JwtTwoFactorStrategy extends PassportStrategy(
     });
   }
   async validate(payload: TokenPayload) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: payload.sub,
-      },
-    });
-    if (user.isTwoFactorAuthEnabled === false) {
-      return user;
-    }
-    if (payload.isTwoFactorAuthEnabled) {
-      return user;
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: payload.sub,
+        },
+      });
+      if (user.isTwoFactorAuthEnabled === false) {
+        return user;
+      }
+      if (payload.isTwoFactorAuthEnabled) {
+        return user;
+      }
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }
