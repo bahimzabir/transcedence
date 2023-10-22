@@ -70,16 +70,17 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                 }
             });
         });
-        
+
         // generate the QrCode
-        axios.post("/api/2fa/generate", {})
-        .then( (res) => {
-            console.log(res.data);
-            setQrCode(res.data);
-        }).catch((err) => {
-            console.error(err);
-        })
-    
+        axios
+            .post("/api/2fa/generate", {})
+            .then((res) => {
+                console.log(res.data);
+                setQrCode(res.data);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     }, []);
 
     const getCodeFromInput = async () => {
@@ -89,21 +90,21 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
         inputs?.forEach((input) => {
             code += input.value;
         });
-        console.log('code: ', code);
+        console.log("code: ", code);
         return code;
     };
 
     const verifyCode = async () => {
         try {
             const code = await getCodeFromInput();
-            const res = await axios.post("/api/2fa/turn-on", {code: code});
+            const res = await axios.post("/api/2fa/turn-on", { code: code });
             // if (res.status !== 201)
             //     throw new Error("Invalid 2FA Code");
             toggleQrCode();
-        } catch(err) {
+        } catch (err) {
             console.log(err);
         }
-    }
+    };
 
     return (
         <div className="pop-up">
@@ -122,13 +123,13 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
                                             scan to activate 2 factor
                                             authentication
                                         </h3>
-                                        { qrCode &&
-                                        <img
-                                            className="w-[15vw]"
-                                            src={qrCode}
-                                            alt="QR Code"
-                                        />
-                                        }
+                                        {qrCode && (
+                                            <img
+                                                className="w-[15vw]"
+                                                src={qrCode}
+                                                alt="QR Code"
+                                            />
+                                        )}
                                         <form action="#" id="form">
                                             <div className="flex justify-center items-center">
                                                 <input

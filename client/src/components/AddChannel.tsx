@@ -15,12 +15,25 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [password, setPassword] = useState("");
     const handleChange = (e: any) => {
-        setChannelName(e.target.value);
+        setChannelName(e.target.value.trim());
     };
 
     const handleSave = () => {
-        if (channelName !== "" && (isPublic || isPrivate || isProtected) && selectedImage) {
-            addChannel({ name: channelName, img: selectedImage, password: password, status: isPublic ? "public" : isPrivate ? "private" : "protected"});
+        if (
+            channelName !== "" &&
+            (isPublic || isPrivate || isProtected) &&
+            selectedImage
+        ) {
+            addChannel({
+                name: channelName,
+                img: selectedImage,
+                password: password,
+                status: isPublic
+                    ? "public"
+                    : isPrivate
+                    ? "private"
+                    : "protected",
+            });
             setChannelName("");
             setSelectedImage(null);
             togglePopup();
@@ -50,7 +63,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
         setSelectedImage(file);
     };
     const handleChangepassword = (e: any) => {
-        setPassword(e.target.value);
+        setPassword(e.target.value.trim());
     };
     return (
         <div className="pop-up">
