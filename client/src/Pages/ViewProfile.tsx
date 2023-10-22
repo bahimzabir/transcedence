@@ -27,6 +27,9 @@ interface UserInfo {
     wins: number;
     loses: number;
     games: number;
+    github: string;
+    linkedin: string;
+    instagram: string;
 }
 
 interface Player {
@@ -102,6 +105,9 @@ const ViewProfile = () => {
                     wins: data.user.wins,
                     loses: data.user.losses,
                     games: data.user.wins + data.user.losses,
+                    github: data.user.github,
+                    linkedin: data.user.linkedin,
+                    instagram: data.user.instagram
                 });
                 const newMAp = new Map<number, Player>(map);
                 newMAp.set(userid, {
@@ -402,7 +408,7 @@ const ViewProfile = () => {
                     <ul className="flex gap-[2vw] max-sm:gap-[3vw] max-md:gap-[4vw] absolute bottom-[4vw] max-sm:bottom-[6vw] max-md:bottom-[6vw]">
                         <li>
                             <a
-                                href="#"
+                                href={user?.github} target="_blank"
                                 className="text-[1vw] max-sm:text-[3vw] max-md:text-[2.4vw]"
                             >
                                 <BsGithub />
@@ -410,7 +416,7 @@ const ViewProfile = () => {
                         </li>
                         <li>
                             <a
-                                href="#"
+                                href={user?.linkedin} target="_blank"
                                 className="text-[1vw] max-sm:text-[3vw] max-md:text-[2.4vw]"
                             >
                                 <BsLinkedin />
@@ -418,7 +424,7 @@ const ViewProfile = () => {
                         </li>
                         <li>
                             <a
-                                href="#"
+                                href={user?.instagram} target="_blank"
                                 className="text-[1vw] max-sm:text-[3vw] max-md:text-[2.4vw]"
                             >
                                 <BsInstagram />

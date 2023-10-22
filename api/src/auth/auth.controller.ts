@@ -196,8 +196,8 @@ export class TwoFactorAuthenticationController {
   }
 
   @UseGuards(JwtGard)
-  @Post('authenticate') //
-  @HttpCode(200)
+  @Post('authenticate')
+  @HttpCode(201)
   async authenticate(
     @Req() request: RequestWithUser,
     @Body() body: any,
