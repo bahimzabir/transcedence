@@ -57,6 +57,7 @@ export class PrismaTypes {
     github: true,
     linkedin: true,
     instagram: true,
+    bio: true,
   }
 
   static BlockedIfosSelect: Prisma.UserSelect = {
