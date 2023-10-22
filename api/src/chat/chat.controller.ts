@@ -19,10 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import JwtTwoFactorGuard from 'src/auth/guard/jwt-two-factor.guard';
-<<<<<<< HEAD
-=======
 import { ChatRoomBody } from './entities/chat.entity';
->>>>>>> b6e2b17b836c2f7364a1610451846e001192bce9
 
 @UseGuards(JwtTwoFactorGuard)
 @Controller('chat')
