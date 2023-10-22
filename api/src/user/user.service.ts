@@ -736,9 +736,9 @@ export class UserService {
           username: true,
           photo: true,
           wins: true,
+          losses: true,
         },
       });
-      console.log('leaderboard')
       console.log(users);
       return users;
     } catch (error) {

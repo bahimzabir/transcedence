@@ -8,6 +8,7 @@ import {
     Dashboard,
     Challenge,
     Practice,
+    Error404,
 } from "./Pages/index";
 import "./App.css";
 import Game from "./Game/Game";
@@ -16,6 +17,7 @@ import { ToastContainer } from "react-toastify";
 import RouteProtector from "./auth";
 import VerifyLogin from "./components/VerifyLogin";
 import JwtRouteProtector from "./authjwt";
+import LandinRouteProtector from "./authhome";
 const App = () => {
     setOnline();
     recieveNotification();
@@ -23,8 +25,9 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         
-        <Route path="/" element={<Landing />} />
-        <Route element={<JwtRouteProtector />} >
+        <Route element={<LandinRouteProtector />} >
+          <Route path="/" element= {<VerifyLogin />} />
+        </Route>        <Route element={<JwtRouteProtector />} >
         <Route path="/verify" element= {<VerifyLogin />} />
         </Route>
         <Route element={<RouteProtector />} >
@@ -37,7 +40,7 @@ const App = () => {
             <Route path="/view-profile" element={<ViewProfile />} />
             <Route path="/chat" element= {<Chat />} />
         </Route>
-      </Routes>
+        <Route path="/*" element={<Error404 />} />      </Routes>
       <ToastContainer />
     </BrowserRouter>
   );
