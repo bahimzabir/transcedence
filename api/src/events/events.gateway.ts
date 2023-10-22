@@ -58,13 +58,16 @@ export class EventsGateway {
       const cookies = client.handshake.headers.cookie;
       let userID: number;
       if (cookies) {
-        const token = client.handshake.headers.cookie.split("=")[1];
+        // console.log('cookies', cookies);
+        const token = cookies.split("jwt=")[1];
+        console.log('token', token);
         userID = await this.validateUser(this.config, this.prisma, true, token);
         if (this.onlineUsers.has(userID)) {
           this.onlineUsers.get(userID).push(client.id);
         } else {
           this.onlineUsers.set(userID, [client.id]);
         }
+        console.log('onlineUsers', this.onlineUsers);
       }
       // const notifications = await getUnseenNotification(this.prisma, userID);
       // notifications.forEach((notification) => {
