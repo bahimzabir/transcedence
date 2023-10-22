@@ -35,7 +35,7 @@ export class UserService {
           bio: body.bio,
           fullname: body.fullname,
           firstname: body.fullname?.split(' ')[0],
-          lastname: body.fullname?.split(' ')[1],
+          lastname: body.fullname?.split(' ').slice(1).join(' '),
           github: body.github,
           linkedin: body.linkedin,
           instagram: body.instagram,

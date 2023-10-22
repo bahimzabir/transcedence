@@ -126,8 +126,9 @@ export class UserController {
       const body = plainToClass(UserUpdateDto, parsedBody);
       console.log('body: ', body);
       if (body.fullname) {
-        const words = body.fullname.split(' ')
-        if (words.length !== 2) {
+        console.log('trruuue')
+        const words = body.fullname.split(' ');
+        if (words.length < 2) {
           throw new BadRequestException('Invalid Fullname')
         }
       }
