@@ -44,6 +44,8 @@ function Challenge() {
     const [scale, setScale] = useState<number>(1);
     const [endMatch, setEndMatch] = useState<boolean>(false);
 
+    const [timeoutId, setTimeoutId] = useState<number>();
+
     const navigate = useNavigate();
 
     const handleWindowResize = () => {
@@ -70,7 +72,7 @@ function Challenge() {
 
         handleWindowResize();
         window.addEventListener("resize", handleWindowResize);
-        const timeoutId = setTimeout(timeout, 5000);
+        setTimeoutId(setTimeout(timeout, 5000));
 
         return () => {
             window.removeEventListener("resize", handleWindowResize);
@@ -100,6 +102,7 @@ function Challenge() {
 
         socket?.on("join_room", (obj: any) => {
             console.log("JOINING ROOM ...");
+            clearTimeout(timeoutId);
             setData(obj.data);
             setRoomName(obj.roomName);
 
