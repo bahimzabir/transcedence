@@ -22,7 +22,6 @@ export class newchatdto {
     name: string;
     status: string;
     @ValidateIf((o) => o.status === 'protected')
-    @IsNumber()
     @IsNotEmpty()
     password: string;
 }

@@ -85,11 +85,11 @@ const Chat = () => {
                 const data = {
                     name: currentChannel.name,
                     status: currentChannel.status,
+                    password: currentChannel.password,
                 };
                 formData.append("body", JSON.stringify(data));
                 await axios.post("/api/chat/new", formData);
             } catch (error: any) {
-                console.log(error.response.data)
                 if (error.code === "ERR_NETWOR") notifyoferror(error.message);
                 else
                     notifyoferror(error.response.data.message);
