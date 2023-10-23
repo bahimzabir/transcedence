@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import "../styles/QrCode.css";
 import axios from "axios";
 import { BsXLg } from "react-icons/bs";
+import { infonotify, notifyoferror } from "../Pages/chatInterfaces";
 
 interface TurnOffProps {
     turnTfOff: () => void;
@@ -89,8 +90,10 @@ const TurnOffVerify = ({ turnTfOff }: TurnOffProps) => {
             if (res.status !== 201)
                 throw new Error("Invalid 2FA Code");
             turnTfOff();
-        } catch(err) {
-            console.log(err);
+            infonotify("2FA Turned Off Succefully");
+        } catch(err: any) {
+            const errorMsg = err.response.data.message;
+            notifyoferror(errorMsg);
         }
     }
 

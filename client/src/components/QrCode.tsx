@@ -2,6 +2,7 @@ import { BsXLg } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import "../styles/QrCode.css";
 import axios from "axios";
+import { infonotify, notifyoferror } from "../Pages/chatInterfaces";
 
 interface QrCodeProps {
     toggleQrCode: () => void;
@@ -102,8 +103,10 @@ const QrCode = ({ toggleQrCode }: QrCodeProps) => {
             if (res.status !== 201)
                 throw new Error("Invalid 2FA Code");
             toggleQrCode();
-        } catch (err) {
-            console.log(err);
+            infonotify("2FA Turned On Succefully");
+        } catch (err: any) {
+            const errorMsg = err.response.data.message;
+            notifyoferror(errorMsg);
         }
     };
 
