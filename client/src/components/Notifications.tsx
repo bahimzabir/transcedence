@@ -39,6 +39,12 @@ const Notifications = ({
           withCredentials: true,
         })
         infonotify("You joined the room")
+        const data = {
+          id: [notification.id],
+        };
+        await axios.post("/api/users/readnotification", data, {
+          withCredentials: true,
+        });
         navigate('/chat')
       }
       catch(error:any){

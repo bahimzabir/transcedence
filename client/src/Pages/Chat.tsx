@@ -36,23 +36,23 @@ const Chat = () => {
     const [showinvite, setShowinvite] = useState(false);
     const handleArrowClick = async () => {
         if (inputValue.trim() !== "") {
+            const now = new Date();
             setMessages((prevMessages) => [
                 ...prevMessages,
                 {
                     message: inputValue.trim(),
                     isSentByMe: true,
                     img: "",
-                    date: "",
+                    date: `${now.getUTCHours()}:${now.getUTCMinutes()}`,
                 },
             ]);
             setInputValue("");
-            const now = new Date();
             const dto = {
                 id: selectedChannel?.id,
                 message: inputValue.trim(),
                 sender: myid,
                 roomid: selectedChannel?.id,
-                data: `${now.getHours()}:${now.getMinutes()}`,
+                data: `${now.getUTCHours()}:${now.getUTCMinutes()}`,
             };
             socket?.emit("createMessage", dto, {
                 withCredentials: true,
@@ -154,7 +154,6 @@ const Chat = () => {
         return room;
     }
     const Getmyrooms = async () => {
-        console.log(myid);
         let newchannel: intersetchannel[] = [];
         const rooms = await getRoomChannels();
         for (const element of rooms) {
@@ -195,13 +194,15 @@ const Chat = () => {
             const msgs = await getChannelmsg(selectedChannel?.id);
             for (let i = 0; i < msgs.length; i++) {
                 if (msgs[i].senderId == id) {
+                    const inputdate = new Date(msgs[i].createdAt);
+                    const time = inputdate.getUTCHours() + ":" + inputdate.getUTCMinutes();
                     msg = [
                         ...msg,
                         {
                             message: msgs[i].content,
                             isSentByMe: true,
                             img: "",
-                            date: msgs[i].createdAt,
+                            date: time,
                         },
                     ];
                 } else {
@@ -255,7 +256,6 @@ const Chat = () => {
                 setChannels([...channels]);
             }
 
-            console.log(myid);
             socket?.emit(
                 "messagedontseen",
                 { id: myid, roomid: dto.roomid },
@@ -273,7 +273,7 @@ const Chat = () => {
                         message: dto.message,
                         isSentByMe: false,
                         img: "/images/" + dto.sender + ".png",
-                        date: `${now.getHours()}:${now.getMinutes()}`,
+                        date: `${now.getUTCHours()}:${now.getUTCMinutes()}`,
                     },
                 ]);
             }
@@ -339,7 +339,7 @@ const Chat = () => {
                 );
                 if (
                     me !== element.id &&
-                    classSystemEnum[userclassSystem.status] >
+                    classSystemEnum[userclassSystem.status] >=
                         classSystemEnum[mystatus]
                 )
                     newmember.isAdmin = false;
