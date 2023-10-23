@@ -99,8 +99,8 @@ export class GoogleAuthController {
     const url = await redirectUrl(this.prisma, req);
     const r = await this.authService.SignIn(req);
     await res.cookie('jwt', r.token , {
+      path: '/',
       httpOnly: true,
-      secure: true,
     });
     if (r.user.isTwoFactorAuthEnabled) {
       res.redirect(`${this.config.get("HOST")}/verify`);
