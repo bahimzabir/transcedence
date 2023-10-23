@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import "../styles/QrCode.css";
 import axios from "axios";
+import { notifyoferror } from "../Pages/chatInterfaces";
 
 const VerifyLogin = () => {
     useEffect(() => {
@@ -86,12 +87,15 @@ const VerifyLogin = () => {
             } else {
                 window.location.href = "/home";
             }
-        } catch (error) {
-            console.log(error);
+        } catch (err: any) {
+            const errorMsg = err.response.data.message;
+            notifyoferror(errorMsg);
+
             inputs?.forEach((input) => {
                 input.value = "";
             });
         }
+        
     };
 
     return (
