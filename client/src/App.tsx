@@ -22,6 +22,7 @@ import Speed from "./Game/Speed";
 const App = () => {
     setOnline();
     recieveNotification();
+
   return (
     <BrowserRouter>
       <Routes>

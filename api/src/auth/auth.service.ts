@@ -61,8 +61,8 @@ export class AuthService {
     const accessTokenCookie = this.generateToken(request.user, tfa);
     // request.res.setHeader('Set-Cookie', [accessTokenCookie]);
     request.res.cookie('jwt', accessTokenCookie, {
+      path: '/',
       httpOnly: true,
-      secure: true,
     });
     return request.user;
   }
@@ -185,19 +185,7 @@ export class AuthService {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: `${this.config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
     });
-    // if (!isTwoFactorAuthEnabled) {
     return token;
-    // }
-    // return `jwt=${token}; HttpOnly; Path=/; Max-Age=${this.config.get(
-    //   'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
-    // )}`;
-    // await res.cookie('jwt', token, {
-    //   domain: 'localhost', // Set to your domain
-    //   path: '/',
-    //   httpOnly: true,
-    //   secure: true, // Set to true for HTTPS
-    //   //sameSite: 'Lax', // Adjust based on your requirements
-    // });
   }
 }
 

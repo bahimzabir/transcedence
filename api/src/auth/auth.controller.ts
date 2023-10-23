@@ -57,6 +57,7 @@ export class AuthController {
   async verify() {
     return 'TRUE';
   }
+  
   @Get('Jwtverify')
   @UseGuards(JwtGard)
   async Jwtverify() {
@@ -207,10 +208,13 @@ export class TwoFactorAuthenticationController {
     @Req() request: RequestWithUser,
     @Body() body: any,
   ) {
+    console.log('bady cede: ');
+    console.log(body.code);
     const isCodeValid = await this.authService.isTwoFactorAuthenticationCodeValid(
         body.code,
         request.user,
     );
+    console.log('isCodeValid: ' + isCodeValid);
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
