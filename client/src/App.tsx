@@ -18,6 +18,7 @@ import { ToastContainer } from "react-toastify";
 import RouteProtector from "./auth";
 import VerifyLogin from "./components/VerifyLogin";
 import JwtRouteProtector from "./authjwt";
+import Speed from "./Game/Speed";
 const App = () => {
     setOnline();
     recieveNotification();
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/spectate" element={<Spectate/>}/>
             <Route path="/gamemode" element= {<GameMode /> }/>
             <Route path="/game" element= {<Game />}/>
+            <Route path="/speed" element= {<Speed />}/>
             <Route path="/home" element= { <Dashboard /> }/>
             <Route path="/view-profile" element={<ViewProfile />} />
             <Route path="/chat" element= {<Chat />} />
