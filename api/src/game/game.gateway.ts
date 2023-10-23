@@ -115,11 +115,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("spectate")
 	async watchMatch(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-		console.log("watchhhhhhhhhhhhhhh");
-		client.join(data.roomName);
 		const room = this.getRoomByName(data.roomName);
-		console.log(data.roomName);
+		console.log(room);
 		if (room) {
+			client.join(data.roomName);
 			console.log("joined room")
 			client.emit("join_room", {
 				data: room.data,
@@ -129,7 +128,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			});
 		}
 		else {
-			console.log("no room");
 			client.emit("no_room");
 		}
 	}

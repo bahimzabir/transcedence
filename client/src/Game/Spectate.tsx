@@ -103,6 +103,10 @@ function Spectate() {
             setStart(true);
         });
 
+        socket?.on("no_room", () => {
+            navigate("/*");
+        });
+
         socket?.on("update", (data: GameData) => {
             setData(data);
         });

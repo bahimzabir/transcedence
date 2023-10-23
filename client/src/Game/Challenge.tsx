@@ -8,6 +8,7 @@ import waiting from "../assets/waiting.json";
 import Lottie from "lottie-react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsArrowLeftShort } from "react-icons/bs";
+import { infonotify } from "../Pages/chatInterfaces";
 
 interface Ball {
     x: number;
@@ -59,17 +60,23 @@ function Challenge() {
         }
     };
 
+    const timeout = () => {
+        infonotify('Your Opponent is Busy or not here');
+        navigate(-1);
+    }
+    
     useEffect(() => {
         setSocket(io("/game"));
-    }, []);
 
-    useEffect(() => {
         handleWindowResize();
         window.addEventListener("resize", handleWindowResize);
+        const timeoutId = setTimeout(timeout, 5000);
 
         return () => {
             window.removeEventListener("resize", handleWindowResize);
+            clearTimeout(timeoutId);
         };
+
     }, []);
 
     useEffect(() => {
