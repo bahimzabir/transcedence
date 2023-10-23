@@ -33,8 +33,8 @@ logs-f:
 # restart:
 #      docker-compose restart
 
-purne:
+prune:
 	 docker system prune
 
-purne-a:
+prune-a:
 	 docker system prune -af --volumes
