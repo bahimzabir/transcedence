@@ -60,12 +60,10 @@ interface room {
 }
 
 interface Leaderboard {
-    id: number;
     username: string;
     photo: string;
-    game_won: number;
-    game_lost: number;
-    game_played: number;
+    wins: number;
+    losses: number;
 }
 
 const Dashboard = () => {
@@ -267,6 +265,7 @@ const Dashboard = () => {
                     withCredentials: true,
                 });
                 const leaderboard = res.data;
+                console.log(res.data);
                 setLeaderboard(leaderboard);
             } catch (error) {}
         };
@@ -477,14 +476,14 @@ const Dashboard = () => {
                             <h2 className="font-bold font-satoshi uppercase text-[.8vw] max-sm:text-[1.2vh] max-md:text-[1.2vh] max-lg:text-[1.2vh]">
                                 leaderboard
                             </h2>
-                            {leaderboard.map((leaderboard, index) => (
-                                <Leaderboard
-                                    id={leaderboard.id}
-                                    username={leaderboard.username}
-                                    photo={leaderboard.photo}
-                                    game_won={leaderboard.game_won}
-                                    game_lost={leaderboard.game_lost}
-                                    game_played={leaderboard.game_played}
+                            {leaderboard.map((leader, index) => (
+                                <Leaderboard 
+                                    id={index+1}
+                                    username={leader.username}
+                                    photo={leader.photo}
+                                    game_won={leader.wins}
+                                    game_lost={leader.losses}
+                                    game_played={leader.wins + leader.losses}
                                     key={index}
                                 />
                             ))}

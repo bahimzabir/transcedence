@@ -44,7 +44,7 @@ const Leaderboard = ({
                             /
                         </h1>
                         <h3 className="font-normal font-satoshi lowercase text-[.7vw] max-sm:text-[1.1vh] max-md:text-[1.1vh] max-lg:text-[1.1vh]">
-                            draws: {game_played - game_won - game_lost}
+                            games played: {game_played}
                         </h3>
                     </div>
                 </div>
