@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 const Chat = () => {
     const [challengebutton, setChallengebutton] = useState(false);
     const [socket, setSocket] = useState<Socket | null>(null);
+    const [myid, setMyid] = useState<number>(0);
     const [channels, setChannels] = useState<intersetchannel[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [messages, setMessages] = useState<intermessages[]>([]);
@@ -49,7 +50,7 @@ const Chat = () => {
             const dto = {
                 id: selectedChannel?.id,
                 message: inputValue.trim(),
-                sender: await whoami(),
+                sender: myid,
                 roomid: selectedChannel?.id,
                 data: `${now.getHours()}:${now.getMinutes()}`,
             };
@@ -153,6 +154,7 @@ const Chat = () => {
         return room;
     }
     const Getmyrooms = async () => {
+        console.log(myid);
         let newchannel: intersetchannel[] = [];
         const rooms = await getRoomChannels();
         for (const element of rooms) {
@@ -183,7 +185,7 @@ const Chat = () => {
     //-------------------------------------------casper-------------------------------------//
     async function getandSetmsgchannel() {
         if (selectedChannel !== null) {
-            const id: number = await whoami();
+            const id: number = myid;
             let msg: {
                 message: string;
                 isSentByMe: boolean;
@@ -218,6 +220,11 @@ const Chat = () => {
         }
     }
     useEffect(() => {
+        axios.get("/api/users/me", {
+            withCredentials: true,
+        }).then((res)=> {
+           setMyid(res.data.id);
+        });
         Getmyrooms();
     }, []);
     useEffect(() => {
@@ -235,16 +242,6 @@ const Chat = () => {
     }, [selectedChannel]);
 
     const socketRef = useRef<Socket | null>(null);
-    async function whoami() {
-        try {
-            const me = await axios.get("/api/users/me", {
-                withCredentials: true,
-            });
-            return me.data.id;
-        } catch (error) {
-            notifyoferror("error in getting user");
-        }
-    }
     async function receivemsg(dto: messagedto) {
         if (
             !selectedChannelRef.current ||
@@ -257,9 +254,11 @@ const Chat = () => {
                 channels[index].notification = true;
                 setChannels([...channels]);
             }
+
+            console.log(myid);
             socket?.emit(
                 "messagedontseen",
-                { id: await whoami(), roomid: dto.roomid },
+                { id: myid, roomid: dto.roomid },
                 {
                     withCredentials: true,
                 }
@@ -317,7 +316,7 @@ const Chat = () => {
             let getmember: any;
             getmember = await getmemeberoom(selectedChannel?.id);
             let members: MemberProps[] = [];
-            const me: number = await whoami();
+            const me: number = myid;
             let mystatus: classSystemEnum = classSystemEnum.NORMAL;
             const myroomuser = getmember.roomUsers.find((element: any) => {
                 if (element.userId == me) {
@@ -378,7 +377,7 @@ const Chat = () => {
     };
     const navigate = useNavigate();
     const sendGameRequest = async () => {
-        const me: number = await whoami();
+        const me: number = myid;
         member.forEach((mem) => {
             if (me !== mem.id) {
                 return navigate(`/challenge?opp=${mem.id}&role=1`);
@@ -484,6 +483,7 @@ const Chat = () => {
                                                             socket={socket}
                                                             roomid={user.roomid}
                                                             key={idx}
+                                                            me={myid}
                                                         />
                                                     )
                                                 )}

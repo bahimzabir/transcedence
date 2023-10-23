@@ -16,6 +16,7 @@ import { userevents } from "../Pages/chatInterfaces";
     id: number;
     socket: Socket | null;
     roomid: number;
+    me:number;
   }
   
   const Member = ({
@@ -25,6 +26,7 @@ import { userevents } from "../Pages/chatInterfaces";
     id,
     roomid,
     socket,
+    me,
   }: MemberProps) => {
     const kickuser = async () => {
       const dto: userevents = {
@@ -65,7 +67,7 @@ import { userevents } from "../Pages/chatInterfaces";
     };
     return (
       <div className="container-1 flex justify-between items-center p-[.6vw] mt-[.5vw]">
-        <Link to={`/view-profile?id=${id}`}>
+        <Link to={(me != id) ? `/view-profile?id=${id}` : '/profile'}>
           <div className="flex justify-between items-center gap-[.6vw] max-sm:gap-[2vw] max-md:gap-[2vw] max-lg:gap-[2vw]">
             <img
               className="w-[2.5vw] h-[2.5vw] max-sm:w-[7vw] max-sm:h-[7vw] max-md:w-[4vw] max-md:h-[4vw] max-lg:w-[4vw] max-lg:h-[4vw] rounded-full"

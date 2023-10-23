@@ -21,6 +21,7 @@ import JwtRouteProtector from "./authjwt";
 const App = () => {
     setOnline();
     recieveNotification();
+
   return (
     <BrowserRouter>
       <Routes>
