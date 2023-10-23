@@ -86,7 +86,7 @@ function Challenge() {
         let n = queryParams.get("role");
         if (n === null) n = "0";
 
-        const role: number = +n
+        const role: number = +n;
         const oppId: number = +opp;
         
         socket?.on("inGame", () => {

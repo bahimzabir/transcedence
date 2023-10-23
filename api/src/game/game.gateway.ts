@@ -95,7 +95,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
+				done: false,
+				mode: 'classic'
 			};
 
 			players.forEach(player => {
@@ -176,7 +177,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
+				done: false,
+				mode: 'classic'
 			};
 
 			players.forEach(player => {

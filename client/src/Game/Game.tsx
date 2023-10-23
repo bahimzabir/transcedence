@@ -131,6 +131,12 @@ function Game() {
         socket?.emit("move", { posY, roomName });
     };
 
+    const replay = () => {
+        setEndMatch(false);
+        setStarted(false);
+        setSocket(io("/game"));
+    }
+
     if (endMatch) {
         socket?.disconnect();
         return (
@@ -143,7 +149,7 @@ function Game() {
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/game")}
+                        onClick={replay}
                     >
                         Yes
                     </button>

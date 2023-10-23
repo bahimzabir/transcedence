@@ -41,6 +41,7 @@ interface Player {
 
 interface Game {
     roomName: string;
+    mode: string;
     player1: Player;
     player2: Player;
 }
@@ -113,9 +114,9 @@ const Dashboard = () => {
                     withCredentials: true,
                 }),
             ]);
-
             const game: Game = {
                 roomName: room.roomName,
+                mode: room.mode,
                 player1: res1.data,
                 player2: res2.data,
             };
@@ -128,6 +129,7 @@ const Dashboard = () => {
     useEffect(() => {
         socket?.on("initRooms", (data) => {
             for (let room of data.rooms) {
+                console.log(room)
                 fetchPlayersData(room);
             }
             setGamesMap(new Map<string, any>(data.map));
@@ -135,6 +137,7 @@ const Dashboard = () => {
 
         socket?.on("addRoom", (data) => {
             fetchPlayersData(data.room);
+            console.log(data.room)
             console.log("add ===> \n", data.map);
             setGamesMap(new Map<string, any>(data.map));
         });
@@ -159,7 +162,6 @@ const Dashboard = () => {
             const newGames: Game[] = games.filter(
                 (game) => game.roomName !== data.roomName
             );
-            console.log(newGames);
             setGames(newGames);
         });
 

@@ -9,6 +9,7 @@ interface Game {
     roomName: string;
     player1: Player;
     player2: Player;
+    mode: string;
 }
 
 interface Score {
@@ -24,7 +25,7 @@ interface LiveGameProps {
 
 const LiveGame = ({ game, index, gamesMap }: LiveGameProps) => {
     return (
-        <Link key={index} to={`/spectate?roomname=${game.roomName}`}>
+        <Link key={index} to={`/spectate?roomname=${game.roomName}&mode=${game.mode}`}>
             <div
                 className="game-div mt-[1vw] max-sm:mt-[2.5vw] max-md:mt-[2vw] max-lg:mt-[2vw] flex container-1 px-[1.5vw] py-[.5vw] max-sm:py-[1vh] max-md:py-[1vh] max-lg:py-[1vh] justify-between items-center"
                 title="Click to watch the game"

@@ -27,4 +27,5 @@ export interface Room {
 	players: Player[];
 	data: GameData;
     done: boolean;
+	mode: string;
 }

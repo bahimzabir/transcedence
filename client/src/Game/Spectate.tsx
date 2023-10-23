@@ -55,7 +55,14 @@ function Spectate() {
     };
 
     useEffect(() => {
-        setSocket(io("/game"));
+        const queryParams = new URLSearchParams(window.location.search);
+        const mode = queryParams.get("mode");
+        if (mode === 'classic')
+            setSocket(io("/game"));
+        else if (mode === 'speed')
+            setSocket(io("/speed"));
+        else
+            navigate('/*');
     }, []);
 
     useEffect(() => {

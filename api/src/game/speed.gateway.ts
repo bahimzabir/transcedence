@@ -97,7 +97,8 @@ export class SpeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					leftScore: 0,
 					rightScore: 0
 				},
-				done: false
+				done: false,
+                mode: 'speed'
 			};
 
 			players.forEach(player => {
@@ -197,6 +198,7 @@ export class SpeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (room.data.ball.x >= 990 && (room.data.ball.y > room.data.rightPlayerY && room.data.ball.y < room.data.rightPlayerY+80)) {
 				this.handlePaddleCollision(room.data.ball, room.data.rightPlayerY);
 				room.data.ball.velocityX *= -1;
+                room.data.ball.speed += 1;
 			}
 			this.server.to(room.roomName).emit("update", room.data);
 

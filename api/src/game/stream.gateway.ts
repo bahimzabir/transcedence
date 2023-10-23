@@ -59,6 +59,7 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
             roomName: room.roomName,
             playerOneId: room.players[0].id,
 			playerTwoId: room.players[1].id,
+            mode: room.mode,
         });
 
         this.server.emit("addRoom", {
@@ -66,6 +67,7 @@ export class StreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 roomName: room.roomName,
                 playerOneId: room.players[0].id,
 			    playerTwoId: room.players[1].id,
+                mode: room.mode
             },
             map: Array.from(this.map.entries())
         });
