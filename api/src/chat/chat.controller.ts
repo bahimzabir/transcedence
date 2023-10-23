@@ -57,16 +57,12 @@ export class ChatController {
     const chatroombody: newchatdto = JSON.parse(body);
     const valid = await validate(plainToClass(newchatdto, chatroombody));
     if(valid.length > 0)
-    {
-      console.log("ERROR")
-      throw new HttpException("PASSWORD AND NAME SHOULD NOT BE EMPTY, PASSWORD: ONYL NUMBERS", HttpStatus.CONFLICT);
-    }
+      throw new HttpException("PASSWORD AND NAME SHOULD NOT BE EMPTY", HttpStatus.CONFLICT);
     const creatroom = await this.chatService.createChatRoom(req, chatroombody);
     const filename = +creatroom.id + 'room.png';
     await fs.rename(file.path, path.join('/app/src/img/', filename), () => {});
   }
   catch(error) {
-    console.log("error", error)
     throw error;
   }
   }
