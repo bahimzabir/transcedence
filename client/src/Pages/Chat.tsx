@@ -194,10 +194,7 @@ const Chat = () => {
             for (let i = 0; i < msgs.length; i++) {
                 if (msgs[i].senderId == id) {
                     const inputdate = new Date(msgs[i].createdAt);
-                    const time =
-                        inputdate.getUTCHours() +
-                        ":" +
-                        inputdate.getUTCMinutes();
+                    const time =inputdate.getUTCHours() + ":" + inputdate.getUTCMinutes();
                     msg = [
                         ...msg,
                         {
@@ -208,13 +205,15 @@ const Chat = () => {
                         },
                     ];
                 } else {
+                    const inputdate = new Date(msgs[i].createdAt);
+                    const time =inputdate.getUTCHours() + ":" + inputdate.getUTCMinutes();
                     msg = [
                         ...msg,
                         {
                             message: msgs[i].content,
                             isSentByMe: false,
                             img: "/images/" + msgs[i].senderId + ".png",
-                            date: msgs[i].createdAt,
+                            date: time,
                         },
                     ];
                 }

@@ -305,6 +305,11 @@ export class ChatService {
             },
           },
         });
+        await tsx.roomUser.deleteMany({
+          where: {
+            AND: [{ userId: dto.id }, { roomId: dto.roomid }],
+          },
+        });
       }
       else {
         throw new Error("the user not any more in this channel")

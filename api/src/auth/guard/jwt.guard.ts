@@ -31,8 +31,9 @@ export class WsGuard implements CanActivate {
     return false;
   }
   async validateRequest(token: any): Promise<any> {
-    const payload: any = jwt.verify(token, this.config.get('JWT_SECRET'));
-    const user = await this.prisma.user.findUnique({
+    try{
+      const payload: any = jwt.verify(token, this.config.get('JWT_SECRET'));
+      const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,
         email: payload.email,
@@ -44,7 +45,11 @@ export class WsGuard implements CanActivate {
       delete user.password;
       return true;
     }
-    throw new WsException('invalid user credentials');
     return false;
+    }
+    catch {
+      throw new WsException('invalid user credentials');
+      return false;
+    }
   }
 }

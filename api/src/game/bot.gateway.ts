@@ -41,61 +41,62 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const cookie = client.handshake.headers.cookie;
 		const jwtToken = cookie.split('jwt=')[1];
-
-		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
-		const userId = jwtPayload.sub;
-
-        let player: Player = {
+		try {
+			const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
+			const userId = jwtPayload.sub;
+			let player: Player = {
 			socket: client,
 			id: userId,
+			}
+			const roomName: string = this.createNewRoom();
+			player.socket.join(roomName);
+			let room: Room = {
+				roomName: roomName,
+				player: player,
+				data: {
+					ball: {
+						x: 500,
+						y: 300,
+						velocityX: 5,
+						velocityY: 0,
+						speed: 5,
+					},
+					botY: 250,
+					playerY: 250,
+					leftScore: 0,
+					rightScore: 0
+				},
+				done: false
+			}
+			
+			this.server.to(room.roomName).emit("join_room", {
+				data: room.data,
+				roomName: room.roomName,
+				playerId: player.id,
+			});
+			this.rooms.push(room);
+		} catch (error) {
+			return ;
 		}
-
-        const roomName: string = this.createNewRoom();
-        player.socket.join(roomName);
-        let room: Room = {
-            roomName: roomName,
-            player: player,
-            data: {
-                ball: {
-                    x: 500,
-                    y: 300,
-                    velocityX: 5,
-                    velocityY: 0,
-                    speed: 5,
-                },
-                botY: 250,
-                playerY: 250,
-                leftScore: 0,
-                rightScore: 0
-            },
-            done: false
-        }
-
-        this.server.to(room.roomName).emit("join_room", {
-            data: room.data,
-            roomName: room.roomName,
-            playerId: player.id,
-        });
-
-        this.rooms.push(room);
+		
 	}
 
 	private createNewRoom() : string {
 		let roomName: string;
-
+		
 		do {
 			roomName = Math.random().toString(36).substring(7);
 		} while (this.roomNames.includes(roomName));
-
+		
 		this.roomNames.push(roomName);
-
+		
 		return roomName;
 	}
-
+	
 	handleDisconnect(client: Socket) {
 		
 	}
-
+	
 	@Interval(8)
 	async moveBall() {
 		for (let room of this.rooms) {

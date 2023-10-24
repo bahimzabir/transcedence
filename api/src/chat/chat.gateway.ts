@@ -1,4 +1,4 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket, WsException } from '@nestjs/websockets';
 import { ChatService, JwtWebSocketGuard } from './chat.service';
 import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -22,13 +22,17 @@ export class ChatGateway {
   server: Server;
   sockets = new Map<number, Socket>();
   getclientbysocket(client: Socket) {
-    let token = client.handshake.headers.cookie;
-    let id: number;
-    if (token) {
-      token = token.split('jwt=')[1];
-      const decoded = this.chatService.getUserJwt(token);
-      id = +decoded.sub;
-      return id;
+    try{
+      let token = client.handshake.headers.cookie;
+      let id: number;
+      if (token) {
+        token = token.split('jwt=')[1];
+        const decoded = this.chatService.getUserJwt(token);
+        id = +decoded.sub;
+        return id;
+      }
+    }
+    catch(error){
     }
   }
 
@@ -60,6 +64,9 @@ export class ChatGateway {
     const userid: number =  client.user.id;
     try{
       await this.chatService.ban(userid, dto[0]);
+      if(this.sockets.has(dto[0].id)){
+        this.server.to(this.sockets.get(dto[0].id).id).emit("leave", dto[0].roomid);
+      }
     }
     catch(error){
       this.server.to(this.sockets.get(userid).id).emit("error", error.message);
@@ -84,8 +91,12 @@ export class ChatGateway {
     this.sockets.set(id, client)
   }
   async handleDisconnect(@ConnectedSocket() client) {
-    const id = this.getclientbysocket(client);
-    this.sockets.delete(id)
+    try{
+      const id = this.getclientbysocket(client);
+      this.sockets.delete(id)
+    }
+    catch(error){      
+    }
   }
   async unreadmessage(receiverid: number, dto: messageDto){
     await this.prisma.$transaction(async (tsx)=>{

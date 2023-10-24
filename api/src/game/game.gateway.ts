@@ -46,20 +46,25 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private ids: number[] = [];
 
 	async handleConnection(client: Socket) : Promise<void> {
-		const cookie = client.handshake.headers.cookie;
-		const jwtToken = cookie.split('jwt=')[1];
-		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
-		const userId = jwtPayload.sub;
-		if (this.ids.includes(userId)) {
-			console.log(`user already connected ===> ${userId}`);
-			client.emit('inGame');
-			this.event.sendnotify('inGame', userId);
-			client.disconnect();
+		try{
+			const cookie = client.handshake.headers.cookie;
+			const jwtToken = cookie.split('jwt=')[1];
+			const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
+			const userId = jwtPayload.sub;
+			if (this.ids.includes(userId)) {
+				console.log(`user already connected ===> ${userId}`);
+				client.emit('inGame');
+				this.event.sendnotify('inGame', userId);
+				client.disconnect();
+			}
+			else {
+				this.map.set(client, userId);
+				this.ids.push(userId);
+				console.log(`connected ====> ${userId}`);
+			}
 		}
-		else {
-			this.map.set(client, userId);
-			this.ids.push(userId);
-			console.log(`connected ====> ${userId}`);
+		catch {
+			
 		}
 	}
 
