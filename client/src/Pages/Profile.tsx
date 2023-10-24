@@ -5,7 +5,7 @@ import {
     BsLinkedin,
 } from "react-icons/bs";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { QrCode } from "./index";
 import "../styles/Profile.css";
@@ -170,6 +170,11 @@ const Profile = () => {
     return (
         <div className="parent flex justify-center items-center gap-[1.2vw] h-screen max-sm:flex-col max-md:flex-col max-sm:my-[2vh] max-md:my-[2vh]">
             <div className="child-container-1">
+                <Link to="/home">
+                    <span className="container-1 w-[3vw] h-[3vw] mr-[1vw] text-[1vw] max-sm:text-[2vw] max-md:text-[2vw] font-satoshi font-bold uppercase hover:cursor-pointer flex justify-center items-center">
+                        ←
+                    </span>
+                </Link>
                 <div className="container-1 font-satoshi text-white w-[16vw] h-[90vh] max-sm:w-[80vw] max-sm:h-[40vh] max-md:w-[80vw] max-md:h-[40vh] flex flex-col justify-center items-center relative">
                     <div className="img-holder absolute top-[6vw] max-sm:top-[6vw] max-md:top-[3vw]">
                         <label htmlFor="imageInput">

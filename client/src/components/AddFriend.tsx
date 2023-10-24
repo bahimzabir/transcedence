@@ -73,9 +73,9 @@ const AddFriend = ({
                 <div className="overlay">
                     <div className="pop-up-container">
                         <div className="flex justify-center items-center relative">
-                            <div className="add-channel w-[30em] h-[30vw] max-sm:w-[60vw] max-sm:h-[30vw] max-md:w-[60vw] max-md:h-[30vw] max-lg:w-[50vw] max-lg:h-[30vw] max-xl:w-[50vw] max-xl:h-[30vw] text-white font-satoshi flex justify-center items-center py-[5vw] max-sm:py-[2vw] max-md:py-[2vw] max-lg:py-[2vw]">
-                                <div className="pop-up w-[25em] max-sm:w-full max-md:w-full flex flex-col gap-[1vw] max-sm:gap-[1.5vw] max-md:gap-[2vw] max-xl:gap-[2vw] mx-[2vw] max-sm:mx-[4vw] max-md:mx-[4vw] max-lg:mx-[4vw] max-xl:mx-[1vw]">
-                                    <h3 className="text-[1em] text-center uppercase font-semibold max-sm:text-[2.5vw] max-md:text-[1.8vw] max-lg:text-[1.8vw] max-xl:text-[1.8vw]">
+                            <div className="add-channel w-[30vw] h-[30vw] max-sm:w-[60vw] max-sm:h-[30vw] max-md:w-[60vw] max-md:h-[30vw] max-lg:w-[50vw] max-lg:h-[30vw] max-xl:w-[50vw] max-xl:h-[30vw] text-white font-satoshi flex justify-center items-center py-[5vw] max-sm:py-[2vw] max-md:py-[2vw] max-lg:py-[2vw]">
+                                <div className="pop-up w-[25vw] max-sm:w-full max-md:w-full flex flex-col gap-[1vw] max-sm:gap-[1.5vw] max-md:gap-[2vw] max-xl:gap-[2vw] mx-[2vw] max-sm:mx-[4vw] max-md:mx-[4vw] max-lg:mx-[4vw] max-xl:mx-[1vw]">
+                                    <h3 className="text-[1vw] text-center uppercase font-semibold max-sm:text-[2.5vw] max-md:text-[1.8vw] max-lg:text-[1.8vw] max-xl:text-[1.8vw]">
                                         Invite Friends
                                     </h3>
                                     <div className="flex flex-col items-center justify-start h-[20vw] overflow-y-scroll no-scrollbar overflow-hidden pb-[1vw]">

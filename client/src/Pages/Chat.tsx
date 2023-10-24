@@ -17,7 +17,7 @@ import {
     notifyoferror,
 } from "./chatInterfaces";
 import { notify } from "../assets/toastNotifys";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Chat = () => {
     const [challengebutton, setChallengebutton] = useState(false);
@@ -92,8 +92,7 @@ const Chat = () => {
                 await axios.post("/api/chat/new", formData);
             } catch (error: any) {
                 if (error.code === "ERR_NETWOR") notifyoferror(error.message);
-                else
-                    notifyoferror(error.response.data.message);
+                else notifyoferror(error.response.data.message);
             }
         } catch (error) {}
         await Getmyrooms();
@@ -195,7 +194,10 @@ const Chat = () => {
             for (let i = 0; i < msgs.length; i++) {
                 if (msgs[i].senderId == id) {
                     const inputdate = new Date(msgs[i].createdAt);
-                    const time = inputdate.getUTCHours() + ":" + inputdate.getUTCMinutes();
+                    const time =
+                        inputdate.getUTCHours() +
+                        ":" +
+                        inputdate.getUTCMinutes();
                     msg = [
                         ...msg,
                         {
@@ -221,11 +223,13 @@ const Chat = () => {
         }
     }
     useEffect(() => {
-        axios.get("/api/users/me", {
-            withCredentials: true,
-        }).then((res)=> {
-           setMyid(res.data.id);
-        });
+        axios
+            .get("/api/users/me", {
+                withCredentials: true,
+            })
+            .then((res) => {
+                setMyid(res.data.id);
+            });
         Getmyrooms();
     }, []);
     useEffect(() => {
@@ -387,6 +391,11 @@ const Chat = () => {
     return (
         <div className="parent flex flex-row justify-center items-center gap-[1vw] h-screen max-sm:flex-col max-md:flex-col">
             <div className="child-container-1">
+                <Link to="/home">
+                    <span className="container-1 w-[3vw] h-[3vw] mr-[1vw] text-[1vw] max-sm:text-[2vw] max-md:text-[2vw] font-satoshi font-bold uppercase hover:cursor-pointer flex justify-center items-center">
+                        ←
+                    </span>
+                </Link>
                 <div className="container-1 font-satoshi text-white w-[18vw] h-[90vh] max-sm:w-[80vw] max-sm:h-[45vh] max-md:w-[80vw] max-md:h-[45vh] flex flex-col justify-center items-center relative">
                     <h3 className="absolute top-[3vh] max-sm:top-[1.8vh] max-md:top-[1.8vh] uppercase font-bold text-[1vw] max-sm:text-[2vw] max-md:text-[1.4vw]">
                         Conversations
