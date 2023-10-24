@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BsArrowLeftShort } from "react-icons/bs";
 import waiting from "../assets/waiting.json";
 import Lottie from "lottie-react";
+import NetError from "./NetError";
 
 interface Ball {
     x: number;
@@ -41,6 +42,7 @@ function Practice() {
     const [player, setPlayer] = useState<PlayerData>();
     const [scale, setScale] = useState<number>(1);
     const [endMatch, setEndMatch] = useState<boolean>(false);
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     const navigate = useNavigate();
 
@@ -60,16 +62,23 @@ function Practice() {
 
     useEffect(() => {
         setSocket(io("/bot"));
-    }, []);
 
-    useEffect(() => {
+        const handleOnline = () => setIsOffline(false);
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
         handleWindowResize();
         window.addEventListener("resize", handleWindowResize);
 
         return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
             window.removeEventListener("resize", handleWindowResize);
         };
     }, []);
+
 
     useEffect(() => {
         console.log("SOCKET ...");
@@ -121,21 +130,14 @@ function Practice() {
                 <h2 className="font-bold font-satoshi text-[1.5vw] text-center leading-[2.2vw]">
                     The match has ended.
                     <br />
-                    Would you like to play again?
+                    You can go back to your Home Page
                 </h2>
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate("/practice")}
+                        onClick={() => navigate('/home')}
                     >
-                        Yes
-                    </button>
-
-                    <button
-                        className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => window.location.replace("/home")}
-                    >
-                        No
+                        OK
                     </button>
                 </div>
             </div>
@@ -210,6 +212,7 @@ function Practice() {
                     </span>
                 </div>
             </div>
+            {isOffline && <NetError/>}
         </div>
     );
 }

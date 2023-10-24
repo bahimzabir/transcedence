@@ -136,7 +136,7 @@ function Spectate() {
                 <h2 className="font-bold font-satoshi text-[1.5vw] text-center leading-[2.2vw]">
                     The match has ended.
                     <br />
-                    You can go bach to your Home Page
+                    You can go back to your Home Page
                 </h2>
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button

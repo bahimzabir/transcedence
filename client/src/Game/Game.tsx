@@ -8,6 +8,7 @@ import waiting from "../assets/waiting.json";
 import Lottie from "lottie-react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsArrowLeftShort } from "react-icons/bs";
+import NetError from "./NetError";
 
 interface Ball {
     x: number;
@@ -40,7 +41,8 @@ function Game() {
     const [playerTwo, setPlayerTwo] = useState<PlayerData>();
     const [scale, setScale] = useState<number>(1);
     const [endMatch, setEndMatch] = useState<boolean>(false);
-
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
+    
     const navigate = useNavigate();
 
     const handleWindowResize = () => {
@@ -59,16 +61,23 @@ function Game() {
 
     useEffect(() => {
         setSocket(io("/game"));
-    }, []);
 
-    useEffect(() => {
+        const handleOnline = () => setIsOffline(false);
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
         handleWindowResize();
         window.addEventListener("resize", handleWindowResize);
 
         return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
             window.removeEventListener("resize", handleWindowResize);
         };
     }, []);
+
 
     useEffect(() => {
         socket?.on("inGame", () => {
@@ -232,6 +241,7 @@ function Game() {
                     </span>
                 </div>
             </div>
+            {isOffline && <NetError/>}
         </div>
     );
 }

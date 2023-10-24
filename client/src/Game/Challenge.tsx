@@ -9,6 +9,7 @@ import Lottie from "lottie-react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsArrowLeftShort } from "react-icons/bs";
 import { infonotify } from "../Pages/chatInterfaces";
+import NetError from "./NetError";
 
 interface Ball {
     x: number;
@@ -45,6 +46,7 @@ function Challenge() {
     const [endMatch, setEndMatch] = useState<boolean>(false);
 
     const [timeoutId, setTimeoutId] = useState<number>();
+    const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
     const navigate = useNavigate();
 
@@ -74,9 +76,17 @@ function Challenge() {
         window.addEventListener("resize", handleWindowResize);
         setTimeoutId(setTimeout(timeout, 5000));
 
+        const handleOnline = () => setIsOffline(false);
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
         return () => {
             window.removeEventListener("resize", handleWindowResize);
             clearTimeout(timeoutId);
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
         };
 
     }, []);
@@ -159,13 +169,6 @@ function Challenge() {
         socket?.emit("move", { posY, roomName });
     };
 
-    const replay = () => {
-        socket?.connect();
-        socket?.emit("join");
-        setStarted(false);
-        setEndMatch(false);
-    };
-
     if (endMatch) {
         socket?.disconnect();
         return (
@@ -173,21 +176,14 @@ function Challenge() {
                 <h2 className="font-bold font-satoshi text-[1.5vw] text-center leading-[2.2vw]">
                     The match has ended.
                     <br />
-                    Would you like to play again?
+                    You can go back to your Home Page
                 </h2>
                 <div className="flex gap-[3vw] mt-[2vw]">
                     <button
                         className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => replay()}
+                        onClick={() => navigate('/home')}
                     >
-                        Yes
-                    </button>
-
-                    <button
-                        className="hover:scale-105 text-white font-bold font-satoshi w-[10vw] h-[3vw] container-1 text-[1vw]"
-                        onClick={() => navigate(-1)}
-                    >
-                        No
+                        OK
                     </button>
                 </div>
             </div>
@@ -261,6 +257,7 @@ function Challenge() {
                     </span>
                 </div>
             </div>
+            {isOffline && <NetError/>}
         </div>
     );
 }
