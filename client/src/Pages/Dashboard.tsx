@@ -127,7 +127,6 @@ const Dashboard = () => {
     useEffect(() => {
         socket?.on("initRooms", (data) => {
             for (let room of data.rooms) {
-                console.log(room)
                 fetchPlayersData(room);
             }
             setGamesMap(new Map<string, any>(data.map));
@@ -135,15 +134,12 @@ const Dashboard = () => {
 
         socket?.on("addRoom", (data) => {
             fetchPlayersData(data.room);
-            console.log(data.room)
-            console.log("add ===> \n", data.map);
             setGamesMap(new Map<string, any>(data.map));
         });
 
         socket?.on("updateScore", (map: Map<string, Score>) => {
-            console.log("update ===> \n", map);
             setGamesMap(new Map<string, any>(map));
-            console.log(games);
+
         });
 
         return () => {
@@ -193,7 +189,6 @@ const Dashboard = () => {
                     withCredentials: true,
                 })
                 .then((res) => {
-                    console.log(res.data);
                     const newNotifications = res.data;
                     setNotifications(newNotifications);
                 });
@@ -265,7 +260,6 @@ const Dashboard = () => {
                     withCredentials: true,
                 });
                 const leaderboard = res.data;
-                console.log(res.data);
                 setLeaderboard(leaderboard);
             } catch (error) {}
         };
