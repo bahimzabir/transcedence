@@ -23,16 +23,12 @@ services:
       - client
 
   client:
-    volumes:
-      - ./client:/app
     build: ./client
     depends_on:
       - devdb
       - api
     
   api:
-    volumes:
-      - ./api:/app
     depends_on:
       - devdb
     ports:
