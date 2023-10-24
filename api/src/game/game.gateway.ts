@@ -47,7 +47,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(client: Socket) : Promise<void> {
 		const cookie = client.handshake.headers.cookie;
-		const jwtToken = cookie.split('=')[1];
+		const jwtToken = cookie.split('jwt=')[1];
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {

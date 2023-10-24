@@ -40,7 +40,7 @@ export class BotGateway implements OnGatewayConnection, OnGatewayDisconnect {
         console.log ("connected in bot socket")
 
 		const cookie = client.handshake.headers.cookie;
-		const jwtToken = cookie.split('=')[1];
+		const jwtToken = cookie.split('jwt=')[1];
 
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;

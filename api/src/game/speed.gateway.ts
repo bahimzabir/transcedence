@@ -48,7 +48,7 @@ export class SpeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleConnection(client: Socket) : Promise<void> {
         console.log("connected to speed");
 		const cookie = client.handshake.headers.cookie;
-		const jwtToken = cookie.split('=')[1];
+		const jwtToken = cookie.split('jwt=')[1];
 		const jwtPayload : any = jwt.verify(jwtToken, this.config.get('JWT_SECRET'));
 		const userId = jwtPayload.sub;
 		if (this.ids.includes(userId)) {
@@ -58,6 +58,7 @@ export class SpeedGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.disconnect();
 		}
 		else {
+
 			this.map.set(client, userId);
 			this.ids.push(userId);
 			console.log(`user just connected ====> ${userId}`);

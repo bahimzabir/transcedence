@@ -63,6 +63,7 @@ export class EventsGateway {
         if (this.onlineUsers.has(userID)) {
           this.onlineUsers.get(userID).push(client.id);
         } else {
+          
           this.onlineUsers.set(userID, [client.id]);
         }
       }
@@ -88,7 +89,7 @@ export class EventsGateway {
     try {
       const cookies = client.handshake.headers.cookie;
       if (cookies) {
-        const token = cookies.split("=")[1];
+        const token = cookies.split("jwt=")[1];
         const userID = await this.validateUser(this.config, this.prisma, true, token, null);
         const sockets = this.onlineUsers.get(userID);
         const index = sockets.indexOf(client.id);
@@ -99,6 +100,7 @@ export class EventsGateway {
           this.onlineUsers.delete(userID);
           await validateUser(this.config, this.prisma, false, null, userID);
         } else {
+
           this.onlineUsers.set(userID, sockets);
         }
       }

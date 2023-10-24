@@ -25,7 +25,7 @@ export class ChatGateway {
     let token = client.handshake.headers.cookie;
     let id: number;
     if (token) {
-      token = token.split('=')[1];
+      token = token.split('jwt=')[1];
       const decoded = this.chatService.getUserJwt(token);
       id = +decoded.sub;
       return id;

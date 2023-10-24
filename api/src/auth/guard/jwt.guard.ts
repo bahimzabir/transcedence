@@ -24,7 +24,7 @@ export class WsGuard implements CanActivate {
     const data = request.getClient<Socket>();
     const cookies = data.handshake.headers.cookie;
     if (cookies) {
-      const token = cookies.split("=")[1];
+      const token = cookies.split("jwt=")[1];
       return this.validateRequest(token)
     }
     throw new WsException('invalid user credentials');

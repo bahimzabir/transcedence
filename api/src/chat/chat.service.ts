@@ -253,7 +253,7 @@ export class ChatService {
             },
           });
           this.schedulerRegistry.deleteTimeout(`${dto.id}id${dto.roomid}`);
-        }, 5000); // Unmute after 1 hour
+        }, 30000); // Unmute after 1 hour
         this.schedulerRegistry.addTimeout(
           `${dto.id}id${dto.roomid}`,
           eventloop,
@@ -571,7 +571,7 @@ export class ChatService {
     }
   }
 
-  getUserJwt(token: string) {
+  getUserJwt(token: string){
     const Decoded = jwt.verify(token, this.config.get('JWT_SECRET'));
     return Decoded;
   }
@@ -874,18 +874,23 @@ export class JwtWebSocketGuard implements CanActivate {
   }
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
-    const token = client.handshake.headers.cookie.split('=')[1]; // Extract the token from the WebSocket handshake query
+    const token = client.handshake.headers.cookie.split('jwt=')[1]; // Extract the token from the WebSocket handshake query
     if (!token) {
       return false;
     }
-    
+    try{    
     const user = await this.authService.verifyToken(token);
-    
     if (!user) {
       return false;
     }
-    
+
     client.user = user; // Attach the user to the WebSocket client object
     return true;
+    }
+    catch(error) {
+      return false;
+    }
+    
+    
   }
 }
