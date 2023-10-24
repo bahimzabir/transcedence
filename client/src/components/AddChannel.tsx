@@ -70,10 +70,10 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
             <div className="overlay">
                 <div className="pop-up-container">
                     <div className="flex justify-center items-center relative">
-                        <div className="add-channel w-[30em] max-sm:w-[80vw] max-md:w-[80vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vh] max-sm:py-[4vw] max-md:py-[4vw]">
-                            <div className="pop-up w-[25em] max-sm:w-full max-md:w-full flex flex-col gap-[.5vw] max-sm:gap-[2vw] max-md:gap-[2vw] max-sm:mx-[4vw] max-md:mx-[4vw]">
+                        <div className="add-channel w-[30vw] max-sm:w-[80vw] max-md:w-[80vw] text-white font-satoshi flex justify-center items-center overflow-y-scroll no-scrollbar overflow-hidden py-[2vh] max-sm:py-[4vw] max-md:py-[4vw]">
+                            <div className="pop-up w-[25vw] max-sm:w-full max-md:w-full flex flex-col gap-[.5vw] max-sm:gap-[2vw] max-md:gap-[2vw] max-sm:mx-[4vw] max-md:mx-[4vw]">
                                 <div className="flex flex-col items-center gap-[.5vw] max-sm:gap-[2.5vw] max-md:gap-[2.5vw]">
-                                    <h3 className="text-[1em] uppercase font-semibold max-sm:text-[3vw] max-md:text-[2vw]">
+                                    <h3 className="text-[1vw] uppercase font-semibold max-sm:text-[3vw] max-md:text-[2vw]">
                                         Add a new Channel
                                     </h3>
                                     <label
@@ -100,7 +100,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                     </label>
                                 </div>
                                 <div className="flex flex-col items-start mt-[1vw]">
-                                    <h3 className="text-[1em] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
+                                    <h3 className="text-[1vw] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
                                         Channel Name
                                     </h3>
                                     <input
@@ -111,7 +111,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                     />
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-[1em] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
+                                    <h3 className="text-[1vw] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
                                         Private Channel
                                     </h3>
                                     <span
@@ -124,7 +124,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center ">
-                                    <h3 className="text-[1em] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
+                                    <h3 className="text-[1vw] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
                                         Public Channel
                                     </h3>
                                     <span
@@ -137,7 +137,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center ">
-                                    <h3 className="text-[1em] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
+                                    <h3 className="text-[1vw] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
                                         Protected Channel
                                     </h3>
                                     <span
@@ -151,7 +151,7 @@ const AddChannel = ({ togglePopup, addChannel }: Props) => {
                                 </div>
                                 {isProtected && (
                                     <>
-                                        <h3 className="text-[1em] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
+                                        <h3 className="text-[1vw] uppercase max-sm:text-[3vw] max-md:text-[2vw]">
                                             Password
                                         </h3>
                                         <input

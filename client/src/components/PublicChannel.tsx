@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { BsLockFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { PasswordPopup } from "../Pages/index";
-import { ToastContainer, toast } from "react-toastify";
 import { notifyoferror } from "../Pages/chatInterfaces";
 
 interface Room {
@@ -20,39 +19,25 @@ export interface Joinroominter {
     password?: string;
 }
 
-const PublicChannel = ({
-    name,
-    img,
-    member_size,
-    id,
-    status,
-}: Room) => {
+const PublicChannel = ({ name, img, member_size, id, status }: Room) => {
     const navigate = useNavigate();
-    const [password, setPassword] = useState<string>('');
+    const [password, setPassword] = useState<string>("");
     const [popupsave, setPopupsave] = useState(false);
     const joinroom = async (data: Joinroominter) => {
-        
-        try{
-            const res = await axios.post(
-                "/api/chat/joinroom",
-                data,
-                {
-                    withCredentials: true,
-                }
-                );
-                navigate("/chat");
+        try {
+            const res = await axios.post("/api/chat/joinroom", data, {
+                withCredentials: true,
+            });
+            navigate("/chat");
+        } catch (error: any) {
+            if (error.code === "ERR_NETWOR") notifyoferror(error.message);
+            else notifyoferror(error.response.data.message);
         }
-        catch(error: any) {
-            if(error.code === 'ERR_NETWOR')
-                notifyoferror(error.message)
-            else
-                notifyoferror(error.response.data.message);
-        }
-    }
+    };
     const [popup, setPopup] = useState(false);
     const togglePopup = async () => {
         setPopup(!popup);
-    }
+    };
     const data: Joinroominter = {
         id: id,
         status: status,
@@ -63,7 +48,7 @@ const PublicChannel = ({
             joinroom(data);
             setPopupsave(false);
         }
-    }, [popupsave])
+    }, [popupsave]);
     return (
         <div className="channel-div mt-[1vw] max-sm:mt-[2.5vw] max-md:mt-[2vw] max-lg:mt-[2vw] flex justify-between container-1 px-[1.5vw] py-[.5vw] max-sm:py-[1vh] max-md:py-[1vh] max-lg:py-[1vh] items-center">
             <div className="flex items-center gap-5 max-sm:gap-[1vw] max-md:gap-[1vw] max-lg:gap-[1vw]">
@@ -87,9 +72,8 @@ const PublicChannel = ({
                     className="join-channel container-1 px-[2vw] py-[.3vw] uppercase font-bold hover:scale-105 text-[.7vw] max-sm:text-[1.1vh] max-md:text-[1.1vh] max-lg:text-[1.1vh]"
                     onClick={() => {
                         if (status == "protected") {
-                            togglePopup()
-                        }
-                        else {
+                            togglePopup();
+                        } else {
                             joinroom(data);
                         }
                     }}
@@ -97,8 +81,13 @@ const PublicChannel = ({
                     join
                 </button>
             </div>
-            {popup && <PasswordPopup togglePopup={togglePopup} setPopupsave={setPopupsave} setPassword={setPassword} />}
-
+            {popup && (
+                <PasswordPopup
+                    togglePopup={togglePopup}
+                    setPopupsave={setPopupsave}
+                    setPassword={setPassword}
+                />
+            )}
         </div>
     );
 };
